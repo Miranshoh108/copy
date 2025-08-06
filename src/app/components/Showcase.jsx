@@ -12,11 +12,9 @@ const Slider = dynamic(() => import("react-slick"), { ssr: false });
 export default function Showcase() {
   const images = [
     "/images/showcase.jpg",
-    "/images/sag.jpg",
-    "/images/bacgraund.png",
+    "/images/bacgraund.jpg",
     "/images/showcase.jpg",
-    "/images/sag.jpg",
-    "/images/bacgraund.png",
+    "/images/bacgraund.jpg",
     "/images/showcase.jpg",
   ];
 

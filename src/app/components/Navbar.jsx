@@ -966,25 +966,6 @@ export default function Navbar() {
     setExpandedGroup((prevTitle) => (prevTitle === title ? null : title));
   };
 
-  // Fetch categories
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const res = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/catalogs/all`
-        );
-        setCategories(res.data.data || []);
-        if (res.data.data?.length) setSelectedCat(res.data.data[0]);
-      } catch (err) {
-        console.error("API Error:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, []);
-
-  // Fetch subcategories
   useEffect(() => {
     if (!selectedCat || !isOpen) return;
 

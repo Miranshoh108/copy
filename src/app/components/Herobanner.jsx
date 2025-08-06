@@ -11,13 +11,11 @@ const Slider = dynamic(() => import("react-slick"), { ssr: false });
 
 export default function HeroBanner() {
   const images = [
-    "/images/bacgraund.png",
+    "/images/bacgraund.jpg",
     "/images/showcase.jpg",
-    "/images/sag.jpg",
-    "/images/bacgraund.png",
+    "/images/bacgraund.jpg",
     "/images/showcase.jpg",
-    "/images/sag.jpg",
-    "/images/bacgraund.png",
+    "/images/bacgraund.jpg",
   ];
 
   const sliderRef = useRef(null);
@@ -37,7 +35,6 @@ export default function HeroBanner() {
   return (
     <section className="text-center relative mt-10">
       <div className="relative max-w-[1240px] max-[750px]:max-w-[95%] max-[1400px]:max-w-[80%] mx-auto">
-        {/* Arrow buttons */}
         <button
           onClick={() => sliderRef.current?.slickPrev()}
           className="absolute top-[calc(50%)] -left-16 z-20 max-[750px]:hidden cursor-pointer -translate-y-1/2 bg-linear-to-r from-[#EED3DC] to-[#CDD6FD] text-black p-2 rounded-full shadow-lg hover:scale-110 transition"
@@ -52,7 +49,6 @@ export default function HeroBanner() {
           <ChevronRight />
         </button>
 
-        {/* Slider container with fixed 366px height */}
         <div
           className="rounded-2xl overflow-hidden"
           style={{ height: "366px" }}
