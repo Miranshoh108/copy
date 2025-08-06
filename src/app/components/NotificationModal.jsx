@@ -1,15 +1,10 @@
 "use client";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { BookOpenCheck, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNotificationsStore } from "../store/useNotificationsStore";
 
-const NotificationModal = ({ open, setOpen }) => {
+export default function NotificationModal({ open, setOpen }) {
   const { notifications, markAsRead, markAllAsRead, deleteNotification } =
     useNotificationsStore();
 
@@ -99,6 +94,4 @@ const NotificationModal = ({ open, setOpen }) => {
       </DialogContent>
     </Dialog>
   );
-};
-
-export default NotificationModal;
+}

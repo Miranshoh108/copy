@@ -37,7 +37,7 @@ import { useCartStore } from "./hooks/cart";
 import { useHomeLikes } from "./hooks/likes";
 import { useAuth } from "./hooks/useAuth";
 import CategoryList from "./CategoryList";
-import NotificationModal from "../notifacation/page";
+import NotificationModal from "./NotificationModal";
 import { useNotificationsStore } from "../store/useNotificationsStore";
 
 const getCategoryIcon = (categoryName) => {

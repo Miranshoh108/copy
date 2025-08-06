@@ -1,11 +1,16 @@
-"use client"; // Add this if you plan to use client-side features in this component
+"use client"; 
 
 import NewProducts from "@/app/components/NewProducts";
 import ProductDetail from "../../components/DetailCard/ProductDetail";
 import Footer from "../../components/Footer";
 import Navbar from "../../components/Navbar";
+import { notFound } from "next/navigation";
 
 export default function ProductDetailPage() {
+  if (!product) {
+    notFound(); 
+  }
+
   return (
     <div className="flex flex-col">
       <Navbar className="w-full" />

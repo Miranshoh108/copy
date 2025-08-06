@@ -83,12 +83,12 @@ export default function CartProduct({ product }) {
             {/* Price */}
             <div className="flex flex-col">
               <span className="text-lg font-semibold text-gray-900">
-                {formatPrice(product.sale_price)} so'm
+                {formatPrice(product.sale_price)} so&apos;m
               </span>
               {product.original_price &&
                 product.original_price !== product.sale_price && (
                   <span className="text-sm text-gray-500 line-through">
-                    {formatPrice(product.original_price)} so'm
+                    {formatPrice(product.original_price)} so&apos;m
                   </span>
                 )}
             </div>
@@ -185,7 +185,7 @@ export default function CartProduct({ product }) {
                     product.sale_price?.toString().replace(/[^\d.-]/g, "") || 0
                   ) * product.quantity
                 )}{" "}
-                so'm
+                so&apos;m
               </span>
             </div>
           )}
