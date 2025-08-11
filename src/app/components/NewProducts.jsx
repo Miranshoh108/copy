@@ -9,6 +9,7 @@ import axios from "axios";
 import dynamic from "next/dynamic";
 import { ChevronLeft, ChevronRight, MoveRight } from "lucide-react";
 import Link from "next/link";
+import $api from "../http/api";
 
 const Slider = dynamic(() => import("react-slick"), {
   ssr: false,
@@ -22,6 +23,7 @@ const Slider = dynamic(() => import("react-slick"), {
     </div>
   ),
 });
+
 function ProductCardSkeleton() {
   return (
     <div className="bg-white rounded-lg shadow-md p-4 flex flex-col w-full h-full">
@@ -66,29 +68,51 @@ const PrevArrow = (props) => {
   );
 };
 
-export default function NewProducts() {
+export default function DiscountedProducts() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [sliderWidth, setSliderWidth] = useState(0);
   const sliderRef = useRef(null);
 
   useEffect(() => {
-    const fetchProducts = async () => {
+    const fetchDiscountedProducts = async () => {
       try {
-        const response = await axios.get(
-          "https://gw.texnomart.uz/api/web/v1/home/special-products?type=hit_products"
-        );
+        setLoading(true);
+        setError(null);
+
+        const response = await $api.get("/products/get/discounted");
+
         if (response.status === 200) {
-          setProducts(response.data.data.data);
+          const discountedProducts = response.data.productsWithDiscount.map(
+            (product) => {
+              const bestDiscountVariant = product.variants.reduce(
+                (best, current) =>
+                  current.discount > best.discount ? current : best,
+                product.variants[0]
+              );
+
+              return {
+                ...product,
+                mainVariant: bestDiscountVariant,
+                discountedVariants: product.variants.filter(
+                  (variant) => variant.discount > 0
+                ),
+              };
+            }
+          );
+
+          setProducts(discountedProducts);
         }
       } catch (error) {
-        console.error("Error fetching products:", error);
+        console.error("Error fetching discounted products:", error);
+        setError("Chegirmali mahsulotlarni yuklashda xatolik yuz berdi");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchProducts();
+    fetchDiscountedProducts();
 
     const handleResize = () => {
       const width = window.innerWidth;
@@ -110,38 +134,71 @@ export default function NewProducts() {
 
   const sliderSettings = {
     dots: false,
-    infinite: true,
+    infinite: products.length > sliderWidth,
     speed: 500,
-    slidesToShow: sliderWidth,
+    slidesToShow: Math.min(sliderWidth, products.length),
     slidesToScroll: 1,
-    arrows: true,
+    arrows: products.length > sliderWidth,
     nextArrow: <NextArrow />,
     prevArrow: <PrevArrow />,
     responsive: [
       {
         breakpoint: 1024,
-        settings: { slidesToShow: 4 },
+        settings: {
+          slidesToShow: Math.min(4, products.length),
+          infinite: products.length > 4,
+          arrows: products.length > 4,
+        },
       },
       {
         breakpoint: 768,
-        settings: { slidesToShow: 3 },
+        settings: {
+          slidesToShow: Math.min(3, products.length),
+          infinite: products.length > 3,
+          arrows: products.length > 3,
+        },
       },
       {
         breakpoint: 640,
-        settings: { slidesToShow: 2 },
+        settings: {
+          slidesToShow: Math.min(2, products.length),
+          infinite: products.length > 2,
+          arrows: products.length > 2,
+        },
       },
     ],
   };
 
+  if (error) {
+    return (
+      <section className="py-8">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center py-8">
+            <p className="text-red-500 mb-4">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
+            >
+              Qayta urinib ko'ring
+            </button>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
-    <section className="py-8 ">
+    <section className="py-8">
       <div className="max-w-7xl mx-auto px-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold mb-6 text-gray-800">
-            Yangi mahsulotlar
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold text-gray-800">
+            Chegirmali mahsulotlar
           </h2>
-          <Link href={"#"} className="flex items-center gap-2 text-blue-500">
-            Barchasini ko`&apos;rish <MoveRight />
+          <Link
+            href="/discounted-products"
+            className="flex items-center gap-2 text-blue-500 hover:text-blue-600 transition"
+          >
+            Barchasini ko&apos;rish <MoveRight />
           </Link>
         </div>
 
@@ -150,6 +207,12 @@ export default function NewProducts() {
             {[...Array(5)].map((_, index) => (
               <ProductCardSkeleton key={index} />
             ))}
+          </div>
+        ) : products.length === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-gray-500">
+              Hozirda chegirmali mahsulotlar mavjud emas
+            </p>
           </div>
         ) : (
           <div className="relative">
@@ -161,8 +224,18 @@ export default function NewProducts() {
               }`}
             >
               {products.map((product) => (
-                <div key={product.id} className="px-2">
-                  <ProductCard product={product} />
+                <div key={product._id} className="px-2">
+                  <ProductCard
+                    product={{
+                      ...product,
+                      id: product._id,
+                      mainImage: product.mainImage,
+                      variants: product.variants,
+                      price: product.mainVariant?.price,
+                      discountedPrice: product.mainVariant?.discountedPrice,
+                      discount: product.mainVariant?.discount,
+                    }}
+                  />
                 </div>
               ))}
             </Slider>

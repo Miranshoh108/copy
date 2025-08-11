@@ -1,8 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import axios from "axios";
 import { useEffect, useState } from "react";
+import { Loader2 } from "lucide-react";
+import $api from "../http/api";
 
 export default function CategoryList({ onMoreClick }) {
   const [categories, setCategories] = useState([]);
@@ -13,12 +14,20 @@ export default function CategoryList({ onMoreClick }) {
     const fetchCategories = async () => {
       try {
         setLoading(true);
-        const res = await axios.get(
-          "https://gw.texnomart.uz/api/web/v1/category/catalog"
-        );
-        setCategories(res.data.data.categories || []);
-      } catch (err) {
-        console.error("Kategoriya olishda xatolik:", err);
+        const response = await $api.get("/categories/get/all", {
+          params: {
+            page: 1,
+            limit: 50,
+            sort: "asc",
+          },
+        });
+        console.log("Categories API response:", response.data);
+        if (response.data.success) {
+          setCategories(response.data.data);
+        }
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+        setCategories([]);
       } finally {
         setLoading(false);
       }
@@ -28,32 +37,35 @@ export default function CategoryList({ onMoreClick }) {
   }, []);
 
   const getCategoryName = (category) => {
-    if (!category) return "No Name";
+    if (!category) return "";
+
     switch (language) {
-      case "UZ":
-        return category.name || category.name_uzb || "No Name";
       case "RU":
-        return category.name_rus || "No Name";
+        return category.nameRu || category.name;
       case "ENG":
-        return category.name_eng || "No Name";
+        return category.nameEn || category.name;
       default:
-        return category.name || "No Name";
+        return category.name;
     }
   };
 
-  const previewCategories = categories.slice(0, 7);
-  console.log("Category list:", previewCategories);
+  const previewCategories = categories.slice(0, 9);
 
   return (
     <div className="max-w-[1240px] w-full flex items-start justify-between pt-4 mx-auto">
       <div className="bg-white py-2 px-4 flex gap-10 items-center overflow-x-auto no-scrollbar max-[1100px]:hidden">
         {loading ? (
-          <p>Yuklanmoqda...</p>
+          <div className="flex items-center gap-2">
+            <Loader2 className="animate-spin w-4 h-4 text-blue-500" />
+            <span className="text-sm text-gray-600">Yuklanmoqda...</span>
+          </div>
+        ) : categories.length === 0 ? (
+          <p className="text-sm text-gray-500">Kategoriyalar topilmadi</p>
         ) : (
           <>
-            {previewCategories.map((cat) => (
+            {previewCategories.map((cat, index) => (
               <div
-                key={cat.slug} // ✅ id yo'q, lekin slug bor
+                key={cat._id || index}
                 className="group flex flex-col items-center justify-center min-w-[80px] cursor-pointer hover:scale-105 transition-transform duration-200"
               >
                 <span className="text-sm text-center whitespace-nowrap text-gray-700 group-hover:text-[#0D63F5] transition-colors duration-200">

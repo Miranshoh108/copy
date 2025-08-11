@@ -5,10 +5,11 @@ import ProductCard from "./ProductCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-import axios from "axios";
 import dynamic from "next/dynamic";
 import { ChevronLeft, ChevronRight, MoveRight } from "lucide-react";
 import Link from "next/link";
+import $api from "../http/api";
+import Image from "next/image";
 
 const Slider = dynamic(() => import("react-slick"), {
   ssr: false,
@@ -22,6 +23,7 @@ const Slider = dynamic(() => import("react-slick"), {
     </div>
   ),
 });
+
 function ProductCardSkeleton() {
   return (
     <div className="bg-white rounded-lg shadow-md p-4 flex flex-col w-full h-full">
@@ -69,78 +71,141 @@ const PrevArrow = (props) => {
 export default function BestSellers() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [sliderWidth, setSliderWidth] = useState(0);
+  const [error, setError] = useState(null);
+  const [sliderWidth, setSliderWidth] = useState(5);
   const sliderRef = useRef(null);
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get(
-          "https://gw.texnomart.uz/api/web/v1/home/special-products?type=hit_products"
+        setLoading(true);
+        setError(null);
+
+        const response = await $api.get(
+          `${process.env.NEXT_PUBLIC_API_URL}/products/get/popular`,
+          {
+            timeout: 10000,
+          }
         );
-        if (response.status === 200) {
-          setProducts(response.data.data.data);
+
+        if (response.data.success && response.data.data) {
+          const mappedProducts = response.data.data.map((item) => {
+            const variant = item.variants?.[0] || {};
+
+            // Console.log bilan qiymatlarni ko'ramiz
+            console.log("Mahsulot:", item.name);
+            console.log("Price:", variant.price);
+            console.log("DiscountedPrice:", variant.discountedPrice);
+
+            // Rasm URL
+            let imageUrl = "/placeholder.png";
+            if (item.mainImage) {
+              const cleanPath = item.mainImage.replace(/\\/g, "/");
+              imageUrl = `${process.env.NEXT_PUBLIC_API_URL}/${cleanPath}`;
+            }
+
+            return {
+              id: item._id,
+              name: item.name || "Noma'lum mahsulot",
+              description: item.description || "",
+              price: variant.price || 0,
+              discount: variant.discount || 0,
+              discountedPrice: variant.discountedPrice || variant.price || 0,
+              image: imageUrl,
+              variants: item.variants || [], // Pass the entire variants array
+              mainImage: item.mainImage,
+              reviews_count: item.reviews_count || 0,
+            };
+          });
+
+          setProducts(mappedProducts);
+        } else {
+          throw new Error("Ma'lumotlar formatida xatolik");
         }
       } catch (error) {
-        console.error("Error fetching products:", error);
+        console.error("Mahsulotlarni yuklashda xatolik:", error);
+        setError(error.message || "Ma'lumotlarni yuklashda xatolik yuz berdi");
       } finally {
         setLoading(false);
       }
     };
 
     fetchProducts();
-
-    const handleResize = () => {
-      const width = window.innerWidth;
-      if (width >= 1280) {
-        setSliderWidth(5);
-      } else if (width >= 1024) {
-        setSliderWidth(4);
-      } else if (width >= 768) {
-        setSliderWidth(3);
-      } else {
-        setSliderWidth(2);
-      }
-    };
-
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   const sliderSettings = {
     dots: false,
-    infinite: true,
+    infinite: products.length > 5,
     speed: 500,
-    slidesToShow: sliderWidth,
+    slidesToShow: Math.min(sliderWidth, products.length, 5),
     slidesToScroll: 1,
-    arrows: true,
+    arrows: products.length > 5,
     nextArrow: <NextArrow />,
     prevArrow: <PrevArrow />,
     responsive: [
       {
         breakpoint: 1024,
-        settings: { slidesToShow: 4 },
+        settings: {
+          slidesToShow: Math.min(4, products.length),
+          infinite: products.length > 4,
+          arrows: products.length > 4,
+        },
       },
       {
         breakpoint: 768,
-        settings: { slidesToShow: 3 },
+        settings: {
+          slidesToShow: Math.min(3, products.length),
+          infinite: products.length > 3,
+          arrows: products.length > 3,
+        },
       },
       {
         breakpoint: 640,
-        settings: { slidesToShow: 2 },
+        settings: {
+          slidesToShow: Math.min(2, products.length),
+          infinite: products.length > 2,
+          arrows: products.length > 2,
+        },
       },
     ],
   };
 
+  if (error) {
+    return (
+      <section className="py-8">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-gray-800">Xit savdo</h2>
+          </div>
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
+            <p className="text-red-600">
+              Mahsulotlarni yuklashda xatolik: {error}
+            </p>
+            <button
+              onClick={() => window.location.reload()}
+              className="mt-2 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 cursor-pointer"
+            >
+              Qaytadan urinish
+            </button>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="py-8">
       <div className="max-w-7xl mx-auto px-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold mb-6 text-gray-800">Xit savdo</h2>
-          <Link href={"#"} className="flex items-center gap-2 text-blue-500">
-            Barchasini ko&apos;rish <MoveRight />
-          </Link>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold text-gray-800">Xit savdo</h2>
+          {!loading && products.length > 0 && (
+            <Link
+              href={"#"}
+              className="flex items-center gap-2 text-blue-500 hover:text-blue-600 transition"
+            >
+              Barchasini ko&apos;rish <MoveRight />
+            </Link>
+          )}
         </div>
 
         {loading ? (
@@ -149,14 +214,22 @@ export default function BestSellers() {
               <ProductCardSkeleton key={index} />
             ))}
           </div>
+        ) : products.length === 0 ? (
+          <div className="text-center py-8 text-gray-500">
+            Hozircha mahsulotlar mavjud emas
+          </div>
+        ) : products.length <= 5 ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            {products.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
         ) : (
           <div className="relative">
             <Slider
               {...sliderSettings}
               ref={sliderRef}
-              className={`slider-transition ${
-                loading ? "slider-loading" : "slider-loaded"
-              }`}
+              className="slider-transition"
             >
               {products.map((product) => (
                 <div key={product.id} className="px-2">

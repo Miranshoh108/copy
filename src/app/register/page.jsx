@@ -2,12 +2,12 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
-
-const BASE_URL = "https://68282b2f6b7628c529126575.mockapi.io/login";
+import $api from "../http/api"; // Import your axios instance
 
 function AuthPage() {
   const [activeTab, setActiveTab] = useState("login");
   const [phoneNumber, setPhoneNumber] = useState("+998");
+  const [password, setPassword] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [showSmsCard, setShowSmsCard] = useState(false);
@@ -16,8 +16,10 @@ function AuthPage() {
   const [notification, setNotification] = useState({ type: "", message: "" });
   const [currentUser, setCurrentUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [tempRegistrationData, setTempRegistrationData] = useState(null);
   const inputRefs = useRef([]);
   const router = useRouter();
+
   const showNotification = (type, message) => {
     setNotification({ type, message });
     setTimeout(() => setNotification({ type: "", message: "" }), 4000);
@@ -25,30 +27,28 @@ function AuthPage() {
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
-    setPhoneNumber("+998-");
+    setPhoneNumber("+998");
+    setPassword("");
     setFirstName("");
     setLastName("");
     setShowSmsCard(false);
     setSmsCode(["", "", "", ""]);
     setNotification({ type: "", message: "" });
     setCurrentUser(null);
+    setTempRegistrationData(null);
   };
 
   const formatPhoneNumber = (value) => {
-    // Faqat raqamlarni qoldirish
     let cleaned = value.replace(/[^\d]/g, "");
 
-    // Agar 998 bilan boshlansa, uni olib tashlaymiz
     if (cleaned.startsWith("998")) {
       cleaned = cleaned.slice(3);
     }
 
-    // +998 dan keyin maksimal 9 ta raqam
     if (cleaned.length > 9) {
       cleaned = cleaned.slice(0, 9);
     }
 
-    // Formatlash: +998-XX-XXX-XX-XX
     let formatted = "+998";
     if (cleaned.length > 0) {
       formatted += "-" + cleaned.slice(0, 2);
@@ -72,117 +72,258 @@ function AuthPage() {
   };
 
   const validatePhone = () => {
-    // +998 dan keyin aynan 9 ta raqam bo'lishi kerak
     const phoneDigits = phoneNumber.replace(/[^\d]/g, "").replace(/^998/, "");
     return phoneDigits.length === 9;
   };
 
-  // API'dan barcha foydalanuvchilarni olish
-  const fetchUsers = async () => {
-    try {
-      const response = await fetch(BASE_URL);
-      if (!response.ok) {
-        throw new Error("API bilan bog'lanishda xatolik");
-      }
-      const users = await response.json();
-      return users;
-    } catch (error) {
-      console.error("Fetch users error:", error);
-      throw error;
-    }
-  };
-
-  // Yangi foydalanuvchini ro'yxatga olish
-  const registerUser = async (userData) => {
-    try {
-      const response = await fetch(BASE_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(userData),
-      });
-
-      if (!response.ok) {
-        throw new Error("Ro'yxatdan o'tishda xatolik");
-      }
-
-      const newUser = await response.json();
-      return newUser;
-    } catch (error) {
-      console.error("Register user error:", error);
-      throw error;
-    }
-  };
-
-  const checkOrRegisterUser = async () => {
-    try {
-      setIsLoading(true);
-      const users = await fetchUsers();
-      const phoneExists = users.find((u) => u.phoneNumber === phoneNumber);
-
-      if (activeTab === "login") {
-        if (!phoneExists) {
-          showNotification(
-            "error",
-            "Bu telefon raqam bilan ro'yxatdan o'tmagan foydalanuvchi topilmadi!"
-          );
-          return false;
-        }
-
-        // login holatida mavjud foydalanuvchini saqlash
-        setCurrentUser(phoneExists);
-        return true; // SMSga o'tsin
-      }
-
-      // Ro'yxatdan o'tishda tekshirish
-      if (phoneExists) {
-        showNotification(
-          "error",
-          "Bu telefon raqam allaqachon ro'yxatdan o'tgan!"
-        );
-        return false;
-      }
-
-      const newUserData = {
-        firstName: firstName.trim(),
-        lastName: lastName.trim(),
-        phoneNumber: phoneNumber,
-      };
-
-      const newUser = await registerUser(newUserData);
-      setCurrentUser(newUser);
-      return true; // SMSga o'tsin
-    } catch (error) {
-      console.error("API Error:", error);
-      showNotification("error", "Server bilan bog'lanishda xatolik yuz berdi!");
-      return false;
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handlePhoneSubmit = async () => {
+  const validateForm = () => {
     if (!validatePhone()) {
       showNotification(
         "warning",
         "Iltimos, to'liq telefon raqam kiriting (+998-XX-XXX-XX-XX formatida)."
       );
+      return false;
+    }
+
+    if (activeTab === "register") {
+      if (!firstName.trim() || !lastName.trim()) {
+        showNotification("warning", "Iltimos, ism va familiyangizni kiriting.");
+        return false;
+      }
+    }
+
+    if (activeTab === "login" && !password.trim()) {
+      showNotification("warning", "Iltimos, parolni kiriting.");
+      return false;
+    }
+
+    return true;
+  };
+
+  // Register user - sends verification code
+  const handleRegister = async () => {
+    if (!validateForm()) return;
+
+    try {
+      setIsLoading(true);
+
+      const registrationData = {
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        phone_number: phoneNumber.replace(/[^\d]/g, ""), // Send only digits
+      };
+
+      const response = await $api.post("/auth/register", registrationData);
+
+      if (response.data.success) {
+        setTempRegistrationData(registrationData);
+        showNotification("info", "SMS kodi yuborildi!");
+        setShowSmsCard(true);
+        setSmsCode(["", "", "", ""]);
+        setTimeout(() => inputRefs.current[0]?.focus(), 100);
+      } else {
+        showNotification(
+          "error",
+          response.data.message || "Ro'yxatdan o'tishda xatolik yuz berdi!"
+        );
+      }
+    } catch (error) {
+      console.error("Registration error:", error);
+      const errorMessage =
+        error.response?.data?.message ||
+        "Server bilan bog'lanishda xatolik yuz berdi!";
+      showNotification("error", errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Login user
+  const handleLogin = async () => {
+    if (!validateForm()) return;
+
+    try {
+      setIsLoading(true);
+
+      const loginData = {
+        phoneNumber: phoneNumber.replace(/[^\d]/g, ""), // Send only digits
+        password: password,
+      };
+
+      const response = await $api.post("/auth/login", loginData);
+
+      if (response.data.success) {
+        const { user, accessToken, refreshToken } = response.data.data;
+
+        // Store tokens and user data
+        localStorage.setItem("accessToken", accessToken);
+        localStorage.setItem("refreshToken", refreshToken);
+        localStorage.setItem("user", JSON.stringify(user));
+
+        setCurrentUser(user);
+        setIsAuthenticated(true);
+        showNotification(
+          "success",
+          `Tizimga muvaffaqiyatli kirdingiz, ${user.firstName}!`
+        );
+      } else {
+        showNotification(
+          "error",
+          response.data.message || "Login qilishda xatolik yuz berdi!"
+        );
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      const errorMessage =
+        error.response?.data?.message ||
+        "Server bilan bog'lanishda xatolik yuz berdi!";
+      showNotification("error", errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // System login for admin/employee
+  const handleSystemLogin = async () => {
+    if (!validateForm()) return;
+
+    try {
+      setIsLoading(true);
+
+      const loginData = {
+        phoneNumber: phoneNumber.replace(/[^\d]/g, ""),
+        password: password,
+      };
+
+      const response = await $api.post("/auth/system/login", loginData);
+
+      if (response.data.success) {
+        const { user, accessToken, refreshToken } = response.data.data;
+
+        localStorage.setItem("accessToken", accessToken);
+        localStorage.setItem("refreshToken", refreshToken);
+        localStorage.setItem("user", JSON.stringify(user));
+
+        setCurrentUser(user);
+        setIsAuthenticated(true);
+        showNotification(
+          "success",
+          `Tizimga muvaffaqiyatli kirdingiz, ${user.firstName}!`
+        );
+      } else {
+        showNotification(
+          "error",
+          response.data.message || "System login qilishda xatolik yuz berdi!"
+        );
+      }
+    } catch (error) {
+      console.error("System login error:", error);
+      const errorMessage =
+        error.response?.data?.message ||
+        "Server bilan bog'lanishda xatolik yuz berdi!";
+      showNotification("error", errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Verify SMS code
+  const handleSmsSubmit = async () => {
+    const enteredCode = smsCode.join("");
+
+    if (enteredCode.length !== 4) {
+      showNotification("warning", "Iltimos, 4 xonali kodni to'liq kiriting.");
       return;
     }
 
-    if (activeTab === "register" && (!firstName.trim() || !lastName.trim())) {
-      showNotification("warning", "Iltimos, ism va familiyangizni kiriting.");
-      return;
+    try {
+      setIsLoading(true);
+
+      const verificationData = {
+        phoneNumber:
+          tempRegistrationData?.phoneNumber ||
+          phoneNumber.replace(/[^\d]/g, ""),
+        code: enteredCode,
+      };
+
+      const response = await $api.post("/auth/verify", verificationData);
+
+      if (response.data.success) {
+        const { user, accessToken, refreshToken } = response.data.data;
+
+        // Store tokens and user data
+        localStorage.setItem("accessToken", accessToken);
+        localStorage.setItem("refreshToken", refreshToken);
+        localStorage.setItem("user", JSON.stringify(user));
+
+        setCurrentUser(user);
+        setShowSmsCard(false);
+        showNotification(
+          "success",
+          `Ro'yxatdan o'tish jarayoni yakunlandi, ${user.firstName}!`
+        );
+
+        setTimeout(() => {
+          setIsAuthenticated(true);
+        }, 1500);
+      } else {
+        showNotification(
+          "error",
+          response.data.message || "SMS kodni tasdiqlashda xatolik yuz berdi!"
+        );
+      }
+    } catch (error) {
+      console.error("Verification error:", error);
+      const errorMessage =
+        error.response?.data?.message ||
+        "Server bilan bog'lanishda xatolik yuz berdi!";
+      showNotification("error", errorMessage);
+    } finally {
+      setIsLoading(false);
     }
+  };
 
-    const success = await checkOrRegisterUser();
+  // Refresh token function
+  const refreshToken = async () => {
+    try {
+      const storedRefreshToken = localStorage.getItem("refreshToken");
+      if (!storedRefreshToken) {
+        throw new Error("No refresh token found");
+      }
 
-    if (success) {
-      showNotification("info", "SMS kodi yuborildi: 1234");
-      setShowSmsCard(true);
-      setSmsCode(["", "", "", ""]);
-      setTimeout(() => inputRefs.current[0]?.focus(), 100);
+      const response = await $api.post(
+        "/auth/refresh/token",
+        {},
+        {
+          headers: {
+            refreshToken: storedRefreshToken,
+          },
+        }
+      );
+
+      if (response.data.success) {
+        const { accessToken, refreshToken: newRefreshToken } =
+          response.data.data;
+        localStorage.setItem("accessToken", accessToken);
+        if (newRefreshToken) {
+          localStorage.setItem("refreshToken", newRefreshToken);
+        }
+        return accessToken;
+      } else {
+        throw new Error("Failed to refresh token");
+      }
+    } catch (error) {
+      console.error("Token refresh error:", error);
+      handleLogout();
+      throw error;
+    }
+  };
+
+  const handleFormSubmit = () => {
+    if (activeTab === "register") {
+      handleRegister();
+    } else {
+      handleLogin();
     }
   };
 
@@ -195,36 +336,9 @@ function AuthPage() {
     }
   };
 
-  const handleSmsSubmit = () => {
-    setIsLoading(true);
-    setTimeout(() => {
-      const enteredCode = smsCode.join("");
-      if (enteredCode === "1234") {
-        setShowSmsCard(false);
-        showNotification(
-          "success",
-          activeTab === "login"
-            ? `Tizimga muvaffaqiyatli kirdingiz, ${currentUser?.firstName}!`
-            : `Ro'yxatdan o'tish jarayoni yakunlandi, ${currentUser?.firstName}!`
-        );
-
-        // ✅ LOCAL STORAGE GA SAQLASH
-        localStorage.setItem("token", "mock-token-123456"); // yoki haqiqiy token
-        localStorage.setItem("user", JSON.stringify(currentUser));
-
-        // Navigatsiya
-        setTimeout(() => {
-          setIsAuthenticated(true);
-        }, 1500);
-      } else {
-        showNotification("error", "Noto'g'ri SMS kod! To'g'ri kod: 1234");
-      }
-      setIsLoading(false);
-    }, 1000);
-  };
-
   const handleCloseSmsCard = () => {
     setShowSmsCard(false);
+    setTempRegistrationData(null);
   };
 
   const handleKeyPress = (e, action) => {
@@ -236,23 +350,82 @@ function AuthPage() {
   const handleLogout = () => {
     setIsAuthenticated(false);
     setCurrentUser(null);
-    localStorage.removeItem("token"); // ✅ tokenni o‘chirish
-    localStorage.removeItem("user"); // ✅ userni o‘chirish
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+    localStorage.removeItem("user");
     setActiveTab("login");
     setPhoneNumber("+998");
+    setPassword("");
     setFirstName("");
     setLastName("");
     setShowSmsCard(false);
     setSmsCode(["", "", "", ""]);
     setNotification({ type: "", message: "" });
+    setTempRegistrationData(null);
   };
+
+  // Check authentication on component mount
+  useEffect(() => {
+    const token = localStorage.getItem("accessToken");
+    const user = localStorage.getItem("user");
+
+    if (token && user) {
+      try {
+        setCurrentUser(JSON.parse(user));
+        setIsAuthenticated(true);
+      } catch (error) {
+        console.error("Error parsing stored user data:", error);
+        handleLogout();
+      }
+    }
+  }, []);
 
   useEffect(() => {
     if (isAuthenticated) {
-      router.push("/"); // ✅ Auth bo‘lsa redirect qiladi
+      router.push("/");
     }
   }, [isAuthenticated, router]);
-  // Auth sahifasi (oldingi kod)
+
+  // Setup axios interceptor for token refresh
+  useEffect(() => {
+    const requestInterceptor = $api.interceptors.request.use(
+      (config) => {
+        const token = localStorage.getItem("accessToken");
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+      },
+      (error) => {
+        return Promise.reject(error);
+      }
+    );
+
+    const responseInterceptor = $api.interceptors.response.use(
+      (response) => response,
+      async (error) => {
+        const original = error.config;
+
+        if (error.response?.status === 401 && !original._retry) {
+          original._retry = true;
+          try {
+            await refreshToken();
+            return $api(original);
+          } catch (refreshError) {
+            return Promise.reject(error);
+          }
+        }
+
+        return Promise.reject(error);
+      }
+    );
+
+    return () => {
+      $api.interceptors.request.eject(requestInterceptor);
+      $api.interceptors.response.eject(responseInterceptor);
+    };
+  }, []);
+
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 relative overflow-hidden">
       {/* Background decoration */}
@@ -296,7 +469,7 @@ function AuthPage() {
                 onClick={() => handleTabChange(tab)}
                 className={`flex-1 py-3 px-4 text-sm cursor-pointer font-semibold rounded-xl transition-all duration-300 ${
                   activeTab === tab
-                    ? "bg-white text-indigo-600 shadow-lg  transform scale-105"
+                    ? "bg-white text-indigo-600 shadow-lg transform scale-105"
                     : "text-gray-600 hover:text-gray-800"
                 }`}
               >
@@ -313,7 +486,7 @@ function AuthPage() {
               </h2>
               <p className="text-gray-600 text-sm">
                 {activeTab === "login"
-                  ? "Hisobingizga kirish uchun telefon raqamingizni kiriting"
+                  ? "Hisobingizga kirish uchun telefon raqam va parolni kiriting"
                   : "Yangi hisob yaratish uchun ma'lumotlaringizni kiriting"}
               </p>
             </div>
@@ -325,7 +498,7 @@ function AuthPage() {
                     placeholder="Ismingiz"
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
-                    onKeyPress={(e) => handleKeyPress(e, handlePhoneSubmit)}
+                    onKeyPress={(e) => handleKeyPress(e, handleFormSubmit)}
                     className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
                   />
                 </div>
@@ -334,7 +507,7 @@ function AuthPage() {
                     placeholder="Familyangiz"
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
-                    onKeyPress={(e) => handleKeyPress(e, handlePhoneSubmit)}
+                    onKeyPress={(e) => handleKeyPress(e, handleFormSubmit)}
                     className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
                   />
                 </div>
@@ -347,7 +520,7 @@ function AuthPage() {
                 placeholder="+998-90-123-45-67"
                 value={phoneNumber}
                 onChange={handlePhoneChange}
-                onKeyPress={(e) => handleKeyPress(e, handlePhoneSubmit)}
+                onKeyPress={(e) => handleKeyPress(e, handleFormSubmit)}
                 className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
               />
               <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
@@ -355,8 +528,24 @@ function AuthPage() {
               </div>
             </div>
 
+            {activeTab === "login" && (
+              <div className="relative">
+                <input
+                  type="password"
+                  placeholder="Parol"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  onKeyPress={(e) => handleKeyPress(e, handleFormSubmit)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
+                />
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  🔒
+                </div>
+              </div>
+            )}
+
             <button
-              onClick={handlePhoneSubmit}
+              onClick={handleFormSubmit}
               disabled={isLoading}
               className="w-full bg-gradient-to-r from-indigo-600 cursor-pointer to-purple-600 text-white py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             >
@@ -367,6 +556,8 @@ function AuthPage() {
                     ? "Tekshirilmoqda..."
                     : "Ro'yxatga olinmoqda..."}
                 </div>
+              ) : activeTab === "login" ? (
+                "Kirish"
               ) : (
                 "SMS Kodi Olish"
               )}
@@ -396,9 +587,10 @@ function AuthPage() {
               <p className="text-gray-600 text-sm">
                 {phoneNumber} raqamiga yuborilgan 4 xonali kodni kiriting
               </p>
-              {currentUser && (
+              {tempRegistrationData && (
                 <p className="text-indigo-600 text-sm font-medium mt-2">
-                  {currentUser.firstName} {currentUser.lastName}
+                  {tempRegistrationData.firstName}{" "}
+                  {tempRegistrationData.lastName}
                 </p>
               )}
             </div>

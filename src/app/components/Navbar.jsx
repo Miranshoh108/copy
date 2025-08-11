@@ -32,6 +32,7 @@ import {
   MapPin,
   Download,
   HomeIcon,
+  Loader2,
 } from "lucide-react";
 import { useCartStore } from "./hooks/cart";
 import { useHomeLikes } from "./hooks/likes";
@@ -39,901 +40,7 @@ import { useAuth } from "./hooks/useAuth";
 import CategoryList from "./CategoryList";
 import NotificationModal from "./NotificationModal";
 import { useNotificationsStore } from "../store/useNotificationsStore";
-
-const getCategoryIcon = (categoryName) => {
-  switch (categoryName) {
-    case "Telefonlar":
-      return <Phone className="w-4 h-4 mr-2" />;
-    case "Noutbuklar va kompyuterlar":
-      return <Laptop className="w-4 h-4 mr-2" />;
-    case "Maishiy texnika":
-      return <Home className="w-4 h-4 mr-2" />;
-    case "Kiyim":
-      return <Shirt className="w-4 h-4 mr-2" />;
-    case "Sport va hordiq":
-      return <Dumbbell className="w-4 h-4 mr-2" />;
-    case "Salomatlik":
-      return <HeartPulse className="w-4 h-4 mr-2" />;
-    case "Xobbi va ijod":
-      return <Music className="w-4 h-4 mr-2" />;
-    case "Avtotovarlar":
-      return <Car className="w-4 h-4 mr-2" />;
-    case "Maishiy va kimyoviy moddalar":
-      return <SprayCan className="w-4 h-4 mr-2" />;
-    case "Qurilish va ta'mirlash":
-      return <Hammer className="w-4 h-4 mr-2" />;
-    case "Poyabzallar":
-      return <Shovel className="w-4 h-4 mr-2" />;
-    case "Aksessuarlar":
-      return <ShoppingBag className="w-4 h-4 mr-2" />;
-    case "Bolalar tovarlari":
-      return <Baby className="w-4 h-4 mr-2" />;
-    case "Oziq-ovqat mahsulotlari":
-      return <Utensils className="w-4 h-4 mr-2" />;
-    case "Kanselyariya tovarlari":
-      return <Notebook className="w-4 h-4 mr-2" />;
-    default:
-      return <ShoppingBagIcon className="w-4 h-4 mr-2" />;
-  }
-};
-
-const categoriesData = [
-  {
-    name: "Telefonlar",
-    sub: [
-      {
-        title: "Smartfonlar",
-        items: [
-          "iPhone",
-          "Samsung",
-          "Xiaomi",
-          "Realme",
-          "Honor",
-          "Vivo",
-          "Oppo",
-          "Infinix",
-          "Poco",
-          "Tecno",
-          "Motorola",
-          "Asus",
-          "Nokia",
-        ],
-      },
-      {
-        title: "Aksessuarlar",
-        items: [
-          "G'ilof va himoya plyonkalar",
-          "Zaryadlovchi qurilmalar",
-          "Quvvat bank (Powerbank)",
-          "Telefon ushlagichlar (Holder)",
-          "Ekran himoyachilari (Tempered glass)",
-          "Kabellar (USB, Type-C, Lightning)",
-          "MagSafe aksessuarlar",
-          "Mobil telefonlar uchun gajetlar",
-        ],
-      },
-      {
-        title: "Naushniklar va audio",
-        items: [
-          "Bluetooth naushniklar",
-          "True Wireless (TWS) naushniklar",
-          "Quloq ichiga joylashuvchi naushniklar",
-          "Quloq usti naushniklar",
-          "Ovoz kuchaytirgichli quloqchinlar",
-          "Mikrofonli naushniklar",
-          "Apple AirPods",
-          "Samsung Galaxy Buds",
-        ],
-      },
-      {
-        title: "Smart soatlar va bilaguzuklar",
-        items: [
-          "Apple Watch",
-          "Samsung Galaxy Watch",
-          "Xiaomi Smart Band",
-          "Huawei Watch",
-          "Aqlli bilaguzuklar",
-          "GPS sport soatlar",
-          "Qon bosimi va yurak urishi o‘lchovchi soatlar",
-        ],
-      },
-      {
-        title: "Telefonlar uchun kamera va media",
-        items: [
-          "Mobil gimbal stabilizatorlar",
-          "Mobil LED yoritkichlar",
-          "Mobil mikrofonlar",
-          "Telefonlar uchun kamera linzalari",
-          "Tripod va selfie stick'lar",
-        ],
-      },
-      {
-        title: "SIM kartalar va raqamlar",
-        items: [
-          "Esim aktivatsiya xizmatlari",
-          "Oddiy SIM kartalar (UZMOBILE, Beeline, Ucell, Humans)",
-          "VIP raqamlar",
-          "Ikkinchi raqam ilovalari",
-        ],
-      },
-      {
-        title: "Zaryadlash va quvvat",
-        items: [
-          "Tez zaryadlovchilar (Fast chargers)",
-          "Avtomobil zaryadlovchilari",
-          "Quvvat o‘lchovchi adapterlar",
-          "Magnetik zaryadlovchilar",
-          "Wireless chargers (Simsiz zaryad)",
-        ],
-      },
-    ],
-  },
-  {
-    name: "Noutbuklar va kompyuterlar",
-    sub: [
-      {
-        title: "Noutbuk va aksessuarlar",
-        items: [
-          "Shaxsiy kompyuter uchun keyslar",
-          "Laptop Notebooklar",
-          "Shaxsiy kompyuter uchun monitorlar",
-          "Quloqchinlar",
-          "Mishkalar",
-          "Aksessuarlar",
-          "Koverlar",
-          "Videokartalar",
-          "Protsessorlar",
-          "Kompyuter sovutish tizimi",
-          "Block power kompyuter uchun",
-          "Keyboard",
-        ],
-      },
-      {
-        title: "Kompyuterlar va Monitorlar",
-        items: ["Kompyuterlar", "Monobloklar", "Monitorlar"],
-      },
-      {
-        title: "Tashqi qurilmalar",
-        items: [
-          "Garnituralar",
-          "Akkumulyatorlar (UPS)",
-          "Akustika va karnay",
-          "Klaviatura va sichqoncha to'plami",
-          "Klaviatura",
-          "Sichqoncha",
-          "Veb-kamera",
-          "Mikrofonlar va aksessuarlar",
-          "UPS",
-          "Sichqoncha uchun gilamchalar",
-          "Kompyuter ko'zoynaklari",
-        ],
-      },
-      {
-        title: "Printerlar va sarf materiallar",
-        items: ["Printer MFU", "Printer"],
-      },
-      {
-        title: "Kompyuter aksessuarlari",
-        items: [
-          "Ichki qattiq disklar va SSD",
-          "Protsessorlar",
-          "Ona plata",
-          "Korpus",
-          "Quvvat manbalari",
-          "Operativ xotira",
-          "Video kartalari",
-        ],
-      },
-      {
-        title: "Geymerlar uchun mebel",
-        items: ["Ofis kreslosi", "O'yin stullari"],
-      },
-      {
-        title: "Tarmoq uskunalari",
-        items: [
-          "Wi-fi routerlar",
-          "Wi-Fi signal kuchaytirgich",
-          "Wi-Fi adapterlar",
-          "Tarmoq uskunalari",
-          "Kummutator",
-        ],
-      },
-    ],
-  },
-  {
-    name: "Maishiy texnika",
-    sub: [
-      {
-        title: "Oshxona texnikasi",
-        items: [
-          "Blenderlar",
-          "Sharbat chiqargichlar",
-          "Elektr choynaklar",
-          "Mikroto‘lqinli pechlar",
-          "Multivarkalar",
-          "Kofe mashinalari",
-          "Toaster va sandwich-maker",
-          "Go‘sht qiymalagichlar",
-          "Oshxona kombaynlari",
-          "Rafli pechlar (duxovka)",
-          "Induksion va gaz plitalari",
-        ],
-      },
-      {
-        title: "Sovutish va isitish",
-        items: [
-          "Konditsionerlar",
-          "Ventilyatorlar",
-          "Isitgichlar (obogrevatel)",
-          "Havoni tozalovchi qurilmalar",
-          "Namlagichlar va quritgichlar",
-          "Termostatlar",
-          "Elektr kaminlar",
-        ],
-      },
-      {
-        title: "Kir yuvish va tozalash",
-        items: [
-          "Kir yuvish mashinalari",
-          "Kir quritgich mashinalari",
-          "Changyutkichlar",
-          "Quruq tozalovchi (robot) changyutkichlar",
-          "Bug‘li tozalovchilar",
-          "Poyabzal quritgichlar",
-          "Gilam yuvish qurilmalari",
-        ],
-      },
-      {
-        title: "Sovutgichlar va muzlatgichlar",
-        items: [
-          "Muzlatgichlar zamonaviy (karkasli va zamonaviy)",
-          "Mini muzlatgichlar",
-          "Sharbat sovutgichlar",
-          "Vitrina sovutkichlar",
-          "No-frost sovutkichlar",
-          "Muzlatgichli shkaflar",
-          "Muzlatgichlar va extiyot qismlari",
-        ],
-      },
-      {
-        title: "Dazmol va kir parvarishi",
-        items: [
-          "Bug‘li dazmollar",
-          "Oddiy dazmollar",
-          "Vertikal dazmollar",
-          "Kir quritish moslamalari",
-          "Kir savatlari",
-          "Kir yuvish doskalari",
-        ],
-      },
-      {
-        title: "Maishiy mayda texnika",
-        items: [
-          "Soch fenlari",
-          "Soch to‘g‘rilagichlar",
-          "Soch jingalak qilgichlar",
-          "Taroq-fenlar",
-          "Quloq tozalovchi moslamalar",
-          "Soch olish mashinalari",
-          "Elektrodepilyatorlar",
-        ],
-      },
-      {
-        title: "Hovli va tom uchun texnika",
-        items: [
-          "Elektr generatorlar",
-          "Suv nasoslari",
-          "Chiroqlar va LED fonuslar",
-          "Bog‘ sug‘orish texnikalari",
-          "Elektr zanjirli arra (pilalar)",
-          "Changyutkichli moplar",
-        ],
-      },
-    ],
-  },
-  {
-    name: "Kiyim",
-    sub: [
-      {
-        title: "Erkakalar kiyimi",
-        items: [
-          " Futbolkalar va polo ",
-          " Paypoqlar va getrlar ",
-          " Shimlar ",
-          " Xudi va svitshotlar ",
-          " Jemperlar, sviterlar va kardiganlar ",
-          " Ko'ylaklar ",
-          " Jinsilar ",
-          " Sport kiyimlari ",
-          " Ustki kiyim ",
-          " Kiyim to'plamlari ",
-          " Ichki kiyimlar ",
-          " Shortilar ",
-          " Maxsus kiyimlar ",
-          " Choʻmilish plavkalari va shortilari ",
-          " Maykalar ",
-          " Uy kiyimi ",
-          " Katta o'lchamli kiyimlar ",
-          " Termal ichki kiyimlar ",
-          " Pidjaklar va kostyumlar ",
-          " Erkaklar uchun diniy kiyim ",
-          " Karnaval uchun kiyimlar ",
-        ],
-      },
-      {
-        title: "O'g'il bolalar uchun kiyimlar",
-        items: [
-          "Kiyim to'plamlari ",
-          "Futbolkalar va maykalar ",
-          "Kostyumlar va pidjaklar  ",
-          "Sport kiyimlari ",
-          "  Shimlar va jinsilar ",
-          "  Tolstovka va olimpiykalar ",
-          "  Paypoqlar ",
-          "  Shortilar ",
-          "  Ko'ylaklar ",
-          "  Ichki kiyim va termal ichki kiyim ",
-          "  Uy kiyimi ",
-          "  Jemperlar, sviterlar va kardiganlar ",
-          "  Ustki kiyim ",
-          "  Choʻmilish plavkalari va shortilari ",
-          "  Oʻgʻil bolalar uchun maktab formasi ",
-          "  Kombinezonlar va yarim kombinezonlar ",
-          "  Karnaval uchun kiyimlar ",
-          "  Oʻgʻil bolalar uchun diniy kiyim ",
-        ],
-      },
-      {
-        title: "Ayollar kiyimi",
-        items: [
-          " Liboslar va sarafanlar ",
-          " Futbolkalar va polo ",
-          " Paypoqlar, kolgotkilar va chulkilar ",
-          " Shimlar ",
-          " Kiyim to'plamlari ",
-          " Jemperlar, sviterlar va kardiganlar ",
-          " Bluzkalar va ko'ylaklar ",
-          " Uy kiyimi ",
-          " Jinsilar ",
-          " Ichki kiyim ",
-          " Sport kiyimlari ",
-          " Diniy kiyim ",
-          " Yubkalar ",
-          " Top va maykalar ",
-          " Xudi va svitshotlar ",
-          " Tunikalar ",
-          " Ustki kiyim ",
-          " Pidjaklar va kostyumlar ",
-          " Shortilar ",
-          " Homiladorlar uchun kiyimlar ",
-          " Kombinezonlar ",
-          "Bodi",
-          " To`qilgan kostyumlar ",
-          " Milliy kiyimlar ",
-        ],
-      },
-      {
-        title: "Qiz bolalar kiyimlari",
-        items: [
-          "  Koʻylaklar va sarafanlar  ",
-          " Kiyim to'plamlari ",
-          " Futbolkalar va polo ",
-          " Paypoq va kolgotkilar ",
-          " Top va maykalar ",
-          " Shimlar va jinsilar ",
-          " Kostyumlar va pidjaklar ",
-          " Sport kiyimlari ",
-          " Yubkalar va shortilar ",
-          " Ichki kiyim va termal ichki kiyim ",
-          " Jemperlar, sviterlar va kardiganlar ",
-          " Tolstovka va olimpiykalar ",
-          " Uy kiyimi ",
-          " Qizlar uchun maktab formasi ",
-          " Bluzkalar va ko'ylaklar ",
-          " Ustki kiyim ",
-        ],
-      },
-      {
-        title: "Yangi tugʻilgan chaqaloqlar uchun kiyimlar ",
-        items: [
-          "  Bodi va kombinezonlar  ",
-          " Kostyumlar va toʻplamlar ",
-          "  Paypoqlar, pinetkalar  ",
-          "  Shimlar va ishtonlar  ",
-          " Yangi tugʻilgan chaqaloqlar uchun qalpoqchalar, chepchiklar va qoʻlqopchalar ",
-          " Futbolkalar, ko'ylaklar va raspashonkalar  ",
-          "  Jemperlar va tolstovkalar  ",
-          "  Koʻylaklar va yubkalar ",
-          " Ustki kiyim ",
-          " Yangi tugʻilgan chaqaloqlar uchun diniy kiyimlar ",
-        ],
-      },
-    ],
-  },
-  {
-    name: "Sport va hordiq",
-    sub: [
-      {
-        title: "Sport anjomlari",
-        items: [
-          "Trenajorlar",
-          "Yugurish yo'lakchalari",
-          "Velotrenajorlar",
-          "Massaj apparatlari",
-          "Qomat tuzatuvchilar",
-          "Dumbbell va gantellar",
-          "Kauchuk ekspanderlar",
-          "Gym mat (yog‘och yoki kauchuk gilamcha)",
-        ],
-      },
-      {
-        title: "Sayr va dam olish",
-        items: [
-          "Tashqi o‘rindiqlar",
-          "Plaj karavotlari",
-          "Gilamlar va palatkalar",
-          "Termos va termokrujkalar",
-          "Choyshab va gilamchalari",
-          "Piknik to‘plamlari",
-          "Power bank (sayohat uchun)",
-        ],
-      },
-      {
-        title: "Velosiped va skuterlar",
-        items: [
-          "Bolalar velosipedlari",
-          "Kattalar uchun velosipedlar",
-          "Elektr skuterlar",
-          "Bolalar uchun skuterlar",
-          "Velosiped aksessuarlari",
-          "Dublyonka va shlem",
-          "Skuter sumkalar",
-        ],
-      },
-      {
-        title: "Sport kiyimlari",
-        items: [
-          "Sport kiyim to‘plamlari",
-          "Yugurish uchun kiyimlar",
-          "Sport krossovkalari",
-          "Futbol formasi",
-          "Sport bras (ayollar uchun)",
-          "Termal kiyimlar",
-          "Sport shortilar",
-        ],
-      },
-      {
-        title: "Hovuz va suzish anjomlari",
-        items: [
-          "Suzish ko'zoynaklari",
-          "Suzish do‘konchalari (krujka, koltuk)",
-          "Bolalar uchun hovuz",
-          "Nafas olish trubkalari",
-          "Suzish qalpoqlari",
-          "Shnorkel to‘plami",
-        ],
-      },
-      {
-        title: "O'yin va hordiq",
-        items: [
-          "Stol tennis to‘plami",
-          "Dart to‘plamlari",
-          "Shaffof to‘p va basketbol to‘plari",
-          "Ochiq havoda o‘ynaladigan to‘plar",
-          "Bilyard aksessuarlari",
-          "Mini futbol darvozalari",
-        ],
-      },
-    ],
-  },
-  {
-    name: "Salomatlik",
-    sub: [
-      {
-        title: "Tibbiy asboblar",
-        items: [
-          "Termometrlar",
-          "Tonometrlar",
-          "Glyukometrlar",
-          "Nebulyatorlar",
-          "Inhalatorlar",
-          "Massaj uskunalari",
-          "Meditsina qoʻlqoplari",
-        ],
-      },
-      {
-        title: "Gigiyena va parvarish",
-        items: [
-          "Tish pastasi va cho‘tkasi",
-          "Yuz va tana tozalovchilari",
-          "Antibakterial vositalar",
-          "Gigiyenik salfetkalar",
-          "Quloq tozalagichlar",
-        ],
-      },
-      {
-        title: "Vitaminlar va parhez",
-        items: [
-          "Vitamin komplekslari",
-          "Oshqozon uchun biologik qo‘shimchalar",
-          "Sport uchun proteinlar",
-          "Immunitet kuchaytiruvchilar",
-          "Uyquni yaxshilovchi vositalar",
-        ],
-      },
-      {
-        title: "Shaxsiy tibbiy himoya",
-        items: [
-          "Yuz niqoblari",
-          "Antiseptiklar",
-          "Steril bintlar",
-          "Tibbiy ko‘zoynaklar",
-          "Tibbiy aprondlar",
-        ],
-      },
-    ],
-  },
-  {
-    name: "Xobbi va ijod",
-    sub: [
-      {
-        title: "Rassomlik uchun",
-        items: [
-          "Bo‘yoqlar (akril, guash)",
-          "Mo‘yqalamlar",
-          "Rasm daftar va kanvaslar",
-          "Molbertlar",
-          "Grafit qalamlar",
-          "Marker va linerlar",
-        ],
-      },
-      {
-        title: "Qo‘l mehnati (handmade)",
-        items: [
-          "Tikuvchilik asboblari",
-          "Boncuklar va toshlar",
-          "Iplik va gazlama",
-          "Yelim va dekor materiallari",
-          "Scrapbooking materiallari",
-        ],
-      },
-      {
-        title: "Musiqa asboblari",
-        items: [
-          "Gitara va aksessuarlari",
-          "Kalitli asboblar (sintezator)",
-          "Perkussiya (baraban)",
-          "Dutor, rubob va milliy cholg‘ular",
-          "Quloqchin va audio tizimlar",
-        ],
-      },
-      {
-        title: "Konstruksiyalar va model yasash",
-        items: [
-          "Lego va konstruktiv o‘yinchoqlar",
-          "Plastik modellash vositalari",
-          "Yelim va bo‘yoq",
-          "Uchadigan modelllar (dron, samolyot)",
-          "3D printerlar va filamentlar",
-        ],
-      },
-    ],
-  },
-  {
-    name: "Avtotovarlar",
-    sub: [
-      {
-        title: "Avto ehtiyot qismlar",
-        items: [
-          "Akkumulyatorlar",
-          "Tormoz disklari va kolodkalar",
-          "Filtrlar (havo, moy, yoqilg‘i)",
-          "Yorug‘lik lampalari",
-          "Motor yog‘lari va moylar",
-        ],
-      },
-      {
-        title: "Avto aksessuarlar",
-        items: [
-          "Avtomobil gilamchalari",
-          "Telefon ushlagichlari",
-          "Suvyutgich (avtomobil sovutgichi)",
-          "Mashina chiroqlari",
-          "Mashina chiroq bezaklari",
-          "USB zaryadlovchilar",
-        ],
-      },
-      {
-        title: "Avto tozalash va parvarish",
-        items: [
-          "Shampunlar va vositalar",
-          "Salon spreyi",
-          "Avto changyutgich",
-          "Tashqi yuvish uskunalari",
-          "Mikrofiber sochiqlar",
-        ],
-      },
-      {
-        title: "Avto xavfsizlik",
-        items: [
-          "Video registratorlar",
-          "Signalizatsiya tizimlari",
-          "GPS trekerlar",
-          "Tirkamalar uchun to‘plamlar",
-          "Mashina qulf va blokirovkalar",
-        ],
-      },
-    ],
-  },
-  {
-    name: "Maishiy va kimyoviy moddalar",
-    sub: [
-      {
-        title: "Tozalash vositalari",
-        items: [
-          "Idish yuvish vositalari",
-          "Pol yuvish vositalari",
-          "Hojatxona tozalovchilari",
-          "Ko‘p maqsadli spreyi",
-          "Dezinfeksiya vositalari",
-        ],
-      },
-      {
-        title: "Kir yuvish vositalari",
-        items: [
-          "Kir yuvish kukuni",
-          "Gellari va kapsulalari",
-          "Dog‘ ketkazuvchilar",
-          "Kir yuvish parfyumlari",
-          "Oqartiruvchi vositalar",
-        ],
-      },
-      {
-        title: "Idish-tovoq yuvish",
-        items: [
-          "Idish yuvish mashinasi uchun tabletkalar",
-          "Qo‘l bilan idish yuvish gellari",
-          "Gubkalar va lattalar",
-          "Yumshatuvchilar",
-          "Choyshab yuvish vositalari",
-        ],
-      },
-      {
-        title: "Shaxsiy parvarish",
-        items: [
-          "Sovunlar (qattiq va suyuq)",
-          "Shampun va konditsionerlar",
-          "Dush geli va skrablar",
-          "Dezodorantlar",
-          "Krem va losonlar",
-        ],
-      },
-    ],
-  },
-  {
-    name: "Qurilish va ta’mirlash",
-    sub: [
-      {
-        title: "Qurilish materiallari",
-        items: [
-          "Sement, gips, ohak",
-          "G‘isht, blok",
-          "Yopishqoq materiallar",
-          "Suvga chidamli qoplamalar",
-          "Shpaklyovka va bo‘yoqlar",
-        ],
-      },
-      {
-        title: "Ta’mirlash asboblari",
-        items: [
-          "Perforatorlar",
-          "Burghular",
-          "Elektr matkaplar",
-          "Qirqish asboblari",
-          "Vintli otvertkalar to‘plami",
-        ],
-      },
-      {
-        title: "Yoritish va elektr",
-        items: [
-          "Lampalar (LED, energotejamkor)",
-          "Elektr simlar",
-          "Rozetkalar va vilkalar",
-          "Yorug‘lik sensorlari",
-          "Elektr shchitlar",
-        ],
-      },
-      {
-        title: "Pol va devor qoplamalari",
-        items: [
-          "Laminat",
-          "Linoleum",
-          "Oboylar",
-          "Kafel va plitkalar",
-          "Dekorativ panellar",
-        ],
-      },
-    ],
-  },
-  {
-    name: "Poyabzallar",
-    sub: [
-      {
-        title: "Erkaklar uchun poyabzallar",
-        items: [
-          "Kundalik tuflilar",
-          "Sport krossovkalar",
-          "Qishki etiklar",
-          "Ofis tuflilari",
-          "Charm etiklar",
-          "Uy shippaklari",
-        ],
-      },
-      {
-        title: "Ayollar uchun poyabzallar",
-        items: [
-          "Baland poshnali tuflilar",
-          "Sandallar",
-          "Yozgi shippaklar",
-          "Sport oyoq kiyimlari",
-          "Qishki etiklar",
-          "Uy poyabzallari",
-        ],
-      },
-      {
-        title: "Bolalar uchun poyabzallar",
-        items: [
-          "Kichkintoylar uchun poyabzallar",
-          "Bolalar krossovkalari",
-          "Maktab uchun poyabzallar",
-          "Qishki bolalar etiklari",
-          "Sandallar",
-          "Shippaklar",
-        ],
-      },
-    ],
-  },
-  {
-    name: "Aksessuarlar",
-    sub: [
-      {
-        title: "Moda aksessuarlari",
-        items: [
-          "Soatlar (aqlli va oddiy)",
-          "Bilaguzuklar",
-          "Zargarlik buyumlari",
-          "Ko‘zoynaklar",
-          "Shlyapalar va kepkalar",
-        ],
-      },
-      {
-        title: "Telefon aksessuarlari",
-        items: [
-          "Telefon g‘iloflari",
-          "Zaryadlovchi qurilmalar",
-          "Quvvat banklar (Powerbank)",
-          "Kabellar",
-          "Eshitkichlar",
-        ],
-      },
-      {
-        title: "Sumkalar va ryukzaklar",
-        items: [
-          "Qo‘l sumkalari",
-          "Yelka sumkalari",
-          "Sport ryukzaklar",
-          "Bolalar sumkalari",
-          "Kosmetik sumkalar",
-        ],
-      },
-    ],
-  },
-  {
-    name: "Bolalar tovarlari",
-    sub: [
-      {
-        title: "Chaqaloqlar uchun",
-        items: [
-          "Podguzniklar",
-          "Butilkalar",
-          "Gigiyena vositalari",
-          "Kiyimlar (bodi, kombinezon)",
-          "Aravachalar",
-        ],
-      },
-      {
-        title: "O‘yinchoqlar",
-        items: [
-          "Ta'limiy o‘yinchoqlar",
-          "Elektron o‘yinchoqlar",
-          "Yumshoq o‘yinchoqlar",
-          "Konstrukturlar",
-          "Mashinalar va robotlar",
-        ],
-      },
-      {
-        title: "Bolalar jihozlari",
-        items: [
-          "Bolalar kreslolar",
-          "O‘rindiqlar (avtokreslolar)",
-          "Bolalar mebellari",
-          "Ko‘rpa-to‘shak",
-          "Yotoqxona to‘plamlari",
-        ],
-      },
-    ],
-  },
-  {
-    name: "Oziq-ovqat mahsulotlari",
-    sub: [
-      {
-        title: "Asosiy mahsulotlar",
-        items: [
-          "Un, guruch, makaron",
-          "Tuz, shakar, yog‘",
-          "Sut, yogurt, pishloq",
-          "Go‘sht va parranda go‘shti",
-          "Tuxum",
-        ],
-      },
-      {
-        title: "Ichimliklar va shirinliklar",
-        items: [
-          "Choy va qahva",
-          "Sharbatlar va suvlar",
-          "Shokolad va konfetlar",
-          "Pechenyelar",
-          "Non mahsulotlari",
-        ],
-      },
-      {
-        title: "Bolalar ovqati va organik mahsulotlar",
-        items: [
-          "Bolalar ovqatlari",
-          "Organik mahsulotlar",
-          "Tez tayyor ovqatlar",
-          "Soslar va ziravorlar",
-          "Muzlatilgan mahsulotlar",
-        ],
-      },
-    ],
-  },
-  {
-    name: "Kanselyariya tovarlari",
-    sub: [
-      {
-        title: "Yozuv va chizuv anjomlari",
-        items: [
-          "Ruchkalar, qalamlar",
-          "Marker va flomasterlar",
-          "O‘chirgich, qalam o‘tkirlagichlar",
-          "Bo‘yoqlar, rangli qalamlar",
-          "Transportir, lineyka, sirkul",
-        ],
-      },
-      {
-        title: "Qog‘oz va daftarlar",
-        items: [
-          "Daftarlar",
-          "Ofis qog‘ozlari",
-          "Yozuv bloknotlari",
-          "Qog‘ozlar to‘plami",
-          "Rangli qog‘ozlar",
-        ],
-      },
-      {
-        title: "Ofis jihozlari",
-        items: [
-          "Papkalar va fayllar",
-          "Yelim, qaychi, shtamplar",
-          "Skotch, skrepkalar",
-          "Organayzerlar",
-          "Stol anjomlari to‘plami",
-        ],
-      },
-    ],
-  },
-];
+import $api from "../http/api";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -941,16 +48,79 @@ export default function Navbar() {
   const [selectedSubCat, setSelectedSubCat] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [categories, setCategories] = useState([]);
+  const [subCategories, setSubCategories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [subCategoriesLoading, setSubCategoriesLoading] = useState(false);
   const [language, setLanguage] = useState("UZ");
   const router = useRouter();
-  const [selectedCategory, setSelectedCategory] = useState(categoriesData[0]);
+  const [selectedCategory, setSelectedCategory] = useState(null);
   const [expandedGroups, setExpandedGroups] = useState({});
   const [expandedGroup, setExpandedGroup] = useState(null);
   const [isAnimating, setIsAnimating] = useState(false);
-  // const { isAuthenticated, loading: authLoading } = useAuth();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [open, setOpen] = useState(false);
+
+  const { cart } = useCartStore();
+  const { likes } = useHomeLikes();
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        setLoading(true);
+        const response = await $api.get("/categories/get/all", {
+          params: {
+            page: 1,
+            limit: 50,
+            sort: "asc",
+          },
+        });
+        console.log("Categories API response:", response.data);
+        if (response.data.success) {
+          setCategories(response.data.data);
+          if (response.data.data.length > 0) {
+            setSelectedCategory(response.data.data[0]);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+        setCategories([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  useEffect(() => {
+    const fetchSubCategories = async () => {
+      if (!selectedCategory?._id || !isOpen) return;
+
+      try {
+        setSubCategoriesLoading(true);
+        const response = await $api.get(
+          `/sub/types/get/by/category/${selectedCategory._id}`
+        );
+
+        console.log("Subcategories API response:", response.data);
+
+        if (response.data.status === 200 && response.data.data) {
+          // The API returns data directly in response.data.data array
+          setSubCategories(response.data.data || []);
+        } else {
+          setSubCategories([]);
+        }
+      } catch (error) {
+        console.error("Error fetching subcategories:", error);
+        setSubCategories([]);
+      } finally {
+        setSubCategoriesLoading(false);
+      }
+    };
+
+    fetchSubCategories();
+  }, [selectedCategory, isOpen]);
+
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
     if (user && user.phoneNumber) {
@@ -958,59 +128,20 @@ export default function Navbar() {
     }
   }, []);
 
-  // Cart va likes hooks
-  const { cart } = useCartStore();
-  const { likes } = useHomeLikes();
-
   const toggleGroup = (title) => {
     setExpandedGroup((prevTitle) => (prevTitle === title ? null : title));
   };
 
-  useEffect(() => {
-    if (!selectedCat || !isOpen) return;
-
-    const fetchSubCats = async () => {
-      try {
-        const res = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/subcategories?catalogId=${selectedCat.id}`
-        );
-        setSubCats(res.data.data || []);
-        if (res.data.data?.length) setSelectedSubCat(res.data.data[0]);
-      } catch (err) {
-        console.error("Subcat Error:", err);
-      }
-    };
-    fetchSubCats();
-  }, [selectedCat, isOpen]);
-
-  // Fetch products
-  useEffect(() => {
-    if (!selectedSubCat || !isOpen) return;
-
-    const fetchProds = async () => {
-      try {
-        const res = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/getSubCategoryProducts/all?subCategoryId=${selectedSubCat.id}`
-        );
-        setProducts(res.data.data || []);
-      } catch (err) {
-        console.error("Product Error:", err);
-      }
-    };
-    fetchProds();
-  }, [selectedSubCat, isOpen]);
-
-  // Get localized name
-
+  // Handle body overflow
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = "";
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = "";
+      document.body.style.overflow = "unset";
     }
 
     return () => {
-      document.body.style.overflow = "";
+      document.body.style.overflow = "unset";
     };
   }, [isOpen]);
 
@@ -1020,12 +151,13 @@ export default function Navbar() {
     if (searchQuery.trim()) {
       router.push(`/search?q=${encodeURIComponent(searchQuery)}`);
       setSearchQuery("");
-      setSearchResults([]);
     }
   };
 
+  // Reset expanded groups when category changes
   useEffect(() => {
     setExpandedGroups({});
+    setExpandedGroup(null);
   }, [selectedCategory]);
 
   // Toggle dropdown with animation
@@ -1046,17 +178,16 @@ export default function Navbar() {
   const handleIconClick = () => {
     inputRef.current?.focus();
   };
-  const notifications = useNotificationsStore((state) => state.notifications);
 
-  // O‘qilmaganlar soni
+  const notifications = useNotificationsStore((state) => state.notifications);
   const unreadCount = notifications.filter((n) => !n.read).length;
-  // Handle category hover
+
   const handleCategoryClick = (category) => {
-    setSelectedCategory((prev) =>
-      prev?.name === category.name ? null : category
-    );
+    console.log("Category clicked:", category._id, category.name);
+    setSelectedCategory(category);
+    setSubCategories([]);
   };
-  // Close dropdown when clicking outside
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -1073,6 +204,37 @@ export default function Navbar() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isOpen]);
+
+  // Get category name based on language
+  const getCategoryName = (category) => {
+    if (!category) return "";
+
+    switch (language) {
+      case "RU":
+        return category.nameRu || category.name_ru || category.name;
+      case "ENG":
+        return category.nameEn || category.name_en || category.name;
+      default:
+        return category.name;
+    }
+  };
+
+  // Get category image URL - add your base URL here
+  const getCategoryImageUrl = (category) => {
+    if (!category || !category.category_img) return null;
+
+    // Assuming your backend base URL - adjust this according to your setup
+    const baseURL =
+      process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
+
+    // If category_img already includes the full path, use it as is
+    if (category.category_img.startsWith("http")) {
+      return category.category_img;
+    }
+
+    // Otherwise, prepend the base URL
+    return `${baseURL}${category.category_img}`;
+  };
 
   return (
     <>
@@ -1116,32 +278,40 @@ export default function Navbar() {
               SERVIS
             </span>
           </button>
+
           <div className="hidden max-[670px]:block">
             <button className="bg-gradient-to-r text-[12px] from-[#0D63F5] to-[#0D63F5] text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-md cursor-pointer transition-all duration-200 hover:shadow-lg transform hover:scale-105 font-semibold">
               <Download size={18} />
               YUKLAB OLISH
             </button>
           </div>
-          {/* Catalog Button - Hidden on small screens */}
+
+          {/* Catalog Button */}
           <div className="relative max-[670px]:hidden">
             <button
               onClick={toggleDropdown}
+              disabled={loading}
               className={`catalog-btn bg-gradient-to-r from-[#0D63F5] to-[#0D63F5] w-[150px] text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-md cursor-pointer transition-all duration-200 hover:shadow-lg transform hover:scale-105 ${
                 isOpen ? "bg-gradient-to-r from-[#0D63F5] to-[#0D63F5]" : ""
-              }`}
+              } ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
             >
-              {isOpen ? <X size={20} /> : <Menu size={20} />}
+              {loading ? (
+                <Loader2 size={20} className="animate-spin" />
+              ) : isOpen ? (
+                <X size={20} />
+              ) : (
+                <Menu size={20} />
+              )}
               <span className="font-semibold">KATALOG</span>
             </button>
           </div>
 
-          {/* Search - Shows only on larger screens */}
+          {/* Search */}
           <div className="relative w-1/3 max-[670px]:hidden">
             <form onSubmit={handleSearch} className="relative w-full">
               <label htmlFor="search" className="sr-only">
                 Mahsulotlarni izlash
               </label>
-
               <input
                 id="search"
                 ref={inputRef}
@@ -1151,7 +321,6 @@ export default function Navbar() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="border border-gray-200 rounded-lg px-4 py-2 w-full outline-none transition-all bg-gray-50 pr-12 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
-
               <button
                 type="button"
                 onClick={handleIconClick}
@@ -1162,6 +331,7 @@ export default function Navbar() {
             </form>
           </div>
 
+          {/* User Actions */}
           <div className="hidden md:flex items-center gap-4">
             <button
               onClick={() => setOpen(true)}
@@ -1212,10 +382,7 @@ export default function Navbar() {
 
             {isAuthenticated ? (
               <Link href="/profile">
-                <button
-                  className="flex flex-col items-center cursor-pointer group"
-                  title="Profilga o'tish"
-                >
+                <button className="flex flex-col items-center cursor-pointer group">
                   <div className="w-10 h-10 flex items-center justify-center bg-[#ECF4FF] rounded-md group-hover:bg-[#dbeafe] transition-colors">
                     <User className="w-6 h-6 text-[#1862D9]" />
                   </div>
@@ -1232,13 +399,12 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Mobile Search - Shows only on small screens */}
+        {/* Mobile Search */}
         <div className="relative w-full mt-4 hidden max-[670px]:block max-w-[1240px] mx-auto">
           <form onSubmit={handleSearch} className="relative w-full">
             <label htmlFor="mobile-search" className="sr-only">
               Mahsulotlarni izlash
             </label>
-
             <input
               id="mobile-search"
               type="text"
@@ -1247,7 +413,6 @@ export default function Navbar() {
               onChange={(e) => setSearchQuery(e.target.value)}
               className="border border-gray-200 rounded-lg px-4 py-2 w-full outline-none transition-all bg-gray-50 pr-12 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
-
             <button
               type="button"
               onClick={handleIconClick}
@@ -1261,6 +426,7 @@ export default function Navbar() {
         {!isOpen && <CategoryList onMoreClick={toggleDropdown} />}
       </header>
 
+      {/* Category Dropdown */}
       <div
         className={`catalog-dropdown fixed top-[120px] left-0 right-0 z-40 transition-all duration-300 ${
           isOpen
@@ -1269,125 +435,135 @@ export default function Navbar() {
         } ${isAnimating ? "pointer-events-none" : ""}`}
       >
         <div className="bg-white max-w-full h-auto">
-          <div className="max-w-[1250px] mx-auto   border border-gray-100 overflow-hidden">
+          <div className="max-w-[1250px] mx-auto border border-gray-100 overflow-hidden">
             <div className="flex h-[85vh]">
-              {/* Left Categories Menu */}
               <div className="w-[280px] bg-gradient-to-b from-gray-50 to-white border-r border-gray-100">
                 <div className="py-4 px-2 space-y-1 h-full overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300">
-                  {categoriesData.map((category, index) => (
-                    <div
-                      key={index}
-                      onClick={() => handleCategoryClick(category)}
-                      className={`py-3 px-4 rounded-lg cursor-pointer transition-all duration-200 text-sm font-medium relative group ${
-                        selectedCategory?.name === category.name
-                          ? "bg-gradient-to-r from-blue-50 to-blue-50 text-blue-700 shadow-sm border-l-4 border-blue-500"
-                          : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center">
-                          {getCategoryIcon(category.name)}
-                          <span className="truncate">{category.name}</span>
-                        </div>
-                        <svg
-                          className={`w-4 h-4 transition-transform duration-200 ${
-                            selectedCategory?.name === category.name
-                              ? "text-blue-500"
-                              : "text-gray-400"
-                          }`}
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M9 5l7 7-7 7"
-                          />
-                        </svg>
-                      </div>
+                  {loading ? (
+                    <div className="flex items-center justify-center h-full">
+                      <Loader2 className="animate-spin w-8 h-8 text-blue-500" />
                     </div>
-                  ))}
+                  ) : categories.length === 0 ? (
+                    <div className="flex items-center justify-center h-full text-gray-500">
+                      Kategoriyalar topilmadi
+                    </div>
+                  ) : (
+                    categories.map((category, index) => {
+                      const isSelected = selectedCategory?._id === category._id;
+                      const imageUrl = getCategoryImageUrl(category);
+
+                      return (
+                        <div
+                          key={category._id || index}
+                          onClick={() => handleCategoryClick(category)}
+                          className={`py-3 px-4 rounded-lg cursor-pointer transition-all duration-200 text-sm font-medium relative group ${
+                            isSelected
+                              ? "bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 shadow-sm border-l-4 border-blue-500"
+                              : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center">
+                              {imageUrl ? (
+                                <img
+                                  src={imageUrl}
+                                  alt={getCategoryName(category)}
+                                  className="w-4 h-4 mr-2 object-contain"
+                                  onError={(e) => {
+                                    // Fallback to a default icon if image fails to load
+                                    e.target.style.display = "none";
+                                    e.target.nextElementSibling.style.display =
+                                      "inline-block";
+                                  }}
+                                />
+                              ) : null}
+                              {/* Fallback icon - only show if image fails or doesn't exist */}
+                              <ShoppingBagIcon
+                                className="w-4 h-4 mr-2"
+                                style={{
+                                  display: imageUrl ? "none" : "inline-block",
+                                }}
+                              />
+                              <span className="truncate">
+                                {getCategoryName(category)}
+                              </span>
+                            </div>
+                            <svg
+                              className={`w-4 h-4 transition-transform duration-200 ${
+                                isSelected ? "text-blue-500" : "text-gray-400"
+                              }`}
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M9 5l7 7-7 7"
+                              />
+                            </svg>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
                 </div>
               </div>
 
-              {/* Right Subcategories Menu */}
               <div className="flex-1 overflow-y-auto max-h-full p-6 bg-white">
                 <h2 className="text-2xl font-bold text-[#1e7d5d] mb-6">
-                  {selectedCategory?.name || "Kategoriya nomi yo'q"}
+                  {selectedCategory
+                    ? getCategoryName(selectedCategory)
+                    : "Kategoriya tanlang"}
                 </h2>
-                <div className="columns-1 sm:columns-2 lg:columns-3 gap-6 text-sm">
-                  {selectedCategory?.sub?.map((group, idx) => {
-                    const isExpanded = expandedGroup === group.title;
-                    const hasItems = group.items && group.items.length > 0;
-                    const visibleItems = isExpanded
-                      ? group.items
-                      : group.items?.slice(0, 6) || [];
-                    const hiddenCount = hasItems ? group.items.length - 6 : 0;
 
-                    return (
-                      <div
-                        key={idx}
-                        className="break-inside-avoid mb-6 bg-white p-2 rounded-md"
-                      >
-                        {/* Title */}
-                        <h3
-                          className={`font-bold mb-3 text-base ${
-                            hasItems
-                              ? "text-gray-800 border-b border-gray-200 pb-2"
-                              : "text-blue-700 text-xl"
-                          }`}
+                {subCategoriesLoading ? (
+                  <div className="flex items-center justify-center h-64">
+                    <Loader2 className="animate-spin w-8 h-8 text-blue-500" />
+                  </div>
+                ) : subCategories.length === 0 ? (
+                  <div className="flex items-center justify-center h-64 text-gray-500">
+                    {selectedCategory
+                      ? "Bu kategoriyada hozircha mahsulotlar yo'q"
+                      : "Kategoriya tanlang"}
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+                    {subCategories.map((subCategory, idx) => {
+                      const getSubCategoryName = (subCat) => {
+                        switch (language) {
+                          case "RU":
+                            return subCat.name_ru || subCat.name;
+                          case "ENG":
+                            return subCat.name_en || subCat.name;
+                          default:
+                            return subCat.name;
+                        }
+                      };
+
+                      return (
+                        <div
+                          key={subCategory._id || idx}
+                          className="p-4 bg-white rounded-xl  hover:border-blue-400 
+             hover:shadow-xl transition-all duration-300 cursor-pointer group transform hover:-translate-y-1"
                         >
-                          {group.title}
-                        </h3>
-
-                        {/* Items */}
-                        {hasItems && (
-                          <div className="space-y-2">
-                            {visibleItems.map((item, i) => (
-                              <a
-                                key={i}
-                                href="#"
-                                className="block text-gray-600 hover:text-blue-600 hover:bg-blue-50 px-2 py-1 rounded transition-all duration-200 leading-relaxed text-sm hover:translate-x-1"
-                              >
-                                {item.trim()}
-                              </a>
-                            ))}
-
-                            {hiddenCount > 0 && (
-                              <button
-                                onClick={() => toggleGroup(group.title)}
-                                className="flex items-center gap-1 text-blue-500 cursor-pointer text-sm mt-2 hover:text-blue-700 transition-colors px-2 py-1 hover:bg-blue-50 rounded"
-                              >
-                                <span>
-                                  {isExpanded
-                                    ? "Yopish"
-                                    : `Yana ${hiddenCount} ta`}
-                                </span>
-                                <svg
-                                  className={`w-4 h-4 transition-transform duration-200 ${
-                                    isExpanded ? "rotate-180" : ""
-                                  }`}
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M19 9l-7 7-7-7"
-                                  />
-                                </svg>
-                              </button>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
+                          <a
+                            href={`/category/${selectedCategory._id}/subcategory/${subCategory._id}`}
+                            className="block"
+                          >
+                            <h3
+                              className="font-semibold text-gray-800 group-hover:text-blue-600 
+                   transition-colors duration-300 leading-relaxed"
+                            >
+                              {getSubCategoryName(subCategory)}
+                            </h3>
+                          </a>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -1408,7 +584,6 @@ export default function Navbar() {
           <Bell size={20} className="text-[#1862D9]" />
           <span className="text-xs">Aloqa</span>
         </button>
-
         <button
           onClick={() => router.push("/wishes")}
           className="flex flex-col items-center text-gray-600"
@@ -1416,7 +591,6 @@ export default function Navbar() {
           <Heart size={20} className="text-[#1862D9]" />
           <span className="text-xs">Tanlangan</span>
         </button>
-
         <button
           onClick={() => router.push("/cart")}
           className="flex flex-col items-center text-gray-600"
@@ -1424,7 +598,6 @@ export default function Navbar() {
           <ShoppingCart size={20} className="text-[#1862D9]" />
           <span className="text-xs">Savat</span>
         </button>
-
         {isAuthenticated ? (
           <button
             onClick={() => router.push("/profile")}
