@@ -16,7 +16,7 @@ const Notifications = () => {
           <Button
             variant="link"
             onClick={markAllAsRead}
-            className="text-blue-600 hover:text-blue-800 cursor-pointer"
+            className="text-green-600 hover:text-green-800 cursor-pointer"
           >
             Hammasini o'qigan deb belgilash
           </Button>
@@ -33,7 +33,7 @@ const Notifications = () => {
                 className={`p-4 rounded-lg border ${
                   notification.read
                     ? "border-gray-200 bg-gray-50"
-                    : "border-blue-200 bg-blue-50"
+                    : "border-green-200 bg-green-50"
                 }`}
               >
                 <div className="flex justify-between items-start">
@@ -47,7 +47,7 @@ const Notifications = () => {
                         {notification.title}
                       </h3>
                       {!notification.read && (
-                        <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                        <span className="w-2 h-2 bg-green-500 rounded-full"></span>
                       )}
                     </div>
                     <p
@@ -70,7 +70,7 @@ const Notifications = () => {
                       <Button
                         variant="link"
                         onClick={() => markAsRead(notification.id)}
-                        className="text-blue-600 hover:text-blue-800 text-xs cursor-pointer"
+                        className="text-green-600 hover:text-green-800 text-xs cursor-pointer"
                       >
                         O'qish
                       </Button>

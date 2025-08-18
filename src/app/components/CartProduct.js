@@ -46,17 +46,15 @@ export default function CartProduct({ product }) {
       className={`p-4 transition-all duration-200 `}
     >
       <div className="flex items-start space-x-4">
-        {/* Checkbox */}
         <div className="flex-shrink-0 mt-2">
           <input
             type="checkbox"
             checked={product.checked}
             onChange={() => toggleChecked(product.id)}
-            className="w-5 h-5 text-blue-600 cursor-pointer border-2 border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+            className="w-5 h-5 mt-5 text-green-600 cursor-pointer border-2 border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:ring-offset-1"
           />
         </div>
 
-        {/* Product Image */}
         <div className="flex-shrink-0">
           <div className="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden">
             <Image
@@ -69,7 +67,6 @@ export default function CartProduct({ product }) {
           </div>
         </div>
 
-        {/* Product Details */}
         <div className="flex-1 min-w-0">
           <h3 className="text-sm font-medium text-gray-900 line-clamp-2 mb-1">
             {product.name}
@@ -80,7 +77,6 @@ export default function CartProduct({ product }) {
           )}
 
           <div className="flex items-center justify-between max-[480px]:flex-col max-[480px]:text-start">
-            {/* Price */}
             <div className="flex flex-col">
               <span className="text-lg font-semibold text-gray-900">
                 {formatPrice(product.sale_price)} so&apos;m

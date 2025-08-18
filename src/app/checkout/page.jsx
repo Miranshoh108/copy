@@ -173,7 +173,7 @@ export default function Checkout() {
           </div>
           <Button
             onClick={handleSubmit}
-            className="w-full bg-[#0D63F5] cursor-pointer text-white py-3 rounded-md hover:bg-blue-600"
+            className="w-full bg-[#249B73] cursor-pointer text-white py-3 rounded-md hover:bg-green-600"
           >
             Buyurtmani tasdiqlash
           </Button>

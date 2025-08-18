@@ -68,7 +68,7 @@ export default function Home() {
                 <select
                   value={sortOption}
                   onChange={handleSortChange}
-                  className="w-full sm:w-auto border border-gray-300 rounded-lg px-4 py-2 text-sm text-gray-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 transition-colors"
+                  className="w-full sm:w-auto border border-gray-300 rounded-lg px-4 py-2 text-sm text-gray-700 focus:border-green-500 focus:ring-2 focus:ring-green-500 transition-colors"
                   aria-label="Saralash opsiyasi"
                 >
                   <option value="all">Barcha</option>

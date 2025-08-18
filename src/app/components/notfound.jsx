@@ -42,11 +42,10 @@ export default function NotFound() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 relative overflow-hidden">
-      {/* Animated Background Elements */}
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-50 relative overflow-hidden">
       <div className="absolute inset-0">
         <div
-          className="absolute w-96 h-96 bg-gradient-to-r from-blue-200 to-purple-200 rounded-full opacity-20 blur-3xl transition-all duration-1000"
+          className="absolute w-96 h-96 bg-gradient-to-r from-green-200 to-green-200 rounded-full opacity-20 blur-3xl transition-all duration-1000"
           style={{
             transform: `translate(${mousePosition.x * 0.5}px, ${
               mousePosition.y * 0.3
@@ -67,10 +66,10 @@ export default function NotFound() {
         {/* Logo/Brand */}
         <div className="mb-8">
           <div className="flex items-center justify-center space-x-3 mb-4">
-            <div className="p-3 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl shadow-lg">
+            <div className="p-3 bg-gradient-to-r from-green-600 to-green-600 rounded-xl shadow-lg">
               <ShoppingBag className="w-8 h-8 text-white" />
             </div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-green-600 to-green-600 bg-clip-text text-transparent">
               BS Market
             </h1>
           </div>
@@ -108,30 +107,12 @@ export default function NotFound() {
             bo'lishi mumkin. Biroq, bizda hali ham ajoyib mahsulotlar mavjud!
           </p>
 
-          {/* Search Suggestion */}
-          <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-6 border border-gray-200 shadow-lg mb-8">
-            <div className="flex items-center justify-center mb-4">
-              <Search className="w-6 h-6 text-blue-500 mr-2" />
-              <span className="text-gray-700 font-medium">Qidiruv taklifi</span>
-            </div>
-            <div className="flex flex-wrap justify-center gap-2">
-              {popularProducts.map((product, index) => (
-                <span
-                  key={index}
-                  className="px-4 py-2 bg-gradient-to-r from-blue-100 to-purple-100 text-blue-700 rounded-full text-sm font-medium hover:from-blue-200 hover:to-purple-200 transition-all duration-300 cursor-pointer transform hover:scale-105"
-                >
-                  {product}
-                </span>
-              ))}
-            </div>
-          </div>
         </div>
 
-        {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 mb-8">
           <button
             onClick={handleBackClick}
-            className={`flex items-center px-8 py-4 bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-xl font-medium transition-all duration-300 hover:from-gray-700 hover:to-gray-800 hover:scale-105 shadow-lg ${
+            className={`flex items-center px-8 py-4 bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-xl cursor-pointer font-medium transition-all duration-300 hover:from-gray-700 hover:to-gray-800 hover:scale-105 shadow-lg ${
               isAnimating ? "animate-pulse" : ""
             }`}
           >
@@ -141,31 +122,15 @@ export default function NotFound() {
 
           <button
             onClick={() => (window.location.href = "/")}
-            className="flex items-center px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-medium transition-all duration-300 hover:from-blue-700 hover:to-purple-700 hover:scale-105 shadow-lg"
+            className="flex items-center px-8 py-4 bg-gradient-to-r from-green-600 to-green-600 text-white rounded-xl font-medium cursor-pointer transition-all duration-300 hover:from-green-700 hover:to-green-700 hover:scale-105 shadow-lg"
           >
             <Home className="w-5 h-5 mr-2" />
             Bosh sahifa
           </button>
         </div>
 
-        {/* Help Section */}
-        <div className="bg-white/50 backdrop-blur-sm rounded-2xl p-8 border border-gray-200 shadow-lg max-w-md">
-          <div className="flex items-center justify-center mb-4">
-            <Package className="w-8 h-8 text-purple-500 mr-3" />
-            <h3 className="text-xl font-semibold text-gray-800">
-              Yordam kerakmi?
-            </h3>
-          </div>
-          <p className="text-gray-600 mb-4">
-            Agar muammo davom etsa, bizning qo'llab-quvvatlash xizmati bilan
-            bog'laning.
-          </p>
-          <button className="w-full px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl font-medium transition-all duration-300 hover:from-green-600 hover:to-emerald-600 hover:scale-105 shadow-md">
-            Yordam markazi
-          </button>
-        </div>
+       
 
-        {/* Footer */}
         <div className="mt-12 text-sm text-gray-500">
           <p>© 2025 BS Market. Barcha huquqlar himoyalangan.</p>
         </div>

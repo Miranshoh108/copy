@@ -32,7 +32,7 @@ const Orders = () => {
       case "delivered":
         return "text-green-600 bg-green-100";
       case "shipping":
-        return "text-blue-600 bg-blue-100";
+        return "text-green-600 bg-green-100";
       case "processing":
         return "text-orange-600 bg-orange-100";
       default:
@@ -53,7 +53,7 @@ const Orders = () => {
             orders.map((order) => (
               <div
                 key={order.id}
-                className="flex items-center justify-between p-4 border border-gray-100 rounded-lg hover:border-blue-200 transition-colors"
+                className="flex items-center justify-between p-4 border border-gray-100 rounded-lg hover:border-green-200 transition-colors"
               >
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">

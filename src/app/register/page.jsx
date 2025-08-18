@@ -1,24 +1,51 @@
 "use client";
-
 import { useRouter } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
-import $api from "../http/api"; // Import your axios instance
+import $api from "../http/api";
 
 function AuthPage() {
   const [activeTab, setActiveTab] = useState("login");
   const [phoneNumber, setPhoneNumber] = useState("+998");
-  const [password, setPassword] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [showSmsCard, setShowSmsCard] = useState(false);
-  const [smsCode, setSmsCode] = useState(["", "", "", ""]);
+  const [smsCode, setSmsCode] = useState(["", "", "", "", "", ""]);
   const [isLoading, setIsLoading] = useState(false);
   const [notification, setNotification] = useState({ type: "", message: "" });
   const [currentUser, setCurrentUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [tempRegistrationData, setTempRegistrationData] = useState(null);
+  const [smsStep, setSmsStep] = useState(""); // "login" or "register"
   const inputRefs = useRef([]);
   const router = useRouter();
+
+  useEffect(() => {
+    checkAuthStatus();
+  }, []);
+
+  const checkAuthStatus = async () => {
+    const accessToken = localStorage.getItem("accessToken");
+
+    if (!accessToken) {
+      return;
+    }
+
+    try {
+      const { data } = await $api.get("/users/profile/me");
+
+      if (data?.success && data?.data) {
+        const user = data.data;
+        localStorage.setItem("user", JSON.stringify(user));
+        setCurrentUser(user);
+        setIsAuthenticated(true);
+      } else {
+        handleLogout();
+      }
+    } catch (error) {
+      console.error("Token tekshirishda xatolik:", error);
+      handleLogout();
+    }
+  };
 
   const showNotification = (type, message) => {
     setNotification({ type, message });
@@ -28,14 +55,14 @@ function AuthPage() {
   const handleTabChange = (tab) => {
     setActiveTab(tab);
     setPhoneNumber("+998");
-    setPassword("");
     setFirstName("");
     setLastName("");
     setShowSmsCard(false);
-    setSmsCode(["", "", "", ""]);
+    setSmsCode(["", "", "", "", "", ""]);
     setNotification({ type: "", message: "" });
     setCurrentUser(null);
     setTempRegistrationData(null);
+    setSmsStep("");
   };
 
   const formatPhoneNumber = (value) => {
@@ -92,16 +119,75 @@ function AuthPage() {
       }
     }
 
-    if (activeTab === "login" && !password.trim()) {
-      showNotification("warning", "Iltimos, parolni kiriting.");
-      return false;
-    }
-
     return true;
   };
 
-  // Register user - sends verification code
-  const handleRegister = async () => {
+  const handleAuthSuccess = async (authData) => {
+    const { user, accessToken, refreshToken } = authData;
+
+    localStorage.setItem("accessToken", accessToken);
+    localStorage.setItem("refreshToken", refreshToken);
+    localStorage.setItem("user", JSON.stringify(user));
+
+    setCurrentUser(user);
+    setIsAuthenticated(true);
+
+    try {
+      const profileResponse = await $api.get("/users/profile/me");
+      if (profileResponse.data.success) {
+        const freshUserData = profileResponse.data.data;
+        localStorage.setItem("user", JSON.stringify(freshUserData));
+        setCurrentUser(freshUserData);
+      }
+    } catch (error) {
+      console.error("Failed to fetch fresh user profile:", error);
+    }
+
+    showNotification(
+      "success",
+      `Tizimga muvaffaqiyatli kirdingiz, ${user.firstName}!`
+    );
+  };
+
+  // Login qismida faqat telefon raqam tekshirish va SMS yuborish
+  const handleLoginRequest = async () => {
+    if (!validatePhone()) return;
+
+    try {
+      setIsLoading(true);
+
+      const requestData = {
+        phoneNumber: phoneNumber.replace(/[^\d]/g, ""),
+      };
+
+      // Telefon raqamni tekshirish va SMS yuborish
+      const response = await $api.post("/auth/login/request-sms", requestData);
+
+      if (response.data.success) {
+        setSmsStep("login");
+        showNotification("info", "SMS kodi yuborildi!");
+        setShowSmsCard(true);
+        setSmsCode(["", "", "", "", "", ""]);
+        setTimeout(() => inputRefs.current[0]?.focus(), 100);
+      } else {
+        showNotification(
+          "error",
+          response.data.message ||
+            "Telefon raqam topilmadi yoki xatolik yuz berdi!"
+        );
+      }
+    } catch (error) {
+      console.error("Login request error:", error);
+      const errorMessage =
+        error.response?.data?.message ||
+        "Server bilan bog'lanishda xatolik yuz berdi!";
+      showNotification("error", errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleRegisterRequest = async () => {
     if (!validateForm()) return;
 
     try {
@@ -110,16 +196,17 @@ function AuthPage() {
       const registrationData = {
         firstName: firstName.trim(),
         lastName: lastName.trim(),
-        phone_number: phoneNumber.replace(/[^\d]/g, ""), // Send only digits
+        phone_number: phoneNumber.replace(/[^\d]/g, ""),
       };
 
       const response = await $api.post("/auth/register", registrationData);
 
       if (response.data.success) {
         setTempRegistrationData(registrationData);
+        setSmsStep("register");
         showNotification("info", "SMS kodi yuborildi!");
         setShowSmsCard(true);
-        setSmsCode(["", "", "", ""]);
+        setSmsCode(["", "", "", "", "", ""]);
         setTimeout(() => inputRefs.current[0]?.focus(), 100);
       } else {
         showNotification(
@@ -138,101 +225,11 @@ function AuthPage() {
     }
   };
 
-  // Login user
-  const handleLogin = async () => {
-    if (!validateForm()) return;
-
-    try {
-      setIsLoading(true);
-
-      const loginData = {
-        phoneNumber: phoneNumber.replace(/[^\d]/g, ""), // Send only digits
-        password: password,
-      };
-
-      const response = await $api.post("/auth/login", loginData);
-
-      if (response.data.success) {
-        const { user, accessToken, refreshToken } = response.data.data;
-
-        // Store tokens and user data
-        localStorage.setItem("accessToken", accessToken);
-        localStorage.setItem("refreshToken", refreshToken);
-        localStorage.setItem("user", JSON.stringify(user));
-
-        setCurrentUser(user);
-        setIsAuthenticated(true);
-        showNotification(
-          "success",
-          `Tizimga muvaffaqiyatli kirdingiz, ${user.firstName}!`
-        );
-      } else {
-        showNotification(
-          "error",
-          response.data.message || "Login qilishda xatolik yuz berdi!"
-        );
-      }
-    } catch (error) {
-      console.error("Login error:", error);
-      const errorMessage =
-        error.response?.data?.message ||
-        "Server bilan bog'lanishda xatolik yuz berdi!";
-      showNotification("error", errorMessage);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // System login for admin/employee
-  const handleSystemLogin = async () => {
-    if (!validateForm()) return;
-
-    try {
-      setIsLoading(true);
-
-      const loginData = {
-        phoneNumber: phoneNumber.replace(/[^\d]/g, ""),
-        password: password,
-      };
-
-      const response = await $api.post("/auth/system/login", loginData);
-
-      if (response.data.success) {
-        const { user, accessToken, refreshToken } = response.data.data;
-
-        localStorage.setItem("accessToken", accessToken);
-        localStorage.setItem("refreshToken", refreshToken);
-        localStorage.setItem("user", JSON.stringify(user));
-
-        setCurrentUser(user);
-        setIsAuthenticated(true);
-        showNotification(
-          "success",
-          `Tizimga muvaffaqiyatli kirdingiz, ${user.firstName}!`
-        );
-      } else {
-        showNotification(
-          "error",
-          response.data.message || "System login qilishda xatolik yuz berdi!"
-        );
-      }
-    } catch (error) {
-      console.error("System login error:", error);
-      const errorMessage =
-        error.response?.data?.message ||
-        "Server bilan bog'lanishda xatolik yuz berdi!";
-      showNotification("error", errorMessage);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Verify SMS code
   const handleSmsSubmit = async () => {
     const enteredCode = smsCode.join("");
 
-    if (enteredCode.length !== 4) {
-      showNotification("warning", "Iltimos, 4 xonali kodni to'liq kiriting.");
+    if (enteredCode.length !== 6) {
+      showNotification("warning", "Iltimos, 6 xonali kodni to'liq kiriting.");
       return;
     }
 
@@ -240,28 +237,29 @@ function AuthPage() {
       setIsLoading(true);
 
       const verificationData = {
-        phoneNumber:
-          tempRegistrationData?.phoneNumber ||
-          phoneNumber.replace(/[^\d]/g, ""),
+        phoneNumber: phoneNumber.replace(/[^\d]/g, ""),
         code: enteredCode,
       };
 
-      const response = await $api.post("/auth/verify", verificationData);
+      let endpoint = "";
+      if (smsStep === "login") {
+        endpoint = "/auth/login/verify-sms";
+      } else if (smsStep === "register") {
+        endpoint = "/auth/register/verify-sms";
+      }
+
+      const response = await $api.post(endpoint, verificationData);
 
       if (response.data.success) {
-        const { user, accessToken, refreshToken } = response.data.data;
-
-        // Store tokens and user data
-        localStorage.setItem("accessToken", accessToken);
-        localStorage.setItem("refreshToken", refreshToken);
-        localStorage.setItem("user", JSON.stringify(user));
-
-        setCurrentUser(user);
+        await handleAuthSuccess(response.data.data);
         setShowSmsCard(false);
-        showNotification(
-          "success",
-          `Ro'yxatdan o'tish jarayoni yakunlandi, ${user.firstName}!`
-        );
+
+        const message =
+          smsStep === "register"
+            ? `Ro'yxatdan o'tish jarayoni yakunlandi, ${response.data.data.user.firstName}!`
+            : `Tizimga muvaffaqiyatli kirdingiz, ${response.data.data.user.firstName}!`;
+
+        showNotification("success", message);
 
         setTimeout(() => {
           setIsAuthenticated(true);
@@ -271,6 +269,9 @@ function AuthPage() {
           "error",
           response.data.message || "SMS kodni tasdiqlashda xatolik yuz berdi!"
         );
+        // Xato kodni tozalash
+        setSmsCode(["", "", "", "", "", ""]);
+        setTimeout(() => inputRefs.current[0]?.focus(), 100);
       }
     } catch (error) {
       console.error("Verification error:", error);
@@ -278,6 +279,9 @@ function AuthPage() {
         error.response?.data?.message ||
         "Server bilan bog'lanishda xatolik yuz berdi!";
       showNotification("error", errorMessage);
+      // Xato kodni tozalash
+      setSmsCode(["", "", "", "", "", ""]);
+      setTimeout(() => inputRefs.current[0]?.focus(), 100);
     } finally {
       setIsLoading(false);
     }
@@ -321,9 +325,9 @@ function AuthPage() {
 
   const handleFormSubmit = () => {
     if (activeTab === "register") {
-      handleRegister();
+      handleRegisterRequest();
     } else {
-      handleLogin();
+      handleLoginRequest();
     }
   };
 
@@ -332,13 +336,15 @@ function AuthPage() {
       const newCode = [...smsCode];
       newCode[index] = value;
       setSmsCode(newCode);
-      if (value && index < 3) inputRefs.current[index + 1]?.focus();
+      if (value && index < 5) inputRefs.current[index + 1]?.focus();
     }
   };
 
   const handleCloseSmsCard = () => {
     setShowSmsCard(false);
     setTempRegistrationData(null);
+    setSmsStep("");
+    setSmsCode(["", "", "", "", "", ""]);
   };
 
   const handleKeyPress = (e, action) => {
@@ -355,30 +361,14 @@ function AuthPage() {
     localStorage.removeItem("user");
     setActiveTab("login");
     setPhoneNumber("+998");
-    setPassword("");
     setFirstName("");
     setLastName("");
     setShowSmsCard(false);
-    setSmsCode(["", "", "", ""]);
+    setSmsCode(["", "", "", "", "", ""]);
     setNotification({ type: "", message: "" });
     setTempRegistrationData(null);
+    setSmsStep("");
   };
-
-  // Check authentication on component mount
-  useEffect(() => {
-    const token = localStorage.getItem("accessToken");
-    const user = localStorage.getItem("user");
-
-    if (token && user) {
-      try {
-        setCurrentUser(JSON.parse(user));
-        setIsAuthenticated(true);
-      } catch (error) {
-        console.error("Error parsing stored user data:", error);
-        handleLogout();
-      }
-    }
-  }, []);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -427,11 +417,11 @@ function AuthPage() {
   }, []);
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-green-50 via-green-50 to-green-50 relative overflow-hidden">
       {/* Background decoration */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-400 to-purple-600 rounded-full opacity-20 blur-3xl"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-tr from-indigo-400 to-pink-600 rounded-full opacity-20 blur-3xl"></div>
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-green-400 to-green-600 rounded-full opacity-20 blur-3xl"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-tr from-green-400 to-green-600 rounded-full opacity-20 blur-3xl"></div>
       </div>
 
       {/* Notification */}
@@ -444,7 +434,7 @@ function AuthPage() {
               ? "bg-red-500 text-white"
               : notification.type === "warning"
               ? "bg-yellow-500 text-white"
-              : "bg-blue-500 text-white"
+              : "bg-green-500 text-white"
           }`}
         >
           <div className="flex items-center justify-between">
@@ -469,7 +459,7 @@ function AuthPage() {
                 onClick={() => handleTabChange(tab)}
                 className={`flex-1 py-3 px-4 text-sm cursor-pointer font-semibold rounded-xl transition-all duration-300 ${
                   activeTab === tab
-                    ? "bg-white text-indigo-600 shadow-lg transform scale-105"
+                    ? "bg-white text-green-600 shadow-lg transform scale-105"
                     : "text-gray-600 hover:text-gray-800"
                 }`}
               >
@@ -486,7 +476,7 @@ function AuthPage() {
               </h2>
               <p className="text-gray-600 text-sm">
                 {activeTab === "login"
-                  ? "Hisobingizga kirish uchun telefon raqam va parolni kiriting"
+                  ? "Telefon raqamingizni kiriting, sizga SMS kod yuboramiz"
                   : "Yangi hisob yaratish uchun ma'lumotlaringizni kiriting"}
               </p>
             </div>
@@ -499,7 +489,7 @@ function AuthPage() {
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
                     onKeyPress={(e) => handleKeyPress(e, handleFormSubmit)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
+                    className="w-full px-4 py-3 border outline-none border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
                   />
                 </div>
                 <div className="relative">
@@ -508,7 +498,7 @@ function AuthPage() {
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
                     onKeyPress={(e) => handleKeyPress(e, handleFormSubmit)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
+                    className="w-full px-4 py-3 border outline-none border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
                   />
                 </div>
               </div>
@@ -521,43 +511,23 @@ function AuthPage() {
                 value={phoneNumber}
                 onChange={handlePhoneChange}
                 onKeyPress={(e) => handleKeyPress(e, handleFormSubmit)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
+                className="w-full px-4 py-3 border border-gray-300 outline-none rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
               />
               <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
                 📱
               </div>
             </div>
 
-            {activeTab === "login" && (
-              <div className="relative">
-                <input
-                  type="password"
-                  placeholder="Parol"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  onKeyPress={(e) => handleKeyPress(e, handleFormSubmit)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
-                />
-                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                  🔒
-                </div>
-              </div>
-            )}
-
             <button
               onClick={handleFormSubmit}
               disabled={isLoading}
-              className="w-full bg-gradient-to-r from-indigo-600 cursor-pointer to-purple-600 text-white py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+              className="w-full bg-gradient-to-r from-green-600 cursor-pointer to-green-600 text-white py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             >
               {isLoading ? (
                 <div className="flex items-center justify-center">
                   <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-2"></div>
-                  {activeTab === "login"
-                    ? "Tekshirilmoqda..."
-                    : "Ro'yxatga olinmoqda..."}
+                  SMS yuborilmoqda...
                 </div>
-              ) : activeTab === "login" ? (
-                "Kirish"
               ) : (
                 "SMS Kodi Olish"
               )}
@@ -585,17 +555,17 @@ function AuthPage() {
 
             <div className="text-center mb-6">
               <p className="text-gray-600 text-sm">
-                {phoneNumber} raqamiga yuborilgan 4 xonali kodni kiriting
+                {phoneNumber} raqamiga yuborilgan 6 xonali kodni kiriting
               </p>
               {tempRegistrationData && (
-                <p className="text-indigo-600 text-sm font-medium mt-2">
+                <p className="text-green-600 text-sm font-medium mt-2">
                   {tempRegistrationData.firstName}{" "}
                   {tempRegistrationData.lastName}
                 </p>
               )}
             </div>
 
-            <div className="flex justify-center space-x-3 mb-6">
+            <div className="flex justify-center space-x-2 mb-6">
               {smsCode.map((digit, index) => (
                 <input
                   key={index}
@@ -609,7 +579,7 @@ function AuthPage() {
                     }
                   }}
                   ref={(el) => (inputRefs.current[index] = el)}
-                  className="w-14 h-14 border-2 border-gray-300 rounded-xl text-center text-xl font-bold focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
+                  className="w-12 h-14 border-2 border-gray-300 rounded-xl text-center text-xl font-bold focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
                 />
               ))}
             </div>
@@ -617,7 +587,7 @@ function AuthPage() {
             <button
               onClick={handleSmsSubmit}
               disabled={isLoading || smsCode.some((d) => d === "")}
-              className="w-full cursor-pointer bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+              className="w-full cursor-pointer bg-gradient-to-r from-green-600 to-green-600 text-white py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             >
               {isLoading ? (
                 <div className="flex items-center justify-center">
@@ -628,6 +598,12 @@ function AuthPage() {
                 "Tasdiqlash"
               )}
             </button>
+
+            <div className="mt-4 text-center">
+              <p className="text-gray-500 text-sm">
+                Kod noto'g'ri bo'lsa, qaytadan kiriting
+              </p>
+            </div>
           </div>
         </>
       )}

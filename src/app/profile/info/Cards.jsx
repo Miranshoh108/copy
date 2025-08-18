@@ -76,7 +76,7 @@ const Cards = () => {
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle>Mening kartalarim</CardTitle>
-          <Button onClick={() => setIsAdding(true)} className="cursor-pointer bg-[#1862D9] hover:bg-[#1862D9]">
+          <Button onClick={() => setIsAdding(true)} className="cursor-pointer bg-[#249B73] hover:bg-[#1ba778]">
             Karta qo'shish
           </Button>
         </div>
@@ -175,13 +175,13 @@ const Cards = () => {
                   setIsEditing(null);
                   setNewCard({ number: "", exp: "", name: "", type: "Visa" });
                 }}
-                className="cursor-pointer hover:bg-[#1862D9] hover:text-white"
+                className="cursor-pointer hover:bg-[#249B73] hover:text-white"
               >
                 Bekor qilish
               </Button>
               <Button
                 onClick={isEditing ? handleSaveEdit : handleAddCard}
-                className="cursor-pointer bg-[#1862D9] hover:bg-[#1862D9]"
+                className="cursor-pointer bg-[#249B73] hover:bg-[#249B73]"
               >
                 Saqlash
               </Button>
@@ -207,7 +207,7 @@ const Cards = () => {
                     variant="ghost"
                     size="icon"
                     onClick={() => handleEditCard(card)}
-                    className="text-blue-600 hover:text-blue-800 cursor-pointer"
+                    className="text-green-600 hover:text-green-800 cursor-pointer"
                   >
                     <Edit size={18} />
                   </Button>
@@ -222,7 +222,7 @@ const Cards = () => {
                 </div>
               </div>
               <div className="mt-2">
-                <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">
+                <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded">
                   {card.type}
                 </span>
               </div>

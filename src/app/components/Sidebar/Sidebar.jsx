@@ -34,7 +34,7 @@ export default function Sidebar() {
           <li key={index}>
             <a
               href={category.href}
-              className="block rounded-md px-2 py-1 text-gray-700 hover:bg-gray-100 hover:text-indigo-600 transition-colors"
+              className="block rounded-md px-2 py-1 text-gray-700 hover:bg-gray-100 hover:text-green-600 transition-colors"
               aria-label={`Kategoriya: ${category.name}`}
             >
               {category.name}
@@ -44,7 +44,7 @@ export default function Sidebar() {
         <li className="flex items-center justify-between">
           <button
             onClick={toggleExpand}
-            className="flex w-full items-center justify-between rounded-md px-2 py-1 text-gray-700 hover:bg-gray-100 hover:text-indigo-600 transition-colors"
+            className="flex w-full items-center justify-between rounded-md px-2 py-1 text-gray-700 hover:bg-gray-100 hover:text-green-600 transition-colors"
             aria-expanded={isExpanded}
             aria-label={isExpanded ? "Ro‘yxatni yig‘ish" : "Ro‘yxatni ochish"}
           >

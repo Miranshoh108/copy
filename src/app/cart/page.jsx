@@ -24,7 +24,6 @@ export default function Cart() {
   const checkedCount = getCheckedCount();
   const route = useRouter();
 
-  // Promokodlar ro'yxati
   const promoCodes = {
     UZUM10: { discount: 10, type: "percent", description: "10% chegirma" },
     WELCOME15: { discount: 15, type: "percent", description: "15% chegirma" },
@@ -148,7 +147,7 @@ export default function Cart() {
 
               <Button
                 onClick={() => route.push("/")}
-                className="bg-[#0D63F5] hover:bg-[#0D63F5] text-white px-8 py-3 rounded-lg font-medium cursor-pointer  transition-colors"
+                className="bg-[#249B73] hover:bg-[#249B73] text-white px-8 py-3 rounded-lg font-medium cursor-pointer  transition-colors"
               >
                 Xarid qilishni boshlash
               </Button>
@@ -175,7 +174,7 @@ export default function Cart() {
                         type="checkbox"
                         checked={isAllChecked && cart.length > 0}
                         onChange={toggleChecked}
-                        className="w-5 h-5 text-[#0D63F5] border-2 cursor-pointer  border-gray-300 rounded-md focus:ring-2 focus:ring-[#0D63F5] focus:ring-offset-1 transition-all duration-200 group-hover:border-[#0D63F5]"
+                        className="w-5 h-5 text-[#249B73] border-2 cursor-pointer  border-gray-300 rounded-md focus:ring-2 focus:ring-[#249B73] focus:ring-offset-1 transition-all duration-200 group-hover:border-[#249B73]"
                       />
                       {isAllChecked && cart.length > 0 && (
                         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -193,14 +192,14 @@ export default function Cart() {
                         </div>
                       )}
                     </div>
-                    <span className="ml-3 text-gray-800 font-medium group-hover:text-[#0D63F5] transition-colors duration-200">
+                    <span className="ml-3 text-gray-800 font-medium group-hover:text-[#249B73] transition-colors duration-200">
                       Hammasini tanlash
                     </span>
                   </label>
 
                   <div className="flex items-center space-x-4 text-sm text-gray-500">
                     {checkedCount > 0 && (
-                      <span className="bg-blue-100 text-[#0D63F5] px-3 py-1 rounded-full font-medium">
+                      <span className="bg-green-100 text-[#249B73] px-3 py-1 rounded-full font-medium">
                         {checkedCount} ta tanlandi
                       </span>
                     )}
@@ -215,7 +214,7 @@ export default function Cart() {
                   <div className="mt-3">
                     <div className="w-full bg-gray-200 rounded-full h-1.5">
                       <div
-                        className="bg-[#0D63F5] h-1.5 rounded-full transition-all duration-300"
+                        className="bg-[#249B73] h-1.5 rounded-full transition-all duration-300 outline-none"
                         style={{
                           width: `${(checkedCount / cart.length) * 100}%`,
                         }}
@@ -252,14 +251,14 @@ export default function Cart() {
                         placeholder="Promokodni kiriting"
                         value={promoCode}
                         onChange={(e) => setPromoCode(e.target.value)}
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0D63F5] focus:border-[#0D63F5]"
+                        className="flex-1 px-3 py-2 border outline-none border-gray-300 rounded-lg focus:ring-2 focus:ring-[#249B73] focus:border-[#249B73]"
                         onKeyPress={(e) =>
                           e.key === "Enter" && applyPromoCode()
                         }
                       />
                       <button
                         onClick={applyPromoCode}
-                        className="px-4 py-2 bg-[#0D63F5] cursor-pointer  text-white rounded-lg hover:bg-[#0D63F5]transition-colors font-medium"
+                        className="px-4 py-2 bg-[#249B73] cursor-pointer  text-white rounded-lg hover:bg-[#249B73]transition-colors font-medium"
                       >
                         Qo'llash
                       </button>
@@ -269,7 +268,7 @@ export default function Cart() {
                     )}
 
                     {/* Available Promo Codes */}
-                    <div className="mt-4 space-y-2">
+                    {/* <div className="mt-4 space-y-2">
                       <p className="text-sm text-gray-600">
                         Mavjud promokodlar:
                       </p>
@@ -278,7 +277,7 @@ export default function Cart() {
                           key={code}
                           className="text-xs bg-gray-50 p-2 rounded border"
                         >
-                          <span className="font-medium text-[#0D63F5]">
+                          <span className="font-medium text-[#249B73]">
                             {code}
                           </span>
                           <span className="text-gray-600">
@@ -287,7 +286,7 @@ export default function Cart() {
                           </span>
                         </div>
                       ))}
-                    </div>
+                    </div> */}
                   </div>
                 ) : (
                   <div className="flex items-center justify-between bg-green-50 p-3 rounded-lg border border-green-200">
@@ -348,12 +347,7 @@ export default function Cart() {
                     </span>
                   </div>
 
-                  {delivery === 0 && (
-                    <p className="text-xs text-green-600">
-                      ✅ 200,000 so'mdan yuqori buyurtmalar uchun yetkazib
-                      berish bepul
-                    </p>
-                  )}
+              
 
                   <hr className="my-4" />
 
@@ -365,7 +359,7 @@ export default function Cart() {
 
                 <Button
                   onClick={handleCheckout}
-                  className="w-full mt-6 bg-[#0D63F5] hover:bg-[#0D63F5] text-white py-3 rounded-lg cursor-pointer font-medium transition-colors"
+                  className="w-full mt-6 bg-[#249B73] hover:bg-[#249B73] text-white py-3 rounded-lg cursor-pointer font-medium transition-colors"
                   disabled={checkedCount === 0 || authLoading}
                 >
                   {authLoading ? "Tekshirilmoqda..." : "Buyurtma berish"}
@@ -379,7 +373,7 @@ export default function Cart() {
               </div>
 
               {/* Benefits */}
-              <div className="bg-gradient-to-r from-blue-50 to-blue-50 rounded-lg p-4 border">
+              <div className="bg-gradient-to-r from-green-50 to-green-50 rounded-lg p-4 border">
                 <div className="space-y-2">
                   <div className="flex items-center text-sm text-gray-700">
                     <span className="text-green-500 mr-2">✓</span>
@@ -395,7 +389,6 @@ export default function Cart() {
           </div>
         )}
       </div>
-      <NewProducts />
       <Footer />
     </div>
   );

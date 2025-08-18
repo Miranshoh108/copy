@@ -5,10 +5,8 @@ import ProductCard from "./ProductCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-import axios from "axios";
 import dynamic from "next/dynamic";
 import { ChevronLeft, ChevronRight, MoveRight } from "lucide-react";
-import Link from "next/link";
 import $api from "../http/api";
 
 const Slider = dynamic(() => import("react-slick"), {
@@ -20,13 +18,14 @@ const Slider = dynamic(() => import("react-slick"), {
       <ProductCardSkeleton />
       <ProductCardSkeleton />
       <ProductCardSkeleton />
+      <ProductCardSkeleton />
     </div>
   ),
 });
 
 function ProductCardSkeleton() {
   return (
-    <div className="bg-white rounded-lg shadow-md p-4 flex flex-col w-full h-full">
+    <div className="bg-white rounded-lg shadow-md p-4 flex flex-col w-[200px] h-full">
       <div className="flex-grow">
         <Skeleton className="w-full h-36 mb-3 rounded-md" />
         <Skeleton className="h-6 w-3/4 mb-2" />
@@ -72,7 +71,7 @@ export default function DiscountedProducts() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [sliderWidth, setSliderWidth] = useState(0);
+  const [sliderWidth, setSliderWidth] = useState(6);
   const sliderRef = useRef(null);
 
   useEffect(() => {
@@ -84,7 +83,7 @@ export default function DiscountedProducts() {
         const response = await $api.get("/products/get/discounted");
 
         if (response.status === 200) {
-          const discountedProducts = response.data.productsWithDiscount.map(
+          const discountedProducts = response.data.products.map(
             (product) => {
               const bestDiscountVariant = product.variants.reduce(
                 (best, current) =>
@@ -92,12 +91,23 @@ export default function DiscountedProducts() {
                 product.variants[0]
               );
 
+              let imageUrl = "/placeholder.png";
+              if (product.mainImage) {
+                const cleanPath = product.mainImage.replace(/\\/g, "/");
+                imageUrl = `${process.env.NEXT_PUBLIC_API_URL}/${cleanPath}`;
+              }
+
               return {
                 ...product,
+                id: product._id, // Add id field
+                image: imageUrl, // Add processed image field
                 mainVariant: bestDiscountVariant,
                 discountedVariants: product.variants.filter(
                   (variant) => variant.discount > 0
                 ),
+                price: bestDiscountVariant?.price,
+                discountedPrice: bestDiscountVariant?.discountedPrice,
+                discount: bestDiscountVariant?.discount,
               };
             }
           );
@@ -113,34 +123,18 @@ export default function DiscountedProducts() {
     };
 
     fetchDiscountedProducts();
-
-    const handleResize = () => {
-      const width = window.innerWidth;
-      if (width >= 1280) {
-        setSliderWidth(5);
-      } else if (width >= 1024) {
-        setSliderWidth(4);
-      } else if (width >= 768) {
-        setSliderWidth(3);
-      } else {
-        setSliderWidth(2);
-      }
-    };
-
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   const sliderSettings = {
     dots: false,
-    infinite: products.length > sliderWidth,
+    infinite: products.length > 6,
     speed: 500,
-    slidesToShow: Math.min(sliderWidth, products.length),
+    slidesToShow: Math.min(sliderWidth, products.length, 6),
     slidesToScroll: 1,
-    arrows: products.length > sliderWidth,
+    arrows: products.length > 6,
     nextArrow: <NextArrow />,
     prevArrow: <PrevArrow />,
+    variableHeight: true,
     responsive: [
       {
         breakpoint: 1024,
@@ -173,13 +167,20 @@ export default function DiscountedProducts() {
     return (
       <section className="py-8">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center py-8">
-            <p className="text-red-500 mb-4">{error}</p>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-gray-800">
+              Chegirmali mahsulotlar
+            </h2>
+          </div>
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
+            <p className="text-red-600">
+              Chegirmali mahsulotlarni yuklashda xatolik: {error}
+            </p>
             <button
               onClick={() => window.location.reload()}
-              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
+              className="mt-2 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 cursor-pointer"
             >
-              Qayta urinib ko'ring
+              Qaytadan urinish
             </button>
           </div>
         </div>
@@ -188,54 +189,44 @@ export default function DiscountedProducts() {
   }
 
   return (
-    <section className="py-8">
-      <div className="max-w-7xl mx-auto px-4">
+    <section className="py-4">
+      <div className="max-w-7xl mx-auto px-4 ">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-gray-800">
             Chegirmali mahsulotlar
           </h2>
-          <Link
-            href="/discounted-products"
-            className="flex items-center gap-2 text-blue-500 hover:text-blue-600 transition"
-          >
-            Barchasini ko&apos;rish <MoveRight />
-          </Link>
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-            {[...Array(5)].map((_, index) => (
+          <div className="flex gap-4 overflow-x-auto">
+            {[...Array(6)].map((_, index) => (
               <ProductCardSkeleton key={index} />
             ))}
           </div>
         ) : products.length === 0 ? (
-          <div className="text-center py-8">
-            <p className="text-gray-500">
-              Hozirda chegirmali mahsulotlar mavjud emas
-            </p>
+          <div className="text-center py-8 text-gray-500">
+            Hozirda chegirmali mahsulotlar mavjud emas
+          </div>
+        ) : products.length <= 6 ? (
+          <div className="flex gap-4 overflow-x-auto">
+            {products.map((product) => (
+              <div key={product.id} className="w-[200px] flex-shrink-0">
+                <ProductCard product={product} />
+              </div>
+            ))}
           </div>
         ) : (
           <div className="relative">
             <Slider
               {...sliderSettings}
               ref={sliderRef}
-              className={`slider-transition ${
-                loading ? "slider-loading" : "slider-loaded"
-              }`}
+              className="slider-transition"
             >
               {products.map((product) => (
                 <div key={product._id} className="px-2">
-                  <ProductCard
-                    product={{
-                      ...product,
-                      id: product._id,
-                      mainImage: product.mainImage,
-                      variants: product.variants,
-                      price: product.mainVariant?.price,
-                      discountedPrice: product.mainVariant?.discountedPrice,
-                      discount: product.mainVariant?.discount,
-                    }}
-                  />
+                  <div className="w-[200px]">
+                    <ProductCard product={product} />
+                  </div>
                 </div>
               ))}
             </Slider>

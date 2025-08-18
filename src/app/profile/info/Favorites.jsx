@@ -118,23 +118,23 @@ const Favorites = () => {
                     </div>
                     {isLoading[item.id] ? (
                       <Button
-                        className="w-full mt-4 flex items-center justify-center gap-2 bg-[#1862D9] text-gray-200"
+                        className="w-full mt-4 flex items-center justify-center gap-2 bg-[#249B73] text-gray-200"
                         disabled
                       >
-                        <span className="loader  border-2 border-t-[#0D63F5] rounded-full w-4 h-4 animate-spin" />
+                        <span className="loader  border-2 border-t-[#249B73] rounded-full w-4 h-4 animate-spin" />
                         Yuklanmoqda...
                       </Button>
                     ) : quantity === 0 ? (
                       <Button
                         variant="outline"
                         onClick={(e) => handleAddToCart(e, item)}
-                        className="w-full mt-4 flex items-center justify-center gap-2 cursor-pointer border-[#0D63F5] text-[#0D63F5] hover:bg-[#0d63f50f]"
+                        className="w-full mt-4 flex items-center justify-center gap-2 cursor-pointer border-[#249B73] text-[#249B73] hover:bg-[#0d63f50f]"
                       >
                         <ShoppingCart size={18} />
                         Savatga qo'shish
                       </Button>
                     ) : (
-                      <div className="w-full mt-4 flex items-center justify-between border border-[#0D63F5] rounded-lg px-4 py-2 bg-white">
+                      <div className="w-full mt-4 flex items-center justify-between border border-[#249B73] rounded-lg px-4 py-2 bg-white">
                         <Button
                           variant="ghost"
                           size="icon"
@@ -143,7 +143,7 @@ const Favorites = () => {
                         >
                           −
                         </Button>
-                        <span className="bg-[#0D63F5] text-white text-sm w-7 h-7 flex items-center justify-center rounded-full font-semibold">
+                        <span className="bg-[#249B73] text-white text-sm w-7 h-7 flex items-center justify-center rounded-full font-semibold">
                           {quantity}
                         </span>
                         <Button

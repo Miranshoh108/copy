@@ -12,39 +12,31 @@ export default function ProductCard({ product }) {
   const { toggleLike, likes } = useHomeLikes();
   const [added, setAdded] = useState(false);
   const setCurrentProduct = useProductStore((state) => state.setCurrentProduct);
-  const [quantity, setQuantity] = useState(0);
-  const { addCart, updateQuantity, removeCart } = useCartStore();
+  const { addCart, updateQuantity, removeCart, cart } = useCartStore();
   const [isLoading, setIsLoading] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isHovering, setIsHovering] = useState(false);
-
-  // Konsolga chiqaramiz
-  console.log("Mahsulot:", product.name);
-  console.log("Price:", product.price);
-  console.log("DiscountedPrice:", product.discountedPrice);
 
   const {
     name,
     image,
     id,
-    price, // oddiy narx
-    discountedPrice, // chegirmali narx
-    axiom_monthly_price,
-    stickers,
+    price,
+    discountedPrice,
     reviews_count,
-    variants = [], // variants array
+    variants = [],
   } = product;
 
-  // Get all available images from variants
+  const cartItem = cart.find((item) => item.id === id);
+  const currentQuantity = cartItem ? cartItem.quantity : 0;
+
   const getAllImages = () => {
     const images = [];
 
-    // Add main product image
     if (image) {
       images.push(image);
     }
 
-    // Add variant main images and product images
     variants.forEach((variant) => {
       if (variant.mainImg) {
         const cleanPath = variant.mainImg.replace(/\\/g, "/");
@@ -81,14 +73,19 @@ export default function ProductCard({ product }) {
   const handleAddToCart = (e) => {
     e.stopPropagation();
     setIsLoading(true);
+
     setTimeout(() => {
-      addCart({
+      const cartProduct = {
         ...product,
+        id: id,
+        sale_price: discountedPrice || price,
+        original_price: discountedPrice ? price : null,
         quantity: 1,
         checked: false,
-      });
+      };
+
+      addCart(cartProduct);
       setAdded(true);
-      setQuantity(1);
       setIsLoading(false);
     }, 300);
   };
@@ -105,7 +102,6 @@ export default function ProductCard({ product }) {
     const x = e.clientX - rect.left;
     const width = rect.width;
 
-    // Calculate which image to show based on mouse position
     const imageIndex = Math.floor((x / width) * allImages.length);
     const clampedIndex = Math.max(
       0,
@@ -134,13 +130,29 @@ export default function ProductCard({ product }) {
     );
   };
 
+  const handleIncrement = (e) => {
+    e.stopPropagation();
+    const newQty = currentQuantity + 1;
+    updateQuantity(id, newQty);
+  };
+
+  const handleDecrement = (e) => {
+    e.stopPropagation();
+    if (currentQuantity === 1) {
+      removeCart(id);
+    } else {
+      const newQty = currentQuantity - 1;
+      updateQuantity(id, newQty);
+    }
+  };
+
   return (
     <div
-      className="group bg-white rounded-lg shadow-md p-4 flex flex-col relative cursor-pointer hover:shadow-lg transition-shadow h-full"
+      className=" bg-white rounded-lg shadow-md flex flex-col w-[190px] relative cursor-pointer hover:shadow-lg transition-shadow h-full"
       onClick={handleProductClick}
     >
       {price && discountedPrice && price > discountedPrice && (
-        <div className="absolute top-2 left-2 bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded-lg shadow-md z-20">
+        <div className="absolute top-2 left-2 bg-green-600 text-white text-xs font-bold px-2 py-1 rounded-lg shadow-md z-20">
           -{Math.round(((price - discountedPrice) / price) * 100)}%
         </div>
       )}
@@ -157,120 +169,95 @@ export default function ProductCard({ product }) {
         />
       </button>
 
-      <div className="flex-grow">
-        {/* Rasm with hover effect */}
-        <div
-          className="relative w-full h-36 mb-3 overflow-hidden"
-          onMouseMove={handleMouseMove}
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
-        >
-          <Image
-            src={getCurrentImage()}
-            alt={name}
-            className="object-contain transition-all duration-300 ease-in-out"
-            fill
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          />
+      <div
+        className="relative w-full h-[210px] overflow-hidden"
+        onMouseMove={handleMouseMove}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      >
+        <Image
+          src={getCurrentImage()}
+          alt={name}
+          className="w-full h-full object-cover transition-transform duration-300 ease-in-out group-hover:scale-105"
+          fill
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+        />
 
-          {/* Image indicators - show only if there are multiple images and hovering */}
-          {allImages.length > 1 && isHovering && (
-            <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1 z-10">
-              {allImages.map((_, index) => (
-                <div
-                  key={index}
-                  className={`w-1.5 h-1.5 rounded-full transition-all duration-200 ${
-                    index === currentImageIndex
-                      ? "bg-blue-500 scale-125"
-                      : "bg-white/60"
-                  }`}
-                />
-              ))}
-            </div>
-          )}
-        </div>
-
-        <div className="min-h-[45px] flex flex-col justify-center">
-          {price && discountedPrice && price !== discountedPrice ? (
-            <>
-              <span className="text-red-500 line-through text-sm">
-                {price} so'm
-              </span>
-              <span className="text-gray-800 font-bold text-lg">
-                {discountedPrice} so'm
-              </span>
-            </>
-          ) : (
-            <p className="text-lg font-bold text-gray-800">{price} so'm</p>
-          )}
-        </div>
-
-        <h3 className="text-gray-800 font-medium mt-1 line-clamp-2 h-12">
-          {name}
-        </h3>
-
-        {axiom_monthly_price && (
-          <p className="text-gray-500 text-sm mt-1">{axiom_monthly_price}</p>
+        {allImages.length > 1 && isHovering && (
+          <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1 z-10">
+            {allImages.map((_, index) => (
+              <div
+                key={index}
+                className={`w-1.5 h-1.5 rounded-full transition-all duration-200 ${
+                  index === currentImageIndex
+                    ? "bg-green-500 scale-125"
+                    : "bg-white/60"
+                }`}
+              />
+            ))}
+          </div>
         )}
       </div>
 
-      <div className="mt-3">
-        <p className="text-gray-500 text-xs">
+      <div className="min-h-[45px] flex flex-col justify-center px-2">
+        {price && discountedPrice && price !== discountedPrice ? (
+          <>
+            <span className="text-gray-400 line-through text-sm">
+              {price} so'm
+            </span>
+            <span className="text-gray-800 font-bold text-lg">
+              {discountedPrice} so'm
+            </span>
+          </>
+        ) : (
+          <p className="text-lg font-bold text-gray-800">{price} so'm</p>
+        )}
+      </div>
+
+      <h3 className="text-gray-800 font-medium px-2">{name}</h3>
+
+      <div className="p-2">
+        <p className="text-gray-700 text-xs">
           {reviews_count && reviews_count > 0
             ? reviews_count
             : Math.floor(Math.random() * 6) + 1}{" "}
           ta sharh
         </p>
 
-        <div className="flex items-center justify-between mt-3">
+        <div className="flex items-center justify-between mt-1">
           {isLoading ? (
             <button
-              className="w-full flex items-center justify-center gap-2 border border-[#0D63F5] text-[#0D63F5] bg-[#f0f8ff] rounded-lg py-2 cursor-not-allowed"
+              className="w-full flex items-center justify-center gap-2 border border-[#249B73] text-[#249B73] bg-[#f0f8ff] rounded-lg py-2 cursor-not-allowed"
               disabled
             >
-              <span className="loader border-2 border-t-[#0D63F5] rounded-full w-4 h-4 animate-spin" />
+              <span className="loader border-2 border-t-[#249B73] rounded-full w-4 h-4 animate-spin" />
               Yuklanmoqda...
             </button>
-          ) : quantity === 0 ? (
+          ) : currentQuantity === 0 ? (
             <button
               onClick={(e) => handleAddToCart(e)}
-              className="w-full flex cursor-pointer items-center justify-center gap-2 border border-[#0D63F5] text-[#0D63F5] hover:bg-[#0d63f50f] transition-all duration-300 rounded-lg py-2"
+              className="w-full flex cursor-pointer items-center justify-center gap-2 border border-[#249B73] text-[#249B73] hover:bg-[#0d63f50f] transition-all duration-300 rounded-lg py-2"
               title="Savatga qo'shish"
             >
               <ShoppingCart size={18} />
               <span className="font-medium">Savatga qo'shish</span>
             </button>
           ) : (
-            <div className="w-full flex items-center justify-between border border-[#0D63F5] rounded-lg px-4 py-2 bg-white shadow-sm transition-all duration-300">
+            <div className="w-full flex items-center justify-between border border-[#249B73] rounded-lg px-4 py-2 bg-white shadow-sm transition-all duration-300">
               <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (quantity === 1) {
-                    setQuantity(0);
-                    removeCart(product.id);
-                  } else {
-                    const newQty = quantity - 1;
-                    setQuantity(newQty);
-                    updateQuantity(product.id, newQty);
-                  }
-                }}
+                onClick={handleDecrement}
                 className="text-xl text-[#f44336] cursor-pointer font-bold hover:scale-110 transition-transform duration-200"
                 title="Kamaytirish"
               >
                 −
               </button>
 
-              <span className="bg-[#0D63F5] text-white text-sm w-7 h-7 flex items-center justify-center rounded-full font-semibold shadow-md">
-                {quantity}
+              <span className="bg-[#249B73] text-white text-sm w-7 h-7 flex items-center justify-center rounded-full font-semibold shadow-md">
+                {currentQuantity}
               </span>
 
               <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  const newQty = quantity + 1;
-                  setQuantity(newQty);
-                  updateQuantity(product.id, newQty);
-                }}
+                onClick={handleIncrement}
                 className="text-xl cursor-pointer text-[#4caf50] font-bold hover:scale-110 transition-transform duration-200"
                 title="Qo'shish"
               >

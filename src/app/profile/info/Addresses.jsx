@@ -95,7 +95,7 @@ const Addresses = () => {
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle>Mening manzillarim</CardTitle>
-          <Button onClick={() => setIsAdding(true)} className="cursor-pointer bg-[#1862D9] hover:bg-[#1862D9]">
+          <Button onClick={() => setIsAdding(true)} className="cursor-pointer bg-[#249B73] hover:bg-[#3ad29f]">
             Manzil qo'shish
           </Button>
         </div>
@@ -190,13 +190,13 @@ const Addresses = () => {
                     default: false,
                   });
                 }}
-                className="cursor-pointer hover:bg-[#1862D9] hover:text-white"
+                className="cursor-pointer hover:bg-[#249B73] hover:text-white"
               >
                 Bekor qilish
               </Button>
               <Button
                 onClick={isEditing ? handleSaveEdit : handleAddAddress}
-                className="cursor-pointer bg-[#1862D9] hover:bg-[#1862D9]"
+                className="cursor-pointer bg-[#249B73] hover:bg-[#3ccc9c]"
               >
                 Saqlash
               </Button>
@@ -234,7 +234,7 @@ const Addresses = () => {
                     variant="ghost"
                     size="icon"
                     onClick={() => handleEditAddress(address)}
-                    className="text-blue-600 hover:text-blue-800 cursor-pointer"
+                    className="text-green-600 hover:text-green-800 cursor-pointer"
                   >
                     <Edit size={18} />
                   </Button>
@@ -253,7 +253,7 @@ const Addresses = () => {
                   variant="outline"
                   size="sm"
                   onClick={() => handleSetDefault(address.id)}
-                  className="mt-3 cursor-pointer text-blue-600 border-blue-200 hover:bg-blue-50"
+                  className="mt-3 cursor-pointer text-green-600 border-green-200 hover:bg-green-50"
                 >
                   Standart manzil sifatida belgilash
                 </Button>

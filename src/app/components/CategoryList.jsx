@@ -56,7 +56,7 @@ export default function CategoryList({ onMoreClick }) {
       <div className="bg-white py-2 px-4 flex gap-10 items-center overflow-x-auto no-scrollbar max-[1100px]:hidden">
         {loading ? (
           <div className="flex items-center gap-2">
-            <Loader2 className="animate-spin w-4 h-4 text-blue-500" />
+            <Loader2 className="animate-spin w-4 h-4 text-green-500" />
             <span className="text-sm text-gray-600">Yuklanmoqda...</span>
           </div>
         ) : categories.length === 0 ? (
@@ -68,7 +68,7 @@ export default function CategoryList({ onMoreClick }) {
                 key={cat._id || index}
                 className="group flex flex-col items-center justify-center min-w-[80px] cursor-pointer hover:scale-105 transition-transform duration-200"
               >
-                <span className="text-sm text-center whitespace-nowrap text-gray-700 group-hover:text-[#0D63F5] transition-colors duration-200">
+                <span className="text-sm text-center whitespace-nowrap text-gray-700 group-hover:text-[#249B73] transition-colors duration-200">
                   {getCategoryName(cat)}
                 </span>
               </div>
@@ -76,7 +76,7 @@ export default function CategoryList({ onMoreClick }) {
 
             <button
               onClick={onMoreClick}
-              className="text-[#0D63F5] font-semibold hover:underline whitespace-nowrap cursor-pointer"
+              className="text-[#249B73] font-semibold hover:underline whitespace-nowrap cursor-pointer"
             >
               Yana →
             </button>

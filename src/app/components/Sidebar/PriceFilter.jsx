@@ -32,7 +32,7 @@ export default function PriceFilter({ min = 0, max = 1000000 }) {
           min={min}
           max={range[1]}
           aria-label="Minimal narx"
-          className="w-20 rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          className="w-20 rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-700 focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500"
         />
         <span className="mx-2 text-gray-500">—</span>
         <input
@@ -42,7 +42,7 @@ export default function PriceFilter({ min = 0, max = 1000000 }) {
           min={range[0]}
           max={max}
           aria-label="Maksimal narx"
-          className="w-20 rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          className="w-20 rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-700 focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500"
         />
       </div>
       <div className="px-2">

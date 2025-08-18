@@ -20,13 +20,14 @@ const Slider = dynamic(() => import("react-slick"), {
       <ProductCardSkeleton />
       <ProductCardSkeleton />
       <ProductCardSkeleton />
+      <ProductCardSkeleton />
     </div>
   ),
 });
 
 function ProductCardSkeleton() {
   return (
-    <div className="bg-white rounded-lg shadow-md p-4 flex flex-col w-full h-full">
+    <div className="bg-white rounded-lg shadow-md p-4 flex flex-col w-[200px] h-full">
       <div className="flex-grow">
         <Skeleton className="w-full h-36 mb-3 rounded-md" />
         <Skeleton className="h-6 w-3/4 mb-2" />
@@ -72,7 +73,7 @@ export default function BestSellers() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [sliderWidth, setSliderWidth] = useState(5);
+  const [sliderWidth, setSliderWidth] = useState(6);
   const sliderRef = useRef(null);
 
   useEffect(() => {
@@ -91,11 +92,6 @@ export default function BestSellers() {
         if (response.data.success && response.data.data) {
           const mappedProducts = response.data.data.map((item) => {
             const variant = item.variants?.[0] || {};
-
-            // Console.log bilan qiymatlarni ko'ramiz
-            console.log("Mahsulot:", item.name);
-            console.log("Price:", variant.price);
-            console.log("DiscountedPrice:", variant.discountedPrice);
 
             // Rasm URL
             let imageUrl = "/placeholder.png";
@@ -135,11 +131,11 @@ export default function BestSellers() {
 
   const sliderSettings = {
     dots: false,
-    infinite: products.length > 5,
+    infinite: products.length > 6,
     speed: 500,
-    slidesToShow: Math.min(sliderWidth, products.length, 5),
+    slidesToShow: Math.min(sliderWidth, products.length, 6),
     slidesToScroll: 1,
-    arrows: products.length > 5,
+    arrows: products.length > 6,
     nextArrow: <NextArrow />,
     prevArrow: <PrevArrow />,
     responsive: [
@@ -172,7 +168,7 @@ export default function BestSellers() {
 
   if (error) {
     return (
-      <section className="py-8">
+      <section className="py-4">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-gray-800">Xit savdo</h2>
@@ -194,23 +190,15 @@ export default function BestSellers() {
   }
 
   return (
-    <section className="py-8">
+    <section className="py-4">
       <div className="max-w-7xl mx-auto px-4">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-4">
           <h2 className="text-2xl font-bold text-gray-800">Xit savdo</h2>
-          {!loading && products.length > 0 && (
-            <Link
-              href={"#"}
-              className="flex items-center gap-2 text-blue-500 hover:text-blue-600 transition"
-            >
-              Barchasini ko&apos;rish <MoveRight />
-            </Link>
-          )}
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-            {[...Array(5)].map((_, index) => (
+          <div className="flex gap-4 overflow-x-auto">
+            {[...Array(6)].map((_, index) => (
               <ProductCardSkeleton key={index} />
             ))}
           </div>
@@ -218,10 +206,12 @@ export default function BestSellers() {
           <div className="text-center py-8 text-gray-500">
             Hozircha mahsulotlar mavjud emas
           </div>
-        ) : products.length <= 5 ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+        ) : products.length <= 6 ? (
+          <div className="flex gap-4 overflow-x-auto">
             {products.map((product) => (
-              <ProductCard key={product.id} product={product} />
+              <div key={product.id} className="w-[200px] flex-shrink-0">
+                <ProductCard product={product} />
+              </div>
             ))}
           </div>
         ) : (
@@ -233,7 +223,9 @@ export default function BestSellers() {
             >
               {products.map((product) => (
                 <div key={product.id} className="px-2">
-                  <ProductCard product={product} />
+                  <div className="w-[200px]">
+                    <ProductCard product={product} />
+                  </div>
                 </div>
               ))}
             </Slider>

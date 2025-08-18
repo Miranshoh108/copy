@@ -33,7 +33,7 @@ export default function Showcase() {
   };
 
   return (
-    <section className="text-center relative mt-10">
+    <section className="text-center relative mt-10 mb-6">
       <div className="relative max-w-[1240px] mx-auto">
         {/* Arrow buttons */}
         <button
@@ -100,12 +100,12 @@ export default function Showcase() {
           bottom: -30px !important;
         }
         .slick-dots li button:before {
-          color: blue;
+          color: green;
           opacity: 0.3;
         }
         .slick-dots li.slick-active button:before {
           opacity: 1;
-          color: darkblue;
+          color: #249B73;
         }
       `}</style>
     </section>

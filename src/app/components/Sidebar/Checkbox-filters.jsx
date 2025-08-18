@@ -35,36 +35,36 @@ export default function CheckboxFilters() {
     <div className="space-y-4 rounded-lg bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
       {/* Switch Filters */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between p-3 rounded-lg transition-colors hover:bg-indigo-50">
+        <div className="flex items-center justify-between p-3 rounded-lg transition-colors hover:bg-green-50">
           <span className="text-sm font-medium text-gray-700">
             Borda mavjud
           </span>
           <Switch
             checked={inStock}
             onCheckedChange={setInStock}
-            className="data-[state=checked]:bg-indigo-600 rounded-full transition-colors"
+            className="data-[state=checked]:bg-green-600 rounded-full transition-colors"
           />
         </div>
 
-        <div className="flex items-center justify-between p-3 rounded-lg transition-colors hover:bg-indigo-50">
+        <div className="flex items-center justify-between p-3 rounded-lg transition-colors hover:bg-green-50">
           <span className="text-sm font-medium text-gray-700">
             Yangi mahsulotlar
           </span>
           <Switch
             checked={newProducts}
             onCheckedChange={setNewProducts}
-            className="data-[state=checked]:bg-indigo-600 rounded-full transition-colors"
+            className="data-[state=checked]:bg-green-600 rounded-full transition-colors"
           />
         </div>
 
-        <div className="flex items-center justify-between p-3 rounded-lg transition-colors hover:bg-indigo-50">
+        <div className="flex items-center justify-between p-3 rounded-lg transition-colors hover:bg-green-50">
           <span className="text-sm font-medium text-gray-700">
             Chegirmali mahsulot
           </span>
           <Switch
             checked={discounted}
             onCheckedChange={setDiscounted}
-            className="data-[state=checked]:bg-indigo-600 rounded-full transition-colors"
+            className="data-[state=checked]:bg-green-600 rounded-full transition-colors"
           />
         </div>
       </div>
@@ -80,7 +80,7 @@ export default function CheckboxFilters() {
               id={filter.id}
               checked={checked.includes(filter.id)}
               onCheckedChange={() => toggleFilter(filter.id)}
-              className="h-5 w-5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+              className="h-5 w-5 rounded border-gray-300 text-green-600 focus:ring-green-500"
             />
             <filter.icon className="h-5 w-5 text-gray-500" />
             <label

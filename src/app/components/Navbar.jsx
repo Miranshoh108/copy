@@ -1,9 +1,7 @@
 "use client";
-
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import axios from "axios";
 import {
   X,
   Menu,
@@ -12,21 +10,6 @@ import {
   Heart,
   ShoppingCart,
   Mail,
-  Phone,
-  Laptop,
-  Home,
-  Shirt,
-  Dumbbell,
-  HeartPulse,
-  Music,
-  Car,
-  SprayCan,
-  Hammer,
-  Shovel,
-  ShoppingBag,
-  Baby,
-  Utensils,
-  Notebook,
   ShoppingBagIcon,
   User,
   MapPin,
@@ -36,7 +19,6 @@ import {
 } from "lucide-react";
 import { useCartStore } from "./hooks/cart";
 import { useHomeLikes } from "./hooks/likes";
-import { useAuth } from "./hooks/useAuth";
 import CategoryList from "./CategoryList";
 import NotificationModal from "./NotificationModal";
 import { useNotificationsStore } from "../store/useNotificationsStore";
@@ -44,8 +26,6 @@ import $api from "../http/api";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedCat, setSelectedCat] = useState(null);
-  const [selectedSubCat, setSelectedSubCat] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [categories, setCategories] = useState([]);
   const [subCategories, setSubCategories] = useState([]);
@@ -59,6 +39,100 @@ export default function Navbar() {
   const [isAnimating, setIsAnimating] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [open, setOpen] = useState(false);
+
+  const [showSearchDropdown, setShowSearchDropdown] = useState(false);
+  const [searchSuggestions, setSuggestions] = useState([]);
+  const [recentSearches, setRecentSearches] = useState([]);
+  const [popularSearches] = useState([
+    "Telefon",
+    "Kompyuter",
+    "Kiyim",
+    "Poyafzal",
+    "Kitob",
+    "Kosmetika",
+    "Maishiy texnika",
+    "Sport tovarlari",
+  ]);
+  const searchInputRef = useRef(null);
+  const searchDropdownRef = useRef(null);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("recentSearches");
+    if (saved) {
+      setRecentSearches(JSON.parse(saved).slice(0, 5));
+    }
+  }, []);
+
+  const fetchSearchSuggestions = async (query) => {
+    if (!query.trim()) {
+      setSuggestions([]);
+      return;
+    }
+
+    try {
+      const res = await $api.get("/products/get/query", {
+        params: { q: query, limit: 10 }, // API parametrlari backendga mos
+      });
+
+      if (res.data && Array.isArray(res.data)) {
+        setSuggestions(res.data); // mahsulotlar massivini saqlaymiz
+      } else {
+        setSuggestions([]);
+      }
+    } catch (err) {
+      console.error("Search API error:", err);
+      setSuggestions([]);
+    }
+  };
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchSearchSuggestions(searchQuery);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        searchDropdownRef.current &&
+        !searchDropdownRef.current.contains(event.target) &&
+        !searchInputRef.current.contains(event.target)
+      ) {
+        setShowSearchDropdown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleSearchSubmit = (query) => {
+    const searchTerm = query || searchQuery;
+    if (searchTerm.trim()) {
+      const updated = [
+        searchTerm,
+        ...recentSearches.filter((s) => s !== searchTerm),
+      ].slice(0, 5);
+      setRecentSearches(updated);
+      localStorage.setItem("recentSearches", JSON.stringify(updated));
+
+      router.push(`/search?q=${encodeURIComponent(searchTerm)}`);
+      setSearchQuery("");
+      setShowSearchDropdown(false);
+    }
+  };
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    handleSearchSubmit();
+  };
+
+  const clearRecentSearches = () => {
+    setRecentSearches([]);
+    localStorage.removeItem("recentSearches");
+  };
 
   const { cart } = useCartStore();
   const { likes } = useHomeLikes();
@@ -105,7 +179,6 @@ export default function Navbar() {
         console.log("Subcategories API response:", response.data);
 
         if (response.data.status === 200 && response.data.data) {
-          // The API returns data directly in response.data.data array
           setSubCategories(response.data.data || []);
         } else {
           setSubCategories([]);
@@ -128,14 +201,9 @@ export default function Navbar() {
     }
   }, []);
 
-  const toggleGroup = (title) => {
-    setExpandedGroup((prevTitle) => (prevTitle === title ? null : title));
-  };
-
-  // Handle body overflow
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = "hidden";
+      document.body.style.overflow = "unset";
     } else {
       document.body.style.overflow = "unset";
     }
@@ -145,22 +213,11 @@ export default function Navbar() {
     };
   }, [isOpen]);
 
-  // Handle search
-  const handleSearch = (e) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      router.push(`/search?q=${encodeURIComponent(searchQuery)}`);
-      setSearchQuery("");
-    }
-  };
-
-  // Reset expanded groups when category changes
   useEffect(() => {
     setExpandedGroups({});
     setExpandedGroup(null);
   }, [selectedCategory]);
 
-  // Toggle dropdown with animation
   const toggleDropdown = () => {
     if (isOpen) {
       setIsAnimating(true);
@@ -205,7 +262,6 @@ export default function Navbar() {
     };
   }, [isOpen]);
 
-  // Get category name based on language
   const getCategoryName = (category) => {
     if (!category) return "";
 
@@ -219,21 +275,20 @@ export default function Navbar() {
     }
   };
 
-  // Get category image URL - add your base URL here
   const getCategoryImageUrl = (category) => {
     if (!category || !category.category_img) return null;
 
-    // Assuming your backend base URL - adjust this according to your setup
-    const baseURL =
-      process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
+    const baseURL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
-    // If category_img already includes the full path, use it as is
     if (category.category_img.startsWith("http")) {
       return category.category_img;
     }
 
-    // Otherwise, prepend the base URL
-    return `${baseURL}${category.category_img}`;
+    const imagePath = category.category_img.startsWith("/")
+      ? category.category_img
+      : `/${category.category_img}`;
+
+    return `${baseURL}${imagePath}`;
   };
 
   return (
@@ -245,21 +300,21 @@ export default function Navbar() {
             rel="noopener noreferrer"
             className="flex items-center gap-2 hover:underline"
           >
-            <MapPin className="text-[#1862D9]" /> Toshkent
+            <MapPin className="text-[#249B73]" /> Toshkent
           </a>
 
           <div className="flex gap-10">
             <a
-              href="mailto:azikmelor7705@gmail.com"
+              href="mailto:it.ideal.forest@gmail.com"
               className="flex items-center gap-3 cursor-pointer max-[500px]:hidden text-gray-600 hover:text-gray-800 transition-colors"
             >
-              <Mail className="text-[#1862D9]" />
+              <Mail className="text-[#249B73]" />
               <span>Aloqa uchun</span>
             </a>
             <select
               value={language}
               onChange={(e) => setLanguage(e.target.value)}
-              className="border border-gray-200 rounded-lg px-2 py-1 bg-gray-50 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="border border-gray-200 rounded-lg px-2 py-1 bg-gray-50 text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500"
             >
               <option value="UZ">UZ</option>
               <option value="RU">RU</option>
@@ -280,19 +335,18 @@ export default function Navbar() {
           </button>
 
           <div className="hidden max-[670px]:block">
-            <button className="bg-gradient-to-r text-[12px] from-[#0D63F5] to-[#0D63F5] text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-md cursor-pointer transition-all duration-200 hover:shadow-lg transform hover:scale-105 font-semibold">
+            <button className="bg-gradient-to-r text-[12px] from-[#249B73] to-[#249B73] text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-md cursor-pointer transition-all duration-200 hover:shadow-lg transform hover:scale-105 font-semibold">
               <Download size={18} />
               YUKLAB OLISH
             </button>
           </div>
 
-          {/* Catalog Button */}
           <div className="relative max-[670px]:hidden">
             <button
               onClick={toggleDropdown}
               disabled={loading}
-              className={`catalog-btn bg-gradient-to-r from-[#0D63F5] to-[#0D63F5] w-[150px] text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-md cursor-pointer transition-all duration-200 hover:shadow-lg transform hover:scale-105 ${
-                isOpen ? "bg-gradient-to-r from-[#0D63F5] to-[#0D63F5]" : ""
+              className={`catalog-btn bg-gradient-to-r from-[#249B73] to-[#249B73] w-[150px] text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-md cursor-pointer transition-all duration-200 hover:shadow-lg transform hover:scale-105 ${
+                isOpen ? "bg-gradient-to-r from-[#249B73] to-[#249B73]" : ""
               } ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
             >
               {loading ? (
@@ -306,7 +360,6 @@ export default function Navbar() {
             </button>
           </div>
 
-          {/* Search */}
           <div className="relative w-1/3 max-[670px]:hidden">
             <form onSubmit={handleSearch} className="relative w-full">
               <label htmlFor="search" className="sr-only">
@@ -314,31 +367,130 @@ export default function Navbar() {
               </label>
               <input
                 id="search"
-                ref={inputRef}
+                ref={searchInputRef}
                 type="text"
                 placeholder="Mahsulotlarni izlash"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="border border-gray-200 rounded-lg px-4 py-2 w-full outline-none transition-all bg-gray-50 pr-12 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                onFocus={() => setShowSearchDropdown(true)}
+                className="border border-gray-200 rounded-lg px-4 py-3 w-full outline-none transition-all bg-white pr-12 focus:ring-2 focus:ring-[#249B73] focus:border-[#249B73] shadow-sm"
               />
               <button
-                type="button"
-                onClick={handleIconClick}
-                className="absolute inset-y-0 right-0 bg-[#0D63F5] cursor-pointer text-white px-4 rounded-r-lg transition-all hover:bg-[#0052d9]"
+                type="submit"
+                className="absolute inset-y-0 right-0 bg-[#249B73] hover:bg-[#249B73] cursor-pointer text-white px-4 rounded-r-lg transition-all duration-200"
               >
                 <Search size={20} />
               </button>
             </form>
+
+            {showSearchDropdown && (
+              <div
+                ref={searchDropdownRef}
+                className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-xl z-50 max-h-96 overflow-y-auto"
+              >
+                {searchQuery && searchSuggestions.length > 0 && (
+                  <div className="p-2">
+                    <div className="text-xs font-medium text-gray-500 px-3 py-2 uppercase tracking-wide">
+                      Qidiruv natijalari
+                    </div>
+                    {searchSuggestions.map((product) => (
+                      <button
+                        key={product._id}
+                        onClick={() => handleSearchSubmit(product.name)}
+                        className="w-full cursor-pointer text-left px-3 py-2 hover:bg-gray-50 rounded-md flex items-center gap-3 transition-colors"
+                      >
+                        <Search size={16} className="text-gray-400" />
+                        <span className="text-gray-700">{product.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {!searchQuery && recentSearches.length > 0 && (
+                  <div className="p-2 border-b border-gray-100">
+                    <div className="flex items-center justify-between px-3 py-2">
+                      <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                        Oxirgi qidiruvlar
+                      </span>
+                      <button
+                        onClick={clearRecentSearches}
+                        className="text-xs text-green-600 hover:text-green-700 cursor-pointer font-medium"
+                      >
+                        Tozalash
+                      </button>
+                    </div>
+                    {recentSearches.map((search, index) => (
+                      <button
+                        key={index}
+                        onClick={() => handleSearchSubmit(search)}
+                        className="w-full text-left px-3 py-2 hover:bg-gray-50 rounded-md flex items-center gap-3 transition-colors"
+                      >
+                        <svg
+                          className="w-4 h-4 text-gray-400"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                          />
+                        </svg>
+                        <span className="text-gray-700">{search}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {!searchQuery && (
+                  <div className="p-2">
+                    <div className="text-xs font-medium text-gray-500 px-3 py-2 uppercase tracking-wide">
+                      Mashhur qidiruvlar
+                    </div>
+                    {popularSearches.map((search, index) => (
+                      <button
+                        key={index}
+                        onClick={() => handleSearchSubmit(search)}
+                        className="w-full text-left px-3 py-2 cursor-pointer hover:bg-gray-50 rounded-md flex items-center gap-3 transition-colors"
+                      >
+                        <svg
+                          className="w-4 h-4 text-gray-400"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+                          />
+                        </svg>
+                        <span className="text-gray-700">{search}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {searchQuery && searchSuggestions.length === 0 && (
+                  <div className="p-4 text-center text-gray-500">
+                    <Search size={24} className="mx-auto mb-2 text-gray-300" />
+                    <p className="text-sm">Hech narsa topilmadi</p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
-          {/* User Actions */}
           <div className="hidden md:flex items-center gap-4">
             <button
               onClick={() => setOpen(true)}
               className="relative flex flex-col items-center cursor-pointer group"
             >
               <div className="w-10 h-10 flex items-center justify-center bg-[#ECF4FF] rounded-md group-hover:bg-[#dbeafe] transition-colors relative">
-                <Bell size={20} className="text-[#1862D9]" />
+                <Bell size={20} className="text-[#249B73]" />
                 {unreadCount > 0 && (
                   <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center animate-pulse">
                     {unreadCount}
@@ -355,7 +507,7 @@ export default function Navbar() {
               className="flex flex-col items-center cursor-pointer relative group"
             >
               <div className="w-10 h-10 flex items-center justify-center bg-[#ECF4FF] rounded-md relative group-hover:bg-[#dbeafe] transition-colors">
-                <Heart size={20} className="text-[#1862D9]" />
+                <Heart size={20} className="text-[#249B73]" />
                 {likes.length > 0 && (
                   <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center animate-pulse">
                     {likes.length}
@@ -370,7 +522,7 @@ export default function Navbar() {
               className="flex flex-col items-center cursor-pointer relative group"
             >
               <div className="w-10 h-10 flex items-center justify-center bg-[#ECF4FF] rounded-md relative group-hover:bg-[#dbeafe] transition-colors">
-                <ShoppingCart size={20} className="text-[#1862D9]" />
+                <ShoppingCart size={20} className="text-[#249B73]" />
                 {cart.length > 0 && (
                   <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center animate-pulse">
                     {cart.length}
@@ -384,7 +536,7 @@ export default function Navbar() {
               <Link href="/profile">
                 <button className="flex flex-col items-center cursor-pointer group">
                   <div className="w-10 h-10 flex items-center justify-center bg-[#ECF4FF] rounded-md group-hover:bg-[#dbeafe] transition-colors">
-                    <User className="w-6 h-6 text-[#1862D9]" />
+                    <User className="w-6 h-6 text-[#249B73]" />
                   </div>
                   <span className="text-xs text-gray-600 pt-1">Profil</span>
                 </button>
@@ -399,7 +551,6 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Mobile Search */}
         <div className="relative w-full mt-4 hidden max-[670px]:block max-w-[1240px] mx-auto">
           <form onSubmit={handleSearch} className="relative w-full">
             <label htmlFor="mobile-search" className="sr-only">
@@ -411,12 +562,12 @@ export default function Navbar() {
               placeholder="Mahsulotlarni izlash"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="border border-gray-200 rounded-lg px-4 py-2 w-full outline-none transition-all bg-gray-50 pr-12 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="border border-gray-200 rounded-lg px-4 py-2 w-full outline-none transition-all bg-gray-50 pr-12 focus:ring-2 focus:ring-green-500 focus:border-transparent"
             />
             <button
               type="button"
               onClick={handleIconClick}
-              className="absolute inset-y-0 right-0 bg-[#0D63F5] cursor-pointer text-white px-4 rounded-r-lg transition-all hover:bg-[#0052d9]"
+              className="absolute inset-y-0 right-0 bg-[#249B73] cursor-pointer text-white px-4 rounded-r-lg transition-all hover:bg-[#249B73]"
             >
               <Search size={20} />
             </button>
@@ -426,7 +577,6 @@ export default function Navbar() {
         {!isOpen && <CategoryList onMoreClick={toggleDropdown} />}
       </header>
 
-      {/* Category Dropdown */}
       <div
         className={`catalog-dropdown fixed top-[120px] left-0 right-0 z-40 transition-all duration-300 ${
           isOpen
@@ -436,12 +586,12 @@ export default function Navbar() {
       >
         <div className="bg-white max-w-full h-auto">
           <div className="max-w-[1250px] mx-auto border border-gray-100 overflow-hidden">
-            <div className="flex h-[85vh]">
+            <div className="flex h-[88vh]">
               <div className="w-[280px] bg-gradient-to-b from-gray-50 to-white border-r border-gray-100">
                 <div className="py-4 px-2 space-y-1 h-full overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300">
                   {loading ? (
                     <div className="flex items-center justify-center h-full">
-                      <Loader2 className="animate-spin w-8 h-8 text-blue-500" />
+                      <Loader2 className="animate-spin w-8 h-8 text-green-500" />
                     </div>
                   ) : categories.length === 0 ? (
                     <div className="flex items-center justify-center h-full text-gray-500">
@@ -458,7 +608,7 @@ export default function Navbar() {
                           onClick={() => handleCategoryClick(category)}
                           className={`py-3 px-4 rounded-lg cursor-pointer transition-all duration-200 text-sm font-medium relative group ${
                             isSelected
-                              ? "bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 shadow-sm border-l-4 border-blue-500"
+                              ? "bg-gradient-to-r from-green-50 to-green-100 text-green-700 shadow-sm border-l-4 border-green-500"
                               : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                           }`}
                         >
@@ -468,18 +618,33 @@ export default function Navbar() {
                                 <img
                                   src={imageUrl}
                                   alt={getCategoryName(category)}
-                                  className="w-4 h-4 mr-2 object-contain"
+                                  className="w-6 h-6 mr-2 object-contain"
                                   onError={(e) => {
-                                    // Fallback to a default icon if image fails to load
+                                    console.error(
+                                      "Image load error for category:",
+                                      category.name,
+                                      imageUrl
+                                    );
                                     e.target.style.display = "none";
-                                    e.target.nextElementSibling.style.display =
-                                      "inline-block";
+                                    const iconElement =
+                                      e.target.parentElement.querySelector(
+                                        ".fallback-icon"
+                                      );
+                                    if (iconElement) {
+                                      iconElement.style.display =
+                                        "inline-block";
+                                    }
+                                  }}
+                                  onLoad={(e) => {
+                                    console.log(
+                                      "Image loaded successfully:",
+                                      imageUrl
+                                    );
                                   }}
                                 />
                               ) : null}
-                              {/* Fallback icon - only show if image fails or doesn't exist */}
                               <ShoppingBagIcon
-                                className="w-4 h-4 mr-2"
+                                className="w-4 h-4 mr-2 fallback-icon"
                                 style={{
                                   display: imageUrl ? "none" : "inline-block",
                                 }}
@@ -490,7 +655,7 @@ export default function Navbar() {
                             </div>
                             <svg
                               className={`w-4 h-4 transition-transform duration-200 ${
-                                isSelected ? "text-blue-500" : "text-gray-400"
+                                isSelected ? "text-green-500" : "text-gray-400"
                               }`}
                               fill="none"
                               stroke="currentColor"
@@ -520,7 +685,7 @@ export default function Navbar() {
 
                 {subCategoriesLoading ? (
                   <div className="flex items-center justify-center h-64">
-                    <Loader2 className="animate-spin w-8 h-8 text-blue-500" />
+                    <Loader2 className="animate-spin w-8 h-8 text-green-500" />
                   </div>
                 ) : subCategories.length === 0 ? (
                   <div className="flex items-center justify-center h-64 text-gray-500">
@@ -545,17 +710,13 @@ export default function Navbar() {
                       return (
                         <div
                           key={subCategory._id || idx}
-                          className="p-4 bg-white rounded-xl  hover:border-blue-400 
-             hover:shadow-xl transition-all duration-300 cursor-pointer group transform hover:-translate-y-1"
+                          className="p-4 bg-white rounded-xl  hover:border-green-400  transition-all duration-300 cursor-pointer group "
                         >
                           <a
                             href={`/category/${selectedCategory._id}/subcategory/${subCategory._id}`}
                             className="block"
                           >
-                            <h3
-                              className="font-semibold text-gray-800 group-hover:text-blue-600 
-                   transition-colors duration-300 leading-relaxed"
-                            >
+                            <h3 className="font-medium text-gray-800 group-hover:text-green-600 transition-colors duration-300 leading-relaxed">
                               {getSubCategoryName(subCategory)}
                             </h3>
                           </a>
@@ -574,28 +735,28 @@ export default function Navbar() {
           onClick={() => router.push("/")}
           className="flex flex-col items-center text-gray-600"
         >
-          <HomeIcon size={20} className="text-[#1862D9]" />
+          <HomeIcon size={20} className="text-[#249B73]" />
           <span className="text-xs">Bosh sahifa</span>
         </button>
         <button
           onClick={() => setOpen(true)}
           className="flex flex-col items-center text-gray-600"
         >
-          <Bell size={20} className="text-[#1862D9]" />
+          <Bell size={20} className="text-[#249B73]" />
           <span className="text-xs">Aloqa</span>
         </button>
         <button
           onClick={() => router.push("/wishes")}
           className="flex flex-col items-center text-gray-600"
         >
-          <Heart size={20} className="text-[#1862D9]" />
+          <Heart size={20} className="text-[#249B73]" />
           <span className="text-xs">Tanlangan</span>
         </button>
         <button
           onClick={() => router.push("/cart")}
           className="flex flex-col items-center text-gray-600"
         >
-          <ShoppingCart size={20} className="text-[#1862D9]" />
+          <ShoppingCart size={20} className="text-[#249B73]" />
           <span className="text-xs">Savat</span>
         </button>
         {isAuthenticated ? (
@@ -603,7 +764,7 @@ export default function Navbar() {
             onClick={() => router.push("/profile")}
             className="flex flex-col items-center text-gray-600"
           >
-            <User size={20} className="text-[#1862D9]" />
+            <User size={20} className="text-[#249B73]" />
             <span className="text-xs">Profil</span>
           </button>
         ) : (
@@ -611,7 +772,7 @@ export default function Navbar() {
             onClick={() => router.push("/register")}
             className="flex flex-col items-center text-gray-600"
           >
-            <User size={20} className="text-[#1862D9]" />
+            <User size={20} className="text-[#249B73]" />
             <span className="text-xs">Kirish</span>
           </button>
         )}

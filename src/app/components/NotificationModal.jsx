@@ -1,16 +1,36 @@
 "use client";
+import { useEffect } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { BookOpenCheck, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNotificationsStore } from "../store/useNotificationsStore";
+import $api from "../http/api";
 
 export default function NotificationModal({ open, setOpen }) {
-  const { notifications, markAsRead, markAllAsRead, deleteNotification } =
-    useNotificationsStore();
+  const {
+    notifications,
+    setNotifications,
+    markAsRead,
+    markAllAsRead,
+    deleteNotification,
+  } = useNotificationsStore();
+
+  useEffect(() => {
+    if (open) {
+      $api
+        .get("/notifications/my")
+        .then((res) => {
+          setNotifications(res.data);
+        })
+        .catch((err) => {
+          console.error("Bildirishnomalarni olishda xatolik:", err.message);
+        });
+    }
+  }, [open, setNotifications]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="top-70 left-235 p-0">
+      <DialogContent className="top-40 left-252 p-0">
         <div className="flex items-center gap-40 px-4 py-2 border-b">
           <DialogTitle className="text-lg font-semibold">
             Bildirishnomalar
@@ -18,7 +38,7 @@ export default function NotificationModal({ open, setOpen }) {
           <Button
             variant="link"
             onClick={markAllAsRead}
-            className="flex items-center gap-1 text-sm text-[#1862D9] hover:underline cursor-pointer"
+            className="flex items-center gap-1 text-sm text-[#249B73] hover:underline cursor-pointer"
           >
             <BookOpenCheck size={18} />
             <span>Barchasini o‘qish</span>
@@ -35,7 +55,7 @@ export default function NotificationModal({ open, setOpen }) {
                 className={`p-3 rounded border ${
                   item.read
                     ? "border-gray-200 bg-gray-50"
-                    : "border-blue-200 bg-blue-50"
+                    : "border-green-200 bg-green-50"
                 } hover:bg-[#EFF6FF] transition`}
               >
                 <div className="flex justify-between items-start">
@@ -49,7 +69,7 @@ export default function NotificationModal({ open, setOpen }) {
                         {item.title}
                       </h3>
                       {!item.read && (
-                        <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                        <span className="w-2 h-2 bg-green-500 rounded-full"></span>
                       )}
                     </div>
                     <p
@@ -72,9 +92,9 @@ export default function NotificationModal({ open, setOpen }) {
                       <Button
                         variant="link"
                         onClick={() => markAsRead(item.id)}
-                        className="text-blue-600 hover:text-blue-800 text-xs cursor-pointer"
+                        className="text-green-600 hover:text-green-800 text-xs cursor-pointer"
                       >
-                        O'qish
+                        O‘qish
                       </Button>
                     )}
                     <Button

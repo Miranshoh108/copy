@@ -33,7 +33,7 @@ export default function HeroBanner() {
   };
 
   return (
-    <section className="text-center relative mt-10">
+    <section className="text-center relative mt-10 mb-6">
       <div className="relative max-w-[1240px] max-[750px]:max-w-[95%] max-[1400px]:max-w-[80%] mx-auto">
         <button
           onClick={() => sliderRef.current?.slickPrev()}
@@ -98,12 +98,12 @@ export default function HeroBanner() {
           bottom: -30px !important;
         }
         .slick-dots li button:before {
-          color: blue;
+          color: green;
           opacity: 0.3;
         }
         .slick-dots li.slick-active button:before {
           opacity: 1;
-          color: darkblue;
+          color: #249B73;
         }
       `}</style>
     </section>

@@ -21,7 +21,7 @@ export default function PriceTag({ price, oldPrice, installmentPrice, loanPrice 
       )}
       
       {loanPrice && (
-        <div className="text-blue-600 font-medium">
+        <div className="text-green-600 font-medium">
           {loanPrice.toLocaleString()} so'mga kredit
         </div>
       )}
