@@ -13,7 +13,7 @@ import NewProducts from "../components/NewProducts";
 export default function Wishes() {
   const { likes, syncLikesWithBackend } = useHomeLikes();
   const token =
-    typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
 
   useEffect(() => {
     if (token) {

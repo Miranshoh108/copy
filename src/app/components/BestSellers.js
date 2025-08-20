@@ -10,6 +10,8 @@ import { ChevronLeft, ChevronRight, MoveRight } from "lucide-react";
 import Link from "next/link";
 import $api from "../http/api";
 import Image from "next/image";
+import { useTranslation } from "react-i18next";
+import i18next from "../../i18n/i18n";
 
 const Slider = dynamic(() => import("react-slick"), {
   ssr: false,
@@ -70,11 +72,17 @@ const PrevArrow = (props) => {
 };
 
 export default function BestSellers() {
+  const { t } = useTranslation();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [sliderWidth, setSliderWidth] = useState(6);
+  const [mounted, setMounted] = useState(false);
   const sliderRef = useRef(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -100,10 +108,36 @@ export default function BestSellers() {
               imageUrl = `${process.env.NEXT_PUBLIC_API_URL}/${cleanPath}`;
             }
 
+            // Get localized product name
+            const getLocalizedName = () => {
+              switch (i18next.language) {
+                case "ru":
+                  return item.name_ru || item.name;
+                case "en":
+                  return item.name_en || item.name;
+                default:
+                  return item.name;
+              }
+            };
+
+            // Get localized description
+            const getLocalizedDescription = () => {
+              switch (i18next.language) {
+                case "ru":
+                  return item.description_ru || item.description;
+                case "en":
+                  return item.description_en || item.description;
+                default:
+                  return item.description;
+              }
+            };
+
             return {
               id: item._id,
-              name: item.name || "Noma'lum mahsulot",
-              description: item.description || "",
+              name: getLocalizedName(),
+              name_ru: item.name_ru,
+              name_en: item.name_en,
+              description: getLocalizedDescription(),
               price: variant.price || 0,
               discount: variant.discount || 0,
               discountedPrice: variant.discountedPrice || variant.price || 0,
@@ -116,18 +150,18 @@ export default function BestSellers() {
 
           setProducts(mappedProducts);
         } else {
-          throw new Error("Ma'lumotlar formatida xatolik");
+          throw new Error(t("bestsellers.data_format_error"));
         }
       } catch (error) {
         console.error("Mahsulotlarni yuklashda xatolik:", error);
-        setError(error.message || "Ma'lumotlarni yuklashda xatolik yuz berdi");
+        setError(error.message || t("bestsellers.loading_error"));
       } finally {
         setLoading(false);
       }
     };
 
     fetchProducts();
-  }, []);
+  }, [i18next.language, t]); // Add language dependency to refetch when language changes
 
   const sliderSettings = {
     dots: false,
@@ -171,17 +205,19 @@ export default function BestSellers() {
       <section className="py-4">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-800">Xit savdo</h2>
+            <h2 className="text-2xl font-bold text-gray-800">
+              {mounted ? t("bestsellers.title") : ""}
+            </h2>
           </div>
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
             <p className="text-red-600">
-              Mahsulotlarni yuklashda xatolik: {error}
+              {mounted ? t("bestsellers.error_message") : ""}: {error}
             </p>
             <button
               onClick={() => window.location.reload()}
               className="mt-2 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 cursor-pointer"
             >
-              Qaytadan urinish
+              {mounted ? t("bestsellers.retry_button") : ""}
             </button>
           </div>
         </div>
@@ -193,7 +229,9 @@ export default function BestSellers() {
     <section className="py-4">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-bold text-gray-800">Xit savdo</h2>
+          <h2 className="text-2xl font-bold text-gray-800">
+            {mounted ? t("bestsellers.title") : ""}
+          </h2>
         </div>
 
         {loading ? (
@@ -204,7 +242,7 @@ export default function BestSellers() {
           </div>
         ) : products.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
-            Hozircha mahsulotlar mavjud emas
+            {mounted ? t("bestsellers.no_products") : ""}
           </div>
         ) : products.length <= 6 ? (
           <div className="flex gap-4 overflow-x-auto">

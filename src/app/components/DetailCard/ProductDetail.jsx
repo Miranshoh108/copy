@@ -18,8 +18,10 @@ import useProductStore from "../../store/productStore";
 import { useRouter } from "next/navigation";
 import { useCartStore } from "../hooks/cart";
 import { useHomeLikes } from "../hooks/likes";
+import { useTranslation } from "react-i18next";
 
 export default function ProductDetail() {
+  const { t } = useTranslation();
   const currentProduct = useProductStore((state) => state.currentProduct);
   const [activeIndex, setActiveIndex] = useState(0);
   const [thumbStartIndex, setThumbStartIndex] = useState(0);
@@ -302,15 +304,23 @@ export default function ProductDetail() {
 
   const getAvailabilityStatus = () => {
     if (stockQuantity === 0) {
-      return { text: "Tugagan", color: "text-red-600", bg: "bg-red-100" };
+      return {
+        text: t("product.out_of_stock"),
+        color: "text-red-600",
+        bg: "bg-red-100",
+      };
     } else if (stockQuantity < 5) {
       return {
-        text: "Oz miqdorda",
+        text: t("product.low_stock"),
         color: "text-orange-600",
         bg: "bg-orange-100",
       };
     } else {
-      return { text: "Mavjud", color: "text-green-600", bg: "bg-green-100" };
+      return {
+        text: t("product.available"),
+        color: "text-green-600",
+        bg: "bg-green-100",
+      };
     }
   };
 
@@ -334,7 +344,7 @@ export default function ProductDetail() {
         {/* Breadcrumb */}
         <div className="flex flex-wrap gap-2 text-[#A0A0A0] mb-6 text-sm md:text-base">
           <span className="cursor-pointer hover:text-[#249B73]">
-            Mahsulotlar
+            {t("product.products")}
           </span>
           <span>/</span>
           <span className="text-[#1E1E1E] font-medium line-clamp-1">
@@ -449,7 +459,6 @@ export default function ProductDetail() {
                 </button>
               </div>
             )}
-
           </div>
 
           <div className="w-full lg:w-1/2">
@@ -471,7 +480,7 @@ export default function ProductDetail() {
               <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mb-4">
                 <button className="text-[#249B73] cursor-pointer text-sm hover:underline flex items-center gap-1">
                   <MessageCircle size={14} />
-                  Sharh yozish
+                  {t("product.write_review")}
                 </button>
               </div>
             </div>
@@ -479,7 +488,7 @@ export default function ProductDetail() {
             {variants.length > 1 && (
               <div className="mb-6">
                 <p className="text-[#1E1E1E] text-lg font-medium mb-3">
-                  Ranglari
+                  {t("product.colors")}
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {variants.map((variant, index) => (
@@ -517,7 +526,7 @@ export default function ProductDetail() {
               </div>
               {discount > 0 && (
                 <p className="text-green-600 font-medium">
-                  {discount}% chegirma bilan
+                  {t("product.with_discount", { discount })}
                 </p>
               )}
             </div>
@@ -525,7 +534,9 @@ export default function ProductDetail() {
             <div className="mb-8">
               <div className="flex items-center gap-4 mb-6">
                 <div className="flex items-center">
-                  <span className="text-lg font-medium mr-3">Miqdor:</span>
+                  <span className="text-lg font-medium mr-3">
+                    {t("product.quantity")}:
+                  </span>
                   <div className="flex items-center border border-gray-300 rounded-lg">
                     <button
                       onClick={() => handleQuantityChange("decrease")}
@@ -547,7 +558,8 @@ export default function ProductDetail() {
                   </div>
                 </div>
                 <span className="text-sm text-gray-500">
-                  Mavjud: {stockQuantity} {unit || "dona"}
+                  {t("product.in_stock")}: {stockQuantity}{" "}
+                  {unit || t("product.piece")}
                 </span>
               </div>
               <div className="flex flex-col sm:flex-row gap-4">
@@ -562,7 +574,7 @@ export default function ProductDetail() {
                   )}
                 >
                   <Plus size={18} />
-                  Savatga qo'shish
+                  {t("product.add_to_cart")}
                 </button>
                 <button
                   onClick={handleBuyNow}
@@ -574,14 +586,16 @@ export default function ProductDetail() {
                       : "bg-[#249B73] text-white hover:bg-[#249B73]"
                   )}
                 >
-                  Sotib olish
+                  {t("product.buy_now")}
                 </button>
               </div>
             </div>
 
             {description && (
               <div className="mb-6 bg-white p-4 rounded-lg border">
-                <h3 className="text-lg font-semibold mb-3">Ta'rif</h3>
+                <h3 className="text-lg font-semibold mb-3">
+                  {t("product.description")}
+                </h3>
                 <p className="text-gray-700 whitespace-pre-wrap">
                   {description}
                 </p>
@@ -591,27 +605,31 @@ export default function ProductDetail() {
             <div className="mt-4">
               <div className="bg-gray-50 p-4 rounded-lg">
                 <h3 className="text-lg font-semibold mb-3">
-                  Mahsulot haqida ma'lumot
+                  {t("product.details")}
                 </h3>
                 <div className="space-y-2 text-sm text-gray-600">
                   {color && (
                     <p>
-                      <span className="font-medium">Rang:</span> {color}
+                      <span className="font-medium">{t("product.color")}:</span>{" "}
+                      {color}
                     </p>
                   )}
                   {unit && (
                     <p>
-                      <span className="font-medium">O'lchov birligi:</span>{" "}
+                      <span className="font-medium">{t("product.unit")}:</span>{" "}
                       {unit}
                     </p>
                   )}
                   <p>
-                    <span className="font-medium">Omborda:</span>{" "}
-                    {stockQuantity} {unit || "dona"}
+                    <span className="font-medium">{t("product.stock")}:</span>{" "}
+                    {stockQuantity} {unit || t("product.piece")}
                   </p>
                   {discount > 0 && (
                     <p>
-                      <span className="font-medium">Chegirma:</span> {discount}%
+                      <span className="font-medium">
+                        {t("product.discount")}:
+                      </span>{" "}
+                      {t("product.with_discount", { discount })}
                     </p>
                   )}
 

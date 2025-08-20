@@ -1,0 +1,116 @@
+{
+  "navbar": {
+    "location": "Toshkent",
+    "contact": "Aloqa uchun",
+    "catalog": "KATALOG",
+    "search_placeholder": "Mahsulotlarni izlash",
+    "brand_name": "BOJXONA",
+    "brand_service": "SERVIS",
+    "download": "YUKLAB OLISH",
+    "notifications": "Bildirishnoma",
+    "wishlist": "Tanlanganlar",
+    "cart": "Savat",
+    "profile": "Profil",
+    "login": "KIRISH",
+    "search_results": "Qidiruv natijalari",
+    "recent_searches": "Oxirgi qidiruvlar",
+    "clear_searches": "Tozalash",
+    "popular_searches": "Mashhur qidiruvlar",
+    "no_results": "Hech narsa topilmadi",
+    "no_categories": "Kategoriyalar topilmadi",
+    "no_subcategories": "Bu kategoriyada hozircha mahsulotlar yo'q",
+    "select_category": "Kategoriya tanlang",
+    "home": "Bosh sahifa"
+  },
+  "home": {
+    "title": "BS Market - O'zbekistondagi Eng Yaxshi Onlayn Do'kon",
+    "description": "BS Market - O'zbekistondagi eng yaxshi onlayn do'kon. Elektronika, kiyim, uy-ro'zg'or buyumlari va boshqa mahsulotlarni arzon narxlarda xarid qiling. Tez yetkazib berish va sifatli xizmat.",
+    "keywords": "onlayn do'kon, BS Market, elektronika, kiyim, uy-ro'zg'or, O'zbekiston, xarid, arzon narx, tez yetkazib berish"
+  },
+  "discounted_products": {
+    "title": "Chegirmali mahsulotlar",
+    "no_products": "Hozirda chegirmali mahsulotlar mavjud emas",
+    "error_loading": "Chegirmali mahsulotlarni yuklashda xatolik yuz berdi",
+    "error_message": "Chegirmali mahsulotlarni yuklashda xatolik",
+    "retry_button": "Qaytadan urinish"
+  },
+  "product_card": {
+    "reviews": "ta sharh",
+    "loading": "Yuklanmoqda...",
+    "add_to_cart": "Savatga qo'shish",
+    "add_to_cart_tooltip": "Savatga qo'shish",
+    "decrease_tooltip": "Kamaytirish",
+    "increase_tooltip": "Qo'shish"
+  },
+  "bestsellers": {
+    "title": "Xit savdo",
+    "no_products": "Hozircha mahsulotlar mavjud emas",
+    "data_format_error": "Ma'lumotlar formatida xatolik",
+    "loading_error": "Ma'lumotlarni yuklashda xatolik yuz berdi",
+    "error_message": "Mahsulotlarni yuklashda xatolik",
+    "retry_button": "Qaytadan urinish"
+  },
+  "services": {
+    "title": "Hujjatlar servisi",
+    "catalog": "Mahsulotlar katalogi",
+    "transport": "Avbarot xizmati",
+    "terms": "Umumiy shartlar",
+    "stores": "Do'konlar"
+  },
+  "about": {
+    "title": "Biz haqimizda",
+    "archive": "Ofertalar arxivi",
+    "regulations": "Nizom",
+    "certificate": "Guvohnoma",
+    "promocodes": "Promokodlar"
+  },
+  "catalogs": {
+    "title": "Kataloglar",
+    "electronics": "Elektronika katalogi",
+    "clothes": "Kiyim-kechak katalogi",
+    "home": "Uy jihozlari katalogi",
+    "all": "Barcha kataloglar"
+  },
+  "contact": {
+    "title": "Aloqa ma'lumotlari",
+    "telegram": "Telegram support bot",
+    "country": "O'zbekiston",
+    "city": "Toshkent shahar"
+  },
+  "newsletter": {
+    "title": "Yangiliklar uchun obuna bo'ling",
+    "subtitle": "Eng so'nggi takliflar va yangiliklar haqida bilib oling",
+    "placeholder": "Email manzilingiz...",
+    "button": "Obuna bo'lish",
+    "socail_media": "Ijtimoiy tarmoqlarda biz bilan bog'laning"
+  },
+  "rights": "Barcha huquqlar himoyalangan",
+  "policies": {
+    "privacy": "Maxfiylik siyosati",
+    "terms": "Foydalanish shartlari",
+    "cookies": "Cookie siyosati"
+  },
+  "product": {
+    "products": "Mahsulotlar",
+    "write_review": "Sharh yozish",
+    "colors": "Ranglari",
+    "quantity": "Miqdor",
+    "in_stock": "Mavjud",
+    "piece": "dona",
+    "add_to_cart": "Savatga qo'shish",
+    "buy_now": "Sotib olish",
+    "description": "Ta'rif",
+    "details": "Mahsulot haqida ma'lumot",
+    "color": "Rang",
+    "unit": "O'lchov birligi",
+    "available": "Mavjud",
+    "low_stock": "Oz miqdorda",
+    "out_of_stock": "Tugagan",
+    "with_discount": "{{discount}}% chegirma bilan"
+  },
+  "categories": {
+    "loading": "Yuklanmoqda...",
+    "notFound": "Kategoriyalar topilmadi",
+    "more": "Yana"
+  }
+}

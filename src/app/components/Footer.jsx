@@ -1,6 +1,15 @@
+"use client";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 const Footer = () => {
+  const { t } = useTranslation();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => setMounted(true), []);
+
+  if (!mounted) return null;
   return (
     <footer className="bg-white border-t border-gray-200 mt-16">
       <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
@@ -9,39 +18,27 @@ const Footer = () => {
           {/* Column 1 - Services */}
           <div>
             <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">
-              Hujjatlar Servisi
+              {t("services.title")}
             </h3>
             <ul className="space-y-2 sm:space-y-3">
               <li>
-                <Link
-                  href="/catalog"
-                  className="text-gray-600 hover:text-[#249B73] transition-colors duration-200 text-sm inline-block"
-                >
-                  Mahsulotlar katalogi
+                <Link href="/catalog" className="footer-link">
+                  {t("services.catalog")}
                 </Link>
               </li>
               <li>
-                <Link
-                  href="/transport"
-                  className="text-gray-600 hover:text-[#249B73] transition-colors duration-200 text-sm inline-block"
-                >
-                  Avbarot xizmati
+                <Link href="/transport" className="footer-link">
+                  {t("services.transport")}
                 </Link>
               </li>
               <li>
-                <Link
-                  href="/terms"
-                  className="text-gray-600 hover:text-[#249B73] transition-colors duration-200 text-sm inline-block"
-                >
-                  Umumiy shartlar
+                <Link href="/terms" className="footer-link">
+                  {t("services.terms")}
                 </Link>
               </li>
               <li>
-                <Link
-                  href="/stores"
-                  className="text-gray-600 hover:text-[#249B73] transition-colors duration-200 text-sm inline-block"
-                >
-                  Do'konlar
+                <Link href="/stores" className="footer-link">
+                  {t("services.stores")}
                 </Link>
               </li>
             </ul>
@@ -50,87 +47,65 @@ const Footer = () => {
           {/* Column 2 - About Us */}
           <div>
             <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">
-              Biz haqimizda
+              {t("about.title")}
             </h3>
             <ul className="space-y-2 sm:space-y-3">
               <li>
-                <Link
-                  href="/archive"
-                  className="text-gray-600 hover:text-[#249B73] transition-colors duration-200 text-sm inline-block"
-                >
-                  Ofertalar arxivi
+                <Link href="/archive" className="footer-link">
+                  {t("about.archive")}
                 </Link>
               </li>
               <li>
-                <Link
-                  href="/regulations"
-                  className="text-gray-600 hover:text-[#249B73] transition-colors duration-200 text-sm inline-block"
-                >
-                  Nizom
+                <Link href="/regulations" className="footer-link">
+                  {t("about.regulations")}
                 </Link>
               </li>
               <li>
-                <Link
-                  href="/certificate"
-                  className="text-gray-600 hover:text-[#249B73] transition-colors duration-200 text-sm inline-block"
-                >
-                  Guvohnoma
+                <Link href="/certificate" className="footer-link">
+                  {t("about.certificate")}
                 </Link>
               </li>
               <li>
-                <Link
-                  href="/promocodes"
-                  className="text-gray-600 hover:text-[#249B73] transition-colors duration-200 text-sm inline-block"
-                >
-                  Promokodlar
+                <Link href="/promocodes" className="footer-link">
+                  {t("about.promocodes")}
                 </Link>
               </li>
             </ul>
           </div>
 
+          {/* Column 3 - Catalogs */}
           <div>
             <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">
-              Kataloglar
+              {t("catalogs.title")}
             </h3>
             <ul className="space-y-2 sm:space-y-3">
               <li>
-                <Link
-                  href="/catalog-1"
-                  className="text-gray-600 hover:text-[#249B73] transition-colors duration-200 text-sm inline-block"
-                >
-                  Elektronika katalogi
+                <Link href="/catalog-1" className="footer-link">
+                  {t("catalogs.electronics")}
                 </Link>
               </li>
               <li>
-                <Link
-                  href="/catalog-2"
-                  className="text-gray-600 hover:text-[#249B73] transition-colors duration-200 text-sm inline-block"
-                >
-                  Kiyim-kechak katalogi
+                <Link href="/catalog-2" className="footer-link">
+                  {t("catalogs.clothes")}
                 </Link>
               </li>
               <li>
-                <Link
-                  href="/catalog-3"
-                  className="text-gray-600 hover:text-[#249B73] transition-colors duration-200 text-sm inline-block"
-                >
-                  Uy jihozlari katalogi
+                <Link href="/catalog-3" className="footer-link">
+                  {t("catalogs.home")}
                 </Link>
               </li>
               <li>
-                <Link
-                  href="/all-catalogs"
-                  className="text-gray-600 hover:text-[#249B73] transition-colors duration-200 text-sm inline-block"
-                >
-                  Barcha kataloglar
+                <Link href="/all-catalogs" className="footer-link">
+                  {t("catalogs.all")}
                 </Link>
               </li>
             </ul>
           </div>
 
+          {/* Column 4 - Contact Info */}
           <div className="sm:col-span-2 lg:col-span-1">
             <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">
-              Aloqa ma'lumotlari
+              {t("contact.title")}
             </h3>
             <div className="space-y-3 sm:space-y-4">
               <div className="flex items-center space-x-3">
@@ -170,9 +145,10 @@ const Footer = () => {
                   href="https://t.me/BsMarket_support_bot"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-gray-600 hover:text-[#249B73] transition-colors text-sm"
+                  className="footer-link"
                 >
-                  Telegram support bot
+                  {" "}
+                  {t("contact.telegram")}{" "}
                 </a>
               </div>
 
@@ -199,39 +175,14 @@ const Footer = () => {
                   </svg>
                 </div>
                 <address className="not-italic text-gray-600 text-sm leading-relaxed">
-                  O'zbekiston
+                  {t("contact.country")}
                   <br />
-                  Toshkent shahar
+                  {t("contact.city")}
                 </address>
               </div>
             </div>
           </div>
         </div>
-
-        <div className="mt-8 sm:mt-12 pt-6 sm:pt-8 border-t border-gray-200">
-          <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center space-y-4 lg:space-y-0">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-2 sm:space-y-0">
-              <h4 className="text-base sm:text-lg font-semibold text-gray-900">
-                Yangiliklar uchun obuna bo'ling
-              </h4>
-              <p className="text-gray-600 text-sm">
-                Eng so'nggi takliflar va yangiliklar haqida bilib oling
-              </p>
-            </div>
-
-            <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
-              <input
-                type="email"
-                placeholder="Email manzilingiz..."
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#249B73] focus:border-transparent bg-white text-sm w-full sm:w-64"
-              />
-              <button className="px-6 py-2 bg-[#249B73] text-white cursor-pointer rounded-lg hover:bg-[#2cc592] transition-colors duration-200 font-medium text-sm whitespace-nowrap">
-                Obuna bo'lish
-              </button>
-            </div>
-          </div>
-        </div>
-
         <div className="mt-6 sm:mt-8 pt-6 border-t border-gray-200">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-4 sm:space-y-0">
             <div className="flex space-x-3 sm:space-x-4 justify-center sm:justify-start">
@@ -239,6 +190,8 @@ const Footer = () => {
                 href="https://www.youtube.com/@bsmarketuz"
                 className="w-10 h-10 bg-[#ECF4FF] rounded-md flex items-center justify-center hover:bg-[#dbeafe] transition-colors duration-200 group"
                 aria-label="YouTube"
+                target="_blank"
+                rel="noopener noreferrer"
               >
                 <svg
                   className="w-5 h-5 text-[#249B73] group-hover:scale-110 transition-transform"
@@ -252,6 +205,8 @@ const Footer = () => {
                 href="https://www.facebook.com/profile.php?id=61579159990235"
                 className="w-10 h-10 bg-[#ECF4FF] rounded-md flex items-center justify-center hover:bg-[#dbeafe] transition-colors duration-200 group"
                 aria-label="Facebook"
+                target="_blank"
+                rel="noopener noreferrer"
               >
                 <svg
                   className="w-5 h-5 text-[#249B73] group-hover:scale-110 transition-transform"
@@ -291,45 +246,74 @@ const Footer = () => {
                   <circle cx="17.338" cy="6.691" r="1.188" />
                 </svg>
               </a>
+              <a
+                href="https://t.me/bsmarket_uz"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-10 h-10 bg-[#ECF4FF] rounded-md flex items-center justify-center hover:bg-[#dbeafe] transition-colors duration-200 group"
+                aria-label="Telegram"
+              >
+                <svg
+                  className="w-5 h-5 text-[#249B73] group-hover:scale-110 transition-transform"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M22 2L2 11l5.5 2 2.5 7 3.5-3 5 4 2.5-17z" />
+                </svg>
+              </a>
             </div>
 
             <div className="text-sm text-gray-600 text-center sm:text-left">
-              Ijtimoiy tarmoqlarda biz bilan bog'laning
+              {t("newsletter.socail_media")}
             </div>
           </div>
         </div>
 
-        <div className="mt-6 sm:mt-8 pt-6 border-t border-gray-200">
+        {/* Newsletter */}
+        <div className="mt-8 sm:mt-12 pt-6 sm:pt-8 border-t border-gray-200">
           <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center space-y-4 lg:space-y-0">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2 space-y-2 sm:space-y-0 text-center sm:text-left">
+            <div>
+              <h4 className="text-base sm:text-lg font-semibold text-gray-900">
+                {t("newsletter.title")}
+              </h4>
+              <p className="text-gray-600 text-sm">
+                {t("newsletter.subtitle")}
+              </p>
+            </div>
+
+            <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
+              <input
+                type="email"
+                placeholder={t("newsletter.placeholder")}
+                className="px-4 py-2 border border-gray-300 rounded-lg text-sm w-full sm:w-64"
+              />
+              <button className="px-6 py-2 bg-[#249B73] text-white rounded-lg text-sm cursor-pointer">
+                {t("newsletter.button")}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom Bar */}
+        <div className="mt-6 sm:mt-8 pt-6 border-t border-gray-200">
+          <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center">
+            <div className="flex flex-col sm:flex-row sm:items-center">
               <div className="text-lg sm:text-xl font-bold">
                 <span className="text-gray-800">BOJXONA</span>
                 <span className="text-[#249B73] ml-1">SERVIS</span>
               </div>
-              <span className="text-gray-400 hidden sm:inline">•</span>
-              <p className="text-gray-600 text-sm">
-                © 2025 Barcha huquqlar himoyalangan
-              </p>
+              <p className="text-gray-600 text-sm ml-2">© 2025 {t("rights")}</p>
             </div>
 
-            <div className="flex flex-col sm:flex-row sm:space-x-6 space-y-2 sm:space-y-0 text-sm text-center sm:text-left">
-              <Link
-                href="/privacy"
-                className="text-gray-600 hover:text-[#249B73] transition-colors duration-200 inline-block"
-              >
-                Maxfiylik siyosati
+            <div className="flex flex-col sm:flex-row sm:space-x-6 text-sm">
+              <Link href="/privacy" className="footer-link">
+                {t("policies.privacy")}
               </Link>
-              <Link
-                href="/terms"
-                className="text-gray-600 hover:text-[#249B73] transition-colors duration-200 inline-block"
-              >
-                Foydalanish shartlari
+              <Link href="/terms" className="footer-link">
+                {t("policies.terms")}
               </Link>
-              <Link
-                href="/cookies"
-                className="text-gray-600 hover:text-[#249B73] transition-colors duration-200 inline-block"
-              >
-                Cookie siyosati
+              <Link href="/cookies" className="footer-link">
+                {t("policies.cookies")}
               </Link>
             </div>
           </div>

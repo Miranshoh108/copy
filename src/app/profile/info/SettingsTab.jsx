@@ -32,7 +32,7 @@ const SettingsTab = ({ onLogout, currentUser }) => {
   // API dan sozlamalarni olish
   const fetchUserSettings = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("accessToken");
       if (!token) return;
 
       $api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
@@ -99,7 +99,7 @@ const SettingsTab = ({ onLogout, currentUser }) => {
       setLoading(true);
       setSaveStatus(null);
 
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("accessToken");
       if (!token) {
         throw new Error("Token mavjud emas");
       }
@@ -147,7 +147,7 @@ const SettingsTab = ({ onLogout, currentUser }) => {
     if (!confirmed) return;
 
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("accessToken");
       if (!token) {
         throw new Error("Token mavjud emas");
       }

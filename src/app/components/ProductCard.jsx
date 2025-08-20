@@ -1,13 +1,16 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Heart, ShoppingCart } from "lucide-react";
 import { useHomeLikes } from "./hooks/likes";
 import { useCartStore } from "./hooks/cart";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import useProductStore from "../store/productStore";
+import { useTranslation } from "react-i18next";
+import i18next from "../../i18n/i18n";
 
 export default function ProductCard({ product }) {
+  const { t } = useTranslation();
   const router = useRouter();
   const { toggleLike, likes } = useHomeLikes();
   const [added, setAdded] = useState(false);
@@ -16,9 +19,16 @@ export default function ProductCard({ product }) {
   const [isLoading, setIsLoading] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isHovering, setIsHovering] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const {
     name,
+    name_ru,
+    name_en,
     image,
     id,
     price,
@@ -29,6 +39,30 @@ export default function ProductCard({ product }) {
 
   const cartItem = cart.find((item) => item.id === id);
   const currentQuantity = cartItem ? cartItem.quantity : 0;
+
+  // Get localized product name
+  const getLocalizedName = () => {
+    switch (i18next.language) {
+      case "ru":
+        return name_ru || name;
+      case "en":
+        return name_en || name;
+      default:
+        return name;
+    }
+  };
+
+  // Get currency text based on language
+  const getCurrencyText = () => {
+    switch (i18next.language) {
+      case "ru":
+        return "сум";
+      case "en":
+        return "sum";
+      default:
+        return "so'm";
+    }
+  };
 
   const getAllImages = () => {
     const images = [];
@@ -146,6 +180,9 @@ export default function ProductCard({ product }) {
     }
   };
 
+  const displayName = getLocalizedName();
+  const currencyText = getCurrencyText();
+
   return (
     <div
       className=" bg-white rounded-lg shadow-md flex flex-col w-[190px] relative cursor-pointer hover:shadow-lg transition-shadow h-full"
@@ -177,7 +214,7 @@ export default function ProductCard({ product }) {
       >
         <Image
           src={getCurrentImage()}
-          alt={name}
+          alt={displayName}
           className="w-full h-full object-cover transition-transform duration-300 ease-in-out group-hover:scale-105"
           fill
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -203,25 +240,27 @@ export default function ProductCard({ product }) {
         {price && discountedPrice && price !== discountedPrice ? (
           <>
             <span className="text-gray-400 line-through text-sm">
-              {price} so'm
+              {price} {currencyText}
             </span>
             <span className="text-gray-800 font-bold text-lg">
-              {discountedPrice} so'm
+              {discountedPrice} {currencyText}
             </span>
           </>
         ) : (
-          <p className="text-lg font-bold text-gray-800">{price} so'm</p>
+          <p className="text-lg font-bold text-gray-800">
+            {price} {currencyText}
+          </p>
         )}
       </div>
 
-      <h3 className="text-gray-800 font-medium px-2">{name}</h3>
+      <h3 className="text-gray-800 font-medium px-2">{displayName}</h3>
 
       <div className="p-2">
         <p className="text-gray-700 text-xs">
           {reviews_count && reviews_count > 0
             ? reviews_count
             : Math.floor(Math.random() * 6) + 1}{" "}
-          ta sharh
+          {mounted ? t("product_card.reviews") : ""}
         </p>
 
         <div className="flex items-center justify-between mt-1">
@@ -231,23 +270,25 @@ export default function ProductCard({ product }) {
               disabled
             >
               <span className="loader border-2 border-t-[#249B73] rounded-full w-4 h-4 animate-spin" />
-              Yuklanmoqda...
+              {mounted ? t("product_card.loading") : ""}
             </button>
           ) : currentQuantity === 0 ? (
             <button
               onClick={(e) => handleAddToCart(e)}
               className="w-full flex cursor-pointer items-center justify-center gap-2 border border-[#249B73] text-[#249B73] hover:bg-[#0d63f50f] transition-all duration-300 rounded-lg py-2"
-              title="Savatga qo'shish"
+              title={mounted ? t("product_card.add_to_cart_tooltip") : ""}
             >
               <ShoppingCart size={18} />
-              <span className="font-medium">Savatga qo'shish</span>
+              <span className="font-medium">
+                {mounted ? t("product_card.add_to_cart") : ""}
+              </span>
             </button>
           ) : (
             <div className="w-full flex items-center justify-between border border-[#249B73] rounded-lg px-4 py-2 bg-white shadow-sm transition-all duration-300">
               <button
                 onClick={handleDecrement}
                 className="text-xl text-[#f44336] cursor-pointer font-bold hover:scale-110 transition-transform duration-200"
-                title="Kamaytirish"
+                title={mounted ? t("product_card.decrease_tooltip") : ""}
               >
                 −
               </button>
@@ -259,7 +300,7 @@ export default function ProductCard({ product }) {
               <button
                 onClick={handleIncrement}
                 className="text-xl cursor-pointer text-[#4caf50] font-bold hover:scale-110 transition-transform duration-200"
-                title="Qo'shish"
+                title={mounted ? t("product_card.increase_tooltip") : ""}
               >
                 +
               </button>

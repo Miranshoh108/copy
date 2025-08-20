@@ -23,8 +23,10 @@ import CategoryList from "./CategoryList";
 import NotificationModal from "./NotificationModal";
 import { useNotificationsStore } from "../store/useNotificationsStore";
 import $api from "../http/api";
-
+import { useTranslation } from "react-i18next";
+import i18next from "../../i18n/i18n";
 export default function Navbar() {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [categories, setCategories] = useState([]);
@@ -43,18 +45,34 @@ export default function Navbar() {
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
   const [searchSuggestions, setSuggestions] = useState([]);
   const [recentSearches, setRecentSearches] = useState([]);
-  const [popularSearches] = useState([
-    "Telefon",
-    "Kompyuter",
-    "Kiyim",
-    "Poyafzal",
-    "Kitob",
-    "Kosmetika",
-    "Maishiy texnika",
-    "Sport tovarlari",
-  ]);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   const searchInputRef = useRef(null);
   const searchDropdownRef = useRef(null);
+
+  const handleLanguageChange = (lang) => {
+    const languageMap = {
+      UZ: "uz",
+      RU: "ru",
+      ENG: "en",
+    };
+    i18next.changeLanguage(languageMap[lang]);
+    localStorage.setItem("language", languageMap[lang]);
+  };
+
+  const [popularSearches] = useState([
+    t("navbar.popular_searches_items.phone", "Telefon"),
+    t("navbar.popular_searches_items.computer", "Kompyuter"),
+    t("navbar.popular_searches_items.clothing", "Kiyim"),
+    t("navbar.popular_searches_items.shoes", "Poyafzal"),
+    t("navbar.popular_searches_items.book", "Kitob"),
+    t("navbar.popular_searches_items.cosmetics", "Kosmetika"),
+    t("navbar.popular_searches_items.appliances", "Maishiy texnika"),
+    t("navbar.popular_searches_items.sport", "Sport tovarlari"),
+  ]);
 
   useEffect(() => {
     const saved = localStorage.getItem("recentSearches");
@@ -71,11 +89,11 @@ export default function Navbar() {
 
     try {
       const res = await $api.get("/products/get/query", {
-        params: { q: query, limit: 10 }, // API parametrlari backendga mos
+        params: { q: query, limit: 10 },
       });
 
       if (res.data && Array.isArray(res.data)) {
-        setSuggestions(res.data); // mahsulotlar massivini saqlaymiz
+        setSuggestions(res.data);
       } else {
         setSuggestions([]);
       }
@@ -195,9 +213,20 @@ export default function Navbar() {
   }, [selectedCategory, isOpen]);
 
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user"));
-    if (user && user.phoneNumber) {
-      setIsAuthenticated(true);
+    const user = localStorage.getItem("user");
+    if (user) {
+      try {
+        const parsedUser = JSON.parse(user);
+        if (
+          parsedUser &&
+          (parsedUser.phoneNumber || parsedUser.id || parsedUser._id)
+        ) {
+          setIsAuthenticated(true);
+        }
+      } catch (error) {
+        console.error("User data parsing error:", error);
+        localStorage.removeItem("user"); 
+      }
     }
   }, []);
 
@@ -265,11 +294,11 @@ export default function Navbar() {
   const getCategoryName = (category) => {
     if (!category) return "";
 
-    switch (language) {
-      case "RU":
-        return category.nameRu || category.name_ru || category.name;
-      case "ENG":
-        return category.nameEn || category.name_en || category.name;
+    switch (i18next.language) {
+      case "ru":
+        return category.name_ru || category.name;
+      case "en":
+        return category.name_en || category.name;
       default:
         return category.name;
     }
@@ -300,7 +329,8 @@ export default function Navbar() {
             rel="noopener noreferrer"
             className="flex items-center gap-2 hover:underline"
           >
-            <MapPin className="text-[#249B73]" /> Toshkent
+            <MapPin className="text-[#249B73]" />{" "}
+            <>{mounted ? t("navbar.location") : null}</>
           </a>
 
           <div className="flex gap-10">
@@ -309,12 +339,18 @@ export default function Navbar() {
               className="flex items-center gap-3 cursor-pointer max-[500px]:hidden text-gray-600 hover:text-gray-800 transition-colors"
             >
               <Mail className="text-[#249B73]" />
-              <span>Aloqa uchun</span>
+              <span>{mounted ? t("navbar.contact") : null}</span>
             </a>
             <select
-              value={language}
-              onChange={(e) => setLanguage(e.target.value)}
-              className="border border-gray-200 rounded-lg px-2 py-1 bg-gray-50 text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+              value={
+                i18next.language === "uz"
+                  ? "UZ"
+                  : i18next.language === "ru"
+                  ? "RU"
+                  : "ENG"
+              }
+              onChange={(e) => handleLanguageChange(e.target.value)}
+              className="border border-gray-200 rounded-lg cursor-pointer px-2 py-1 bg-gray-50 text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500"
             >
               <option value="UZ">UZ</option>
               <option value="RU">RU</option>
@@ -337,7 +373,7 @@ export default function Navbar() {
           <div className="hidden max-[670px]:block">
             <button className="bg-gradient-to-r text-[12px] from-[#249B73] to-[#249B73] text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-md cursor-pointer transition-all duration-200 hover:shadow-lg transform hover:scale-105 font-semibold">
               <Download size={18} />
-              YUKLAB OLISH
+              {mounted ? t("navbar.download") : null}
             </button>
           </div>
 
@@ -356,7 +392,9 @@ export default function Navbar() {
               ) : (
                 <Menu size={20} />
               )}
-              <span className="font-semibold">KATALOG</span>
+              <span className="font-semibold">
+                {mounted ? t("navbar.catalog") : null}
+              </span>
             </button>
           </div>
 
@@ -369,7 +407,7 @@ export default function Navbar() {
                 id="search"
                 ref={searchInputRef}
                 type="text"
-                placeholder="Mahsulotlarni izlash"
+                placeholder={mounted ? t("navbar.search_placeholder") : null}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onFocus={() => setShowSearchDropdown(true)}
@@ -391,7 +429,7 @@ export default function Navbar() {
                 {searchQuery && searchSuggestions.length > 0 && (
                   <div className="p-2">
                     <div className="text-xs font-medium text-gray-500 px-3 py-2 uppercase tracking-wide">
-                      Qidiruv natijalari
+                      {mounted ? t("navbar.search_results") : null}
                     </div>
                     {searchSuggestions.map((product) => (
                       <button
@@ -416,7 +454,7 @@ export default function Navbar() {
                         onClick={clearRecentSearches}
                         className="text-xs text-green-600 hover:text-green-700 cursor-pointer font-medium"
                       >
-                        Tozalash
+                        {mounted ? t("navbar.clear_searches") : null}
                       </button>
                     </div>
                     {recentSearches.map((search, index) => (
@@ -447,7 +485,7 @@ export default function Navbar() {
                 {!searchQuery && (
                   <div className="p-2">
                     <div className="text-xs font-medium text-gray-500 px-3 py-2 uppercase tracking-wide">
-                      Mashhur qidiruvlar
+                      {mounted ? t("navbar.recent_searches") : null}
                     </div>
                     {popularSearches.map((search, index) => (
                       <button
@@ -477,7 +515,9 @@ export default function Navbar() {
                 {searchQuery && searchSuggestions.length === 0 && (
                   <div className="p-4 text-center text-gray-500">
                     <Search size={24} className="mx-auto mb-2 text-gray-300" />
-                    <p className="text-sm">Hech narsa topilmadi</p>
+                    <p className="text-sm">
+                      {mounted ? t("navbar.no_results") : null}
+                    </p>
                   </div>
                 )}
               </div>
@@ -497,7 +537,9 @@ export default function Navbar() {
                   </span>
                 )}
               </div>
-              <span className="text-xs text-gray-600 pt-1">Aloqa</span>
+              <span className="text-xs text-gray-600 pt-1">
+                {mounted ? t("navbar.notifications") : null}
+              </span>
             </button>
 
             <NotificationModal open={open} setOpen={setOpen} />
@@ -514,7 +556,9 @@ export default function Navbar() {
                   </span>
                 )}
               </div>
-              <span className="text-xs text-gray-600 pt-1">Tanlanganlar</span>
+              <span className="text-xs text-gray-600 pt-1">
+                {mounted ? t("navbar.wishlist") : null}
+              </span>
             </button>
 
             <button
@@ -529,7 +573,9 @@ export default function Navbar() {
                   </span>
                 )}
               </div>
-              <span className="text-xs text-gray-600 pt-1">Savat</span>
+              <span className="text-xs text-gray-600 pt-1">
+                {mounted ? t("navbar.cart") : null}
+              </span>
             </button>
 
             {isAuthenticated ? (
@@ -538,13 +584,15 @@ export default function Navbar() {
                   <div className="w-10 h-10 flex items-center justify-center bg-[#ECF4FF] rounded-md group-hover:bg-[#dbeafe] transition-colors">
                     <User className="w-6 h-6 text-[#249B73]" />
                   </div>
-                  <span className="text-xs text-gray-600 pt-1">Profil</span>
+                  <span className="text-xs text-gray-600 pt-1">
+                    {mounted ? t("navbar.profile") : null}
+                  </span>
                 </button>
               </Link>
             ) : (
               <Link className="self-start" href="/register">
                 <button className="px-8 py-3 text-black rounded-md cursor-pointer bg-gradient-to-r from-[#EED3DC] to-[#CDD6FD] hover:from-[#e6c7d3] hover:to-[#c4cefb] transition-all duration-200 transform hover:scale-105">
-                  KIRISH
+                  {mounted ? t("navbar.login") : null}
                 </button>
               </Link>
             )}
@@ -680,7 +728,9 @@ export default function Navbar() {
                 <h2 className="text-2xl font-bold text-[#1e7d5d] mb-6">
                   {selectedCategory
                     ? getCategoryName(selectedCategory)
-                    : "Kategoriya tanlang"}
+                    : mounted
+                    ? t("navbar.select_category")
+                    : null}
                 </h2>
 
                 {subCategoriesLoading ? (
@@ -690,17 +740,19 @@ export default function Navbar() {
                 ) : subCategories.length === 0 ? (
                   <div className="flex items-center justify-center h-64 text-gray-500">
                     {selectedCategory
-                      ? "Bu kategoriyada hozircha mahsulotlar yo'q"
-                      : "Kategoriya tanlang"}
+                      ? mounted
+                        ? t("navbar.no_subcategories")
+                        : t("navbar.select_category")
+                      : null}
                   </div>
                 ) : (
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
                     {subCategories.map((subCategory, idx) => {
                       const getSubCategoryName = (subCat) => {
-                        switch (language) {
-                          case "RU":
+                        switch (i18next.language) {
+                          case "ru":
                             return subCat.name_ru || subCat.name;
-                          case "ENG":
+                          case "en":
                             return subCat.name_en || subCat.name;
                           default:
                             return subCat.name;
@@ -710,7 +762,7 @@ export default function Navbar() {
                       return (
                         <div
                           key={subCategory._id || idx}
-                          className="p-4 bg-white rounded-xl  hover:border-green-400  transition-all duration-300 cursor-pointer group "
+                          className="p-4 bg-white rounded-xl hover:border-green-400 transition-all duration-300 cursor-pointer group"
                         >
                           <a
                             href={`/category/${selectedCategory._id}/subcategory/${subCategory._id}`}
@@ -736,28 +788,32 @@ export default function Navbar() {
           className="flex flex-col items-center text-gray-600"
         >
           <HomeIcon size={20} className="text-[#249B73]" />
-          <span className="text-xs">Bosh sahifa</span>
+          <span className="text-xs">{mounted ? t("navbar.home") : null}</span>
         </button>
         <button
           onClick={() => setOpen(true)}
           className="flex flex-col items-center text-gray-600"
         >
           <Bell size={20} className="text-[#249B73]" />
-          <span className="text-xs">Aloqa</span>
+          <span className="text-xs">
+            {mounted ? t("navbar.notifications") : null}
+          </span>
         </button>
         <button
           onClick={() => router.push("/wishes")}
           className="flex flex-col items-center text-gray-600"
         >
           <Heart size={20} className="text-[#249B73]" />
-          <span className="text-xs">Tanlangan</span>
+          <span className="text-xs">
+            {mounted ? t("navbar.wishlist") : null}
+          </span>
         </button>
         <button
           onClick={() => router.push("/cart")}
           className="flex flex-col items-center text-gray-600"
         >
           <ShoppingCart size={20} className="text-[#249B73]" />
-          <span className="text-xs">Savat</span>
+          <span className="text-xs">{mounted ? t("navbar.cart") : null}</span>
         </button>
         {isAuthenticated ? (
           <button
@@ -765,7 +821,9 @@ export default function Navbar() {
             className="flex flex-col items-center text-gray-600"
           >
             <User size={20} className="text-[#249B73]" />
-            <span className="text-xs">Profil</span>
+            <span className="text-xs">
+              {mounted ? t("navbar.profile") : null}
+            </span>
           </button>
         ) : (
           <button
@@ -773,7 +831,9 @@ export default function Navbar() {
             className="flex flex-col items-center text-gray-600"
           >
             <User size={20} className="text-[#249B73]" />
-            <span className="text-xs">Kirish</span>
+            <span className="text-xs">
+              {mounted ? t("navbar.login") : null}
+            </span>
           </button>
         )}
       </div>

@@ -30,7 +30,7 @@ export default function NotificationModal({ open, setOpen }) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="top-40 left-252 p-0">
+      <DialogContent className="top-45 right-45 p-0">
         <div className="flex items-center gap-40 px-4 py-2 border-b">
           <DialogTitle className="text-lg font-semibold">
             Bildirishnomalar

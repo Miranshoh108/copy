@@ -8,6 +8,8 @@ import "slick-carousel/slick/slick-theme.css";
 import dynamic from "next/dynamic";
 import { ChevronLeft, ChevronRight, MoveRight } from "lucide-react";
 import $api from "../http/api";
+import { useTranslation } from "react-i18next";
+import i18next from "../../i18n/i18n";
 
 const Slider = dynamic(() => import("react-slick"), {
   ssr: false,
@@ -68,11 +70,17 @@ const PrevArrow = (props) => {
 };
 
 export default function DiscountedProducts() {
+  const { t } = useTranslation();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [sliderWidth, setSliderWidth] = useState(6);
+  const [mounted, setMounted] = useState(false);
   const sliderRef = useRef(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const fetchDiscountedProducts = async () => {
@@ -83,47 +91,75 @@ export default function DiscountedProducts() {
         const response = await $api.get("/products/get/discounted");
 
         if (response.status === 200) {
-          const discountedProducts = response.data.products.map(
-            (product) => {
-              const bestDiscountVariant = product.variants.reduce(
-                (best, current) =>
-                  current.discount > best.discount ? current : best,
-                product.variants[0]
-              );
+          const discountedProducts = response.data.products.map((product) => {
+            const bestDiscountVariant = product.variants.reduce(
+              (best, current) =>
+                current.discount > best.discount ? current : best,
+              product.variants[0]
+            );
 
-              let imageUrl = "/placeholder.png";
-              if (product.mainImage) {
-                const cleanPath = product.mainImage.replace(/\\/g, "/");
-                imageUrl = `${process.env.NEXT_PUBLIC_API_URL}/${cleanPath}`;
-              }
-
-              return {
-                ...product,
-                id: product._id, // Add id field
-                image: imageUrl, // Add processed image field
-                mainVariant: bestDiscountVariant,
-                discountedVariants: product.variants.filter(
-                  (variant) => variant.discount > 0
-                ),
-                price: bestDiscountVariant?.price,
-                discountedPrice: bestDiscountVariant?.discountedPrice,
-                discount: bestDiscountVariant?.discount,
-              };
+            let imageUrl = "/placeholder.png";
+            if (product.mainImage) {
+              const cleanPath = product.mainImage.replace(/\\/g, "/");
+              imageUrl = `${process.env.NEXT_PUBLIC_API_URL}/${cleanPath}`;
             }
-          );
+
+            // Get product name based on current language
+            const getProductName = () => {
+              switch (i18next.language) {
+                case "ru":
+                  return product.name_ru || product.name;
+                case "en":
+                  return product.name_en || product.name;
+                default:
+                  return product.name;
+              }
+            };
+
+            // Get product description based on current language
+            const getProductDescription = () => {
+              switch (i18next.language) {
+                case "ru":
+                  return (
+                    product.shortDescription_ru || product.shortDescription
+                  );
+                case "en":
+                  return (
+                    product.shortDescription_en || product.shortDescription
+                  );
+                default:
+                  return product.shortDescription;
+              }
+            };
+
+            return {
+              ...product,
+              id: product._id, // Add id field
+              name: getProductName(), // Use localized name
+              shortDescription: getProductDescription(), // Use localized description
+              image: imageUrl, // Add processed image field
+              mainVariant: bestDiscountVariant,
+              discountedVariants: product.variants.filter(
+                (variant) => variant.discount > 0
+              ),
+              price: bestDiscountVariant?.price,
+              discountedPrice: bestDiscountVariant?.discountedPrice,
+              discount: bestDiscountVariant?.discount,
+            };
+          });
 
           setProducts(discountedProducts);
         }
       } catch (error) {
         console.error("Error fetching discounted products:", error);
-        setError("Chegirmali mahsulotlarni yuklashda xatolik yuz berdi");
+        setError(t("discounted_products.error_loading"));
       } finally {
         setLoading(false);
       }
     };
 
     fetchDiscountedProducts();
-  }, []);
+  }, [i18next.language, t]); // Add language dependency to refetch when language changes
 
   const sliderSettings = {
     dots: false,
@@ -169,18 +205,18 @@ export default function DiscountedProducts() {
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-gray-800">
-              Chegirmali mahsulotlar
+              {mounted ? t("discounted_products.title") : ""}
             </h2>
           </div>
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
             <p className="text-red-600">
-              Chegirmali mahsulotlarni yuklashda xatolik: {error}
+              {mounted ? t("discounted_products.error_message") : ""}: {error}
             </p>
             <button
               onClick={() => window.location.reload()}
               className="mt-2 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 cursor-pointer"
             >
-              Qaytadan urinish
+              {mounted ? t("discounted_products.retry_button") : ""}
             </button>
           </div>
         </div>
@@ -193,7 +229,7 @@ export default function DiscountedProducts() {
       <div className="max-w-7xl mx-auto px-4 ">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-gray-800">
-            Chegirmali mahsulotlar
+            {mounted ? t("discounted_products.title") : ""}
           </h2>
         </div>
 
@@ -205,7 +241,7 @@ export default function DiscountedProducts() {
           </div>
         ) : products.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
-            Hozirda chegirmali mahsulotlar mavjud emas
+            {mounted ? t("discounted_products.no_products") : ""}
           </div>
         ) : products.length <= 6 ? (
           <div className="flex gap-4 overflow-x-auto">

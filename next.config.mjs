@@ -1,24 +1,29 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
+    // Image optimization server-side ishlashini developmentda ham yoqadi, productionda o‘chadi
+    loader: "default",
+    path: "/_next/image",
+    unoptimized: true, // ✅ Productionda backenddan keladigan rasmlar ham ishlaydi
+
     minimumCacheTTL: 60,
     dangerouslyAllowSVG: false,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
 
+    // Rasmlarni olishga ruxsat berilgan domenlar
     domains: ["bsmarket.uz", "mini-io-api.texnomart.uz"],
 
+    // Rasmlar uchun optimizatsiya formatlari
     formats: ["image/avif", "image/webp"],
+
+    // Device size va imageSizes sozlamalari
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
 
+    // Remote patternlar (backend rasmlari)
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "bsmarket.uz",
-        pathname: "/api/uploads/**",
-      },
-      {
-        protocol: "http",
         hostname: "bsmarket.uz",
         pathname: "/api/uploads/**",
       },
@@ -31,10 +36,6 @@ const nextConfig = {
         hostname: "cdn-icons-png.flaticon.com",
       },
     ],
-
-    loader: "default",
-    path: "/_next/image",
-    unoptimized: process.env.NODE_ENV === "development",
   },
 
   webpack: (config, { dev, isServer }) => {
@@ -75,34 +76,16 @@ const nextConfig = {
       {
         source: "/(.*)",
         headers: [
-          {
-            key: "X-DNS-Prefetch-Control",
-            value: "on",
-          },
+          { key: "X-DNS-Prefetch-Control", value: "on" },
           {
             key: "Strict-Transport-Security",
             value: "max-age=63072000; includeSubDomains; preload",
           },
-          {
-            key: "X-XSS-Protection",
-            value: "1; mode=block",
-          },
-          {
-            key: "X-Frame-Options",
-            value: "SAMEORIGIN",
-          },
-          {
-            key: "X-Content-Type-Options",
-            value: "nosniff",
-          },
-          {
-            key: "Referrer-Policy",
-            value: "origin-when-cross-origin",
-          },
-          {
-            key: "Accept-Encoding",
-            value: "gzip, deflate, br",
-          },
+          { key: "X-XSS-Protection", value: "1; mode=block" },
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "Referrer-Policy", value: "origin-when-cross-origin" },
+          { key: "Accept-Encoding", value: "gzip, deflate, br" },
         ],
       },
     ];

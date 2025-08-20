@@ -1,5 +1,5 @@
 "use client";
-import { CreditCard, Edit, Gift, ShoppingBag } from "lucide-react";
+import { Edit, User, Calendar, Phone, Mail, Users } from "lucide-react";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -19,6 +19,7 @@ const ProfileTab = ({
   setIsEditing,
   setUser,
   updateUserProfile,
+  refreshProfile,
 }) => {
   const [formData, setFormData] = useState({
     firstName: user.firstName || "",
@@ -66,18 +67,6 @@ const ProfileTab = ({
       // API orqali ma'lumotlarni yangilash
       await updateUserProfile(formData);
 
-      // Local state'ni yangilash
-      setUser((prev) => ({
-        ...prev,
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        name: `${formData.firstName} ${formData.lastName}`,
-        email: formData.email,
-        phone: formData.phone,
-        gender: formData.gender,
-        age: formData.age,
-      }));
-
       setIsEditing(false);
     } catch (error) {
       console.error("Profile yangilashda xatolik:", error);
@@ -114,6 +103,25 @@ const ProfileTab = ({
     setError(null);
   };
 
+  const getGenderDisplay = (gender) => {
+    switch (gender) {
+      case "male":
+        return "Erkak";
+      case "female":
+        return "Ayol";
+      case "other":
+        return "Boshqa";
+      default:
+        return "Belgilanmagan";
+    }
+  };
+
+  const getRoleDisplay = (role, isWorker) => {
+    if (role === "admin") return "Administrator";
+    if (isWorker) return "Xodim";
+    return "Mijoz";
+  };
+
   return (
     <div className="space-y-6">
       {/* Stats Cards */}
@@ -122,13 +130,13 @@ const ProfileTab = ({
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-green-100 text-green-600 rounded-lg flex items-center justify-center">
-                <ShoppingBag size={24} />
+                <User size={24} />
               </div>
               <div>
                 <p className="text-2xl font-bold text-gray-900">
-                  {user.totalOrders}
+                  {getRoleDisplay(user.role, user.isWorker)}
                 </p>
-                <p className="text-gray-500 text-sm">Jami buyurtmalar</p>
+                <p className="text-gray-500 text-sm">Foydalanuvchi turi</p>
               </div>
             </div>
           </CardContent>
@@ -137,14 +145,14 @@ const ProfileTab = ({
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-green-100 text-[#249B73] rounded-lg flex items-center justify-center">
-                <CreditCard size={24} />
+              <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center">
+                <Calendar size={24} />
               </div>
               <div>
                 <p className="text-2xl font-bold text-gray-900">
-                  {user.totalSpent}
+                  {user.memberSince}
                 </p>
-                <p className="text-gray-500 text-sm">Jami xarajat (so'm)</p>
+                <p className="text-gray-500 text-sm">A'zo bo'lgan sana</p>
               </div>
             </div>
           </CardContent>
@@ -153,14 +161,14 @@ const ProfileTab = ({
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-green-100 text-[#249B73] rounded-lg flex items-center justify-center">
-                <Gift size={24} />
+              <div className="w-12 h-12 bg-purple-100 text-purple-600 rounded-lg flex items-center justify-center">
+                <Users size={24} />
               </div>
               <div>
                 <p className="text-2xl font-bold text-gray-900">
-                  {user.loyaltyPoints}
+                  {user.interests?.length || 0}
                 </p>
-                <p className="text-gray-500 text-sm">Bonus balllar</p>
+                <p className="text-gray-500 text-sm">Qiziqishlar soni</p>
               </div>
             </div>
           </CardContent>
@@ -285,17 +293,12 @@ const ProfileTab = ({
                   <SelectContent>
                     <SelectItem value="male">Erkak</SelectItem>
                     <SelectItem value="female">Ayol</SelectItem>
+                    <SelectItem value="other">Boshqa</SelectItem>
                   </SelectContent>
                 </Select>
               ) : (
                 <Input
-                  value={
-                    formData.gender === "male"
-                      ? "Erkak"
-                      : formData.gender === "female"
-                      ? "Ayol"
-                      : ""
-                  }
+                  value={getGenderDisplay(formData.gender)}
                   disabled
                   className="w-full bg-gray-50"
                 />
@@ -313,7 +316,7 @@ const ProfileTab = ({
                 id="age"
                 name="age"
                 type="number"
-                value={formData.age}
+                value={formData.age || ""}
                 onChange={handleInputChange}
                 disabled={!isEditing}
                 className="w-full"
@@ -349,13 +352,7 @@ const ProfileTab = ({
               <Input
                 id="role"
                 type="text"
-                value={
-                  user.role === "admin"
-                    ? "Administrator"
-                    : user.isWorker
-                    ? "Xodim"
-                    : "Mijoz"
-                }
+                value={getRoleDisplay(user.role, user.isWorker)}
                 disabled
                 className="w-full bg-gray-50"
               />
@@ -379,42 +376,6 @@ const ProfileTab = ({
               >
                 Bekor qilish
               </Button>
-            </div>
-          )}
-
-          {/* Additional Info */}
-          {user.lastLogin && (
-            <div className="mt-6 pt-6 border-t border-gray-200">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600">
-                <div>
-                  <span className="font-medium">So'nggi kirish:</span>{" "}
-                  {new Date(user.lastLogin).toLocaleString("uz-UZ")}
-                </div>
-                {user.lastActivity && (
-                  <div>
-                    <span className="font-medium">So'nggi faollik:</span>{" "}
-                    {new Date(user.lastActivity).toLocaleString("uz-UZ")}
-                  </div>
-                )}
-                {user.telegramId && (
-                  <div>
-                    <span className="font-medium">Telegram ID:</span>{" "}
-                    {user.telegramId}
-                  </div>
-                )}
-                <div>
-                  <span className="font-medium">Status:</span>{" "}
-                  <span
-                    className={`px-2 py-1 rounded-full text-xs ${
-                      user.isOnline
-                        ? "bg-green-100 text-green-800"
-                        : "bg-gray-100 text-gray-800"
-                    }`}
-                  >
-                    {user.isOnline ? "Online" : "Offline"}
-                  </span>
-                </div>
-              </div>
             </div>
           )}
         </CardContent>

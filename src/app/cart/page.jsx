@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Footer from "../components/Footer";
 import Head from "next/head";
 import Navbar from "../components/Navbar";
@@ -18,7 +18,8 @@ export default function Cart() {
   const [promoCode, setPromoCode] = useState("");
   const [appliedPromo, setAppliedPromo] = useState(null);
   const [promoError, setPromoError] = useState("");
-  const { isAuthenticated, loading: authLoading } = useAuth();
+  const [authError, setAuthError] = useState("");
+  const { isAuthenticated, loading: authLoading, checkAuth } = useAuth();
   const isAllChecked = cart.every((item) => item.checked);
   const subtotal = getTotalPrice();
   const checkedCount = getCheckedCount();
@@ -39,6 +40,17 @@ export default function Cart() {
     },
   };
 
+  // Handle authentication state changes
+  useEffect(() => {
+    if (!authLoading && isAuthenticated === false) {
+      setAuthError(
+        "Siz tizimga kirmagan holdasiz. Buyurtma berish uchun ro'yxatdan o'ting."
+      );
+    } else {
+      setAuthError("");
+    }
+  }, [isAuthenticated, authLoading]);
+
   const toggleChecked = () => {
     if (isAllChecked) {
       offChecked();
@@ -46,41 +58,64 @@ export default function Cart() {
       onChecked();
     }
   };
-  const handleCheckout = () => {
-    if (checkedCount === 0) return;
 
-    if (!isAuthenticated && !authLoading) {
-      localStorage.setItem("redirectAfterLogin", "/checkout");
+  const handleCheckout = async () => {
+    if (checkedCount === 0) {
+      alert("Buyurtma berish uchun kamida bitta mahsulot tanlang");
+      return;
+    }
+
+    // Check authentication status before proceeding
+    if (authLoading) {
+      return; // Wait for auth check to complete
+    }
+
+    if (!isAuthenticated) {
+      // Save redirect path and go to register
+      if (typeof window !== "undefined") {
+        localStorage.setItem("redirectAfterLogin", "/checkout");
+      }
       route.push("/register");
       return;
     }
 
-    // Tanlangan mahsulotlarni olish
-    const selectedItems = cart.filter((item) => item.checked);
+    try {
+      // Get selected items
+      const selectedItems = cart.filter((item) => item.checked);
 
-    // Yangi buyurtma yaratish
-    const newOrder = {
-      id: Date.now(), // noyob ID
-      status: "processing",
-      date: new Date().toLocaleDateString("uz-UZ"),
-      total: total.toLocaleString(),
-      items: selectedItems.length,
-      products: selectedItems,
-    };
+      // Create new order
+      const newOrder = {
+        id: Date.now(),
+        status: "processing",
+        date: new Date().toLocaleDateString("uz-UZ"),
+        total: total.toLocaleString(),
+        items: selectedItems.length,
+        products: selectedItems,
+      };
 
-    // Eski buyurtmalarni olish
-    const existingOrders = JSON.parse(localStorage.getItem("orders") || "[]");
+      if (typeof window !== "undefined") {
+        // Get existing orders
+        const existingOrders = JSON.parse(
+          localStorage.getItem("orders") || "[]"
+        );
 
-    // Yangisini qo‘shish
-    const updatedOrders = [newOrder, ...existingOrders];
-    localStorage.setItem("orders", JSON.stringify(updatedOrders));
+        // Add new order
+        const updatedOrders = [newOrder, ...existingOrders];
+        localStorage.setItem("orders", JSON.stringify(updatedOrders));
 
-    // Optionally: Tanlangan mahsulotlarni savatchadan o‘chirish
-    const remainingCart = cart.filter((item) => !item.checked);
-    localStorage.setItem("cart", JSON.stringify(remainingCart));
+        // Remove selected items from cart
+        const remainingCart = cart.filter((item) => !item.checked);
+        localStorage.setItem("cart", JSON.stringify(remainingCart));
+      }
 
-    // Checkout sahifasiga o'tish
-    route.push("/checkout");
+      // Navigate to checkout
+      route.push("/checkout");
+    } catch (error) {
+      console.error("Checkout error:", error);
+      alert(
+        "Buyurtma berishda xatolik yuz berdi. Iltimos, qaytadan urinib ko'ring."
+      );
+    }
   };
 
   const applyPromoCode = () => {
@@ -113,6 +148,12 @@ export default function Cart() {
   const delivery = subtotal > 200000 ? 0 : 25000;
   const finalTotal = total + delivery;
 
+  // Retry authentication
+  const retryAuth = () => {
+    setAuthError("");
+    checkAuth();
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Head>
@@ -123,8 +164,47 @@ export default function Cart() {
       <Navbar />
 
       <div className="max-w-7xl mx-auto px-4 py-6">
+        {/* Authentication Error Banner */}
+        {authError && (
+          <div className="mb-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+            <div className="flex items-start">
+              <div className="flex-shrink-0">
+                <svg
+                  className="h-5 w-5 text-yellow-400"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </div>
+              <div className="ml-3 flex-1">
+                <p className="text-sm text-yellow-700">{authError}</p>
+                <div className="mt-2">
+                  <button
+                    onClick={retryAuth}
+                    className="text-sm text-yellow-800 underline hover:no-underline"
+                  >
+                    Qaytadan urinib ko'ring
+                  </button>
+                  <span className="mx-2 text-yellow-600">yoki</span>
+                  <button
+                    onClick={() => route.push("/register")}
+                    className="text-sm text-yellow-800 underline hover:no-underline"
+                  >
+                    Ro'yxatdan o'ting
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {cart.length === 0 ? (
-          // Empty Cart State - Uzum style
+          // Empty Cart State
           <div className="flex flex-col items-center justify-center min-h-[500px]">
             <div className="text-center max-w-md">
               <div className="mb-8">
@@ -147,7 +227,7 @@ export default function Cart() {
 
               <Button
                 onClick={() => route.push("/")}
-                className="bg-[#249B73] hover:bg-[#249B73] text-white px-8 py-3 rounded-lg font-medium cursor-pointer  transition-colors"
+                className="bg-[#249B73] hover:bg-[#249B73] text-white px-8 py-3 rounded-lg font-medium cursor-pointer transition-colors"
               >
                 Xarid qilishni boshlash
               </Button>
@@ -174,7 +254,7 @@ export default function Cart() {
                         type="checkbox"
                         checked={isAllChecked && cart.length > 0}
                         onChange={toggleChecked}
-                        className="w-5 h-5 text-[#249B73] border-2 cursor-pointer  border-gray-300 rounded-md focus:ring-2 focus:ring-[#249B73] focus:ring-offset-1 transition-all duration-200 group-hover:border-[#249B73]"
+                        className="w-5 h-5 text-[#249B73] border-2 cursor-pointer border-gray-300 rounded-md focus:ring-2 focus:ring-[#249B73] focus:ring-offset-1 transition-all duration-200 group-hover:border-[#249B73]"
                       />
                       {isAllChecked && cart.length > 0 && (
                         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -258,7 +338,7 @@ export default function Cart() {
                       />
                       <button
                         onClick={applyPromoCode}
-                        className="px-4 py-2 bg-[#249B73] cursor-pointer  text-white rounded-lg hover:bg-[#249B73]transition-colors font-medium"
+                        className="px-4 py-2 bg-[#249B73] cursor-pointer text-white rounded-lg hover:bg-[#249B73] transition-colors font-medium"
                       >
                         Qo'llash
                       </button>
@@ -266,27 +346,6 @@ export default function Cart() {
                     {promoError && (
                       <p className="text-sm text-red-500">{promoError}</p>
                     )}
-
-                    {/* Available Promo Codes */}
-                    {/* <div className="mt-4 space-y-2">
-                      <p className="text-sm text-gray-600">
-                        Mavjud promokodlar:
-                      </p>
-                      {Object.entries(promoCodes).map(([code, details]) => (
-                        <div
-                          key={code}
-                          className="text-xs bg-gray-50 p-2 rounded border"
-                        >
-                          <span className="font-medium text-[#249B73]">
-                            {code}
-                          </span>
-                          <span className="text-gray-600">
-                            {" "}
-                            - {details.description}
-                          </span>
-                        </div>
-                      ))}
-                    </div> */}
                   </div>
                 ) : (
                   <div className="flex items-center justify-between bg-green-50 p-3 rounded-lg border border-green-200">
@@ -300,7 +359,7 @@ export default function Cart() {
                     </div>
                     <button
                       onClick={removePromoCode}
-                      className="text-red-500 hover:text-red-700 cursor-pointer  p-1"
+                      className="text-red-500 hover:text-red-700 cursor-pointer p-1"
                       title="O'chirish"
                     >
                       <svg
@@ -347,8 +406,6 @@ export default function Cart() {
                     </span>
                   </div>
 
-              
-
                   <hr className="my-4" />
 
                   <div className="flex justify-between text-lg font-semibold text-gray-900">
@@ -362,12 +419,22 @@ export default function Cart() {
                   className="w-full mt-6 bg-[#249B73] hover:bg-[#249B73] text-white py-3 rounded-lg cursor-pointer font-medium transition-colors"
                   disabled={checkedCount === 0 || authLoading}
                 >
-                  {authLoading ? "Tekshirilmoqda..." : "Buyurtma berish"}
+                  {authLoading
+                    ? "Tekshirilmoqda..."
+                    : !isAuthenticated
+                    ? "Ro'yxatdan o'tish"
+                    : "Buyurtma berish"}
                 </Button>
 
                 {checkedCount === 0 && (
                   <p className="text-sm text-gray-500 text-center mt-2">
                     Buyurtma berish uchun kamida bitta mahsulot tanlang
+                  </p>
+                )}
+
+                {!isAuthenticated && !authLoading && (
+                  <p className="text-sm text-orange-600 text-center mt-2">
+                    Buyurtma berish uchun tizimga kiring
                   </p>
                 )}
               </div>

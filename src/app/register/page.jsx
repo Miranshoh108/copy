@@ -5,9 +5,11 @@ import $api from "../http/api";
 
 function AuthPage() {
   const [activeTab, setActiveTab] = useState("login");
+  const [loginType, setLoginType] = useState("sms"); // "sms" or "system"
   const [phoneNumber, setPhoneNumber] = useState("+998");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [password, setPassword] = useState("");
   const [showSmsCard, setShowSmsCard] = useState(false);
   const [smsCode, setSmsCode] = useState(["", "", "", "", "", ""]);
   const [isLoading, setIsLoading] = useState(false);
@@ -16,6 +18,7 @@ function AuthPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [tempRegistrationData, setTempRegistrationData] = useState(null);
   const [smsStep, setSmsStep] = useState(""); // "login" or "register"
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true); // Add loading state for auth check
   const inputRefs = useRef([]);
   const router = useRouter();
 
@@ -24,9 +27,11 @@ function AuthPage() {
   }, []);
 
   const checkAuthStatus = async () => {
+    setIsCheckingAuth(true);
     const accessToken = localStorage.getItem("accessToken");
 
     if (!accessToken) {
+      setIsCheckingAuth(false);
       return;
     }
 
@@ -38,12 +43,38 @@ function AuthPage() {
         localStorage.setItem("user", JSON.stringify(user));
         setCurrentUser(user);
         setIsAuthenticated(true);
+        // Redirect to home page if already authenticated
+        router.push("/");
       } else {
         handleLogout();
       }
     } catch (error) {
-      console.error("Token tekshirishda xatolik:", error);
-      handleLogout();
+      console.error("Token verification error:", error);
+      // Only try refresh if we have a refresh token
+      const refreshToken = localStorage.getItem("refreshToken");
+      if (refreshToken && error.response?.status === 401) {
+        try {
+          await handleTokenRefresh();
+          // Retry checking auth after refresh
+          const retryResponse = await $api.get("/users/profile/me");
+          if (retryResponse.data?.success && retryResponse.data?.data) {
+            const user = retryResponse.data.data;
+            localStorage.setItem("user", JSON.stringify(user));
+            setCurrentUser(user);
+            setIsAuthenticated(true);
+            router.push("/");
+          } else {
+            handleLogout();
+          }
+        } catch (refreshError) {
+          console.error("Token refresh failed:", refreshError);
+          handleLogout();
+        }
+      } else {
+        handleLogout();
+      }
+    } finally {
+      setIsCheckingAuth(false);
     }
   };
 
@@ -54,9 +85,11 @@ function AuthPage() {
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
+    setLoginType("sms");
     setPhoneNumber("+998");
     setFirstName("");
     setLastName("");
+    setPassword("");
     setShowSmsCard(false);
     setSmsCode(["", "", "", "", "", ""]);
     setNotification({ type: "", message: "" });
@@ -104,18 +137,35 @@ function AuthPage() {
   };
 
   const validateForm = () => {
-    if (!validatePhone()) {
-      showNotification(
-        "warning",
-        "Iltimos, to'liq telefon raqam kiriting (+998-XX-XXX-XX-XX formatida)."
-      );
-      return false;
-    }
-
-    if (activeTab === "register") {
-      if (!firstName.trim() || !lastName.trim()) {
-        showNotification("warning", "Iltimos, ism va familiyangizni kiriting.");
+    if (loginType === "system") {
+      if (!validatePhone()) {
+        showNotification(
+          "warning",
+          "Iltimos, to'liq telefon raqam kiriting (+998-XX-XXX-XX-XX formatida)."
+        );
         return false;
+      }
+      if (!password.trim()) {
+        showNotification("warning", "Iltimos, parol kiriting.");
+        return false;
+      }
+    } else {
+      if (!validatePhone()) {
+        showNotification(
+          "warning",
+          "Iltimos, to'liq telefon raqam kiriting (+998-XX-XXX-XX-XX formatida)."
+        );
+        return false;
+      }
+
+      if (activeTab === "register") {
+        if (!firstName.trim() || !lastName.trim()) {
+          showNotification(
+            "warning",
+            "Iltimos, ism va familiyangizni kiriting."
+          );
+          return false;
+        }
       }
     }
 
@@ -126,7 +176,9 @@ function AuthPage() {
     const { user, accessToken, refreshToken } = authData;
 
     localStorage.setItem("accessToken", accessToken);
-    localStorage.setItem("refreshToken", refreshToken);
+    if (refreshToken) {
+      localStorage.setItem("refreshToken", refreshToken);
+    }
     localStorage.setItem("user", JSON.stringify(user));
 
     setCurrentUser(user);
@@ -145,11 +197,57 @@ function AuthPage() {
 
     showNotification(
       "success",
-      `Tizimga muvaffaqiyatli kirdingiz, ${user.firstName}!`
+      `Tizimga muvaffaqiyatli kirdingiz, ${
+        user.firstName || user.lastName || "Foydalanuvchi"
+      }!`
     );
   };
 
-  // Login qismida faqat telefon raqam tekshirish va SMS yuborish
+  const handleSystemLogin = async () => {
+    if (!validateForm()) return;
+
+    try {
+      setIsLoading(true);
+
+      const requestData = {
+        phone_number: `+${phoneNumber.replace(/[^\d]/g, "")}`,
+        password: password,
+      };
+
+      const response = await $api.post("/auth/system/login", requestData);
+
+      if (response.data.status === 200) {
+        // Handle the response structure from your API
+        const authData = {
+          user: {
+            firstName: response.data.firstName || "",
+            lastName: response.data.lastName || "",
+            email: response.data.email || "",
+            phoneNumber: phoneNumber.replace(/[^\d]/g, ""),
+          },
+          accessToken: response.data.accessToken,
+          refreshToken: response.data.refreshToken || null, // Get refresh token from response if available
+        };
+
+        await handleAuthSuccess(authData);
+
+        setTimeout(() => {
+          router.push("/");
+        }, 1500);
+      } else {
+        showNotification("error", "Login ma'lumotlari noto'g'ri!");
+      }
+    } catch (error) {
+      console.error("System login error:", error);
+      const errorMessage =
+        error.response?.data?.message || "Login qilishda xatolik yuz berdi!";
+      showNotification("error", errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // SMS-based login (existing functionality)
   const handleLoginRequest = async () => {
     if (!validatePhone()) return;
 
@@ -160,7 +258,6 @@ function AuthPage() {
         phoneNumber: phoneNumber.replace(/[^\d]/g, ""),
       };
 
-      // Telefon raqamni tekshirish va SMS yuborish
       const response = await $api.post("/auth/login/request-sms", requestData);
 
       if (response.data.success) {
@@ -262,14 +359,13 @@ function AuthPage() {
         showNotification("success", message);
 
         setTimeout(() => {
-          setIsAuthenticated(true);
+          router.push("/");
         }, 1500);
       } else {
         showNotification(
           "error",
           response.data.message || "SMS kodni tasdiqlashda xatolik yuz berdi!"
         );
-        // Xato kodni tozalash
         setSmsCode(["", "", "", "", "", ""]);
         setTimeout(() => inputRefs.current[0]?.focus(), 100);
       }
@@ -279,7 +375,6 @@ function AuthPage() {
         error.response?.data?.message ||
         "Server bilan bog'lanishda xatolik yuz berdi!";
       showNotification("error", errorMessage);
-      // Xato kodni tozalash
       setSmsCode(["", "", "", "", "", ""]);
       setTimeout(() => inputRefs.current[0]?.focus(), 100);
     } finally {
@@ -287,8 +382,7 @@ function AuthPage() {
     }
   };
 
-  // Refresh token function
-  const refreshToken = async () => {
+  const handleTokenRefresh = async () => {
     try {
       const storedRefreshToken = localStorage.getItem("refreshToken");
       if (!storedRefreshToken) {
@@ -327,7 +421,11 @@ function AuthPage() {
     if (activeTab === "register") {
       handleRegisterRequest();
     } else {
-      handleLoginRequest();
+      if (loginType === "system") {
+        handleSystemLogin();
+      } else {
+        handleLoginRequest();
+      }
     }
   };
 
@@ -360,9 +458,11 @@ function AuthPage() {
     localStorage.removeItem("refreshToken");
     localStorage.removeItem("user");
     setActiveTab("login");
+    setLoginType("sms");
     setPhoneNumber("+998");
     setFirstName("");
     setLastName("");
+    setPassword("");
     setShowSmsCard(false);
     setSmsCode(["", "", "", "", "", ""]);
     setNotification({ type: "", message: "" });
@@ -370,13 +470,7 @@ function AuthPage() {
     setSmsStep("");
   };
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      router.push("/");
-    }
-  }, [isAuthenticated, router]);
-
-  // Setup axios interceptor for token refresh
+  // Remove the redirect effect - let checkAuthStatus handle it
   useEffect(() => {
     const requestInterceptor = $api.interceptors.request.use(
       (config) => {
@@ -399,7 +493,7 @@ function AuthPage() {
         if (error.response?.status === 401 && !original._retry) {
           original._retry = true;
           try {
-            await refreshToken();
+            await handleTokenRefresh();
             return $api(original);
           } catch (refreshError) {
             return Promise.reject(error);
@@ -415,6 +509,18 @@ function AuthPage() {
       $api.interceptors.response.eject(responseInterceptor);
     };
   }, []);
+
+  // Show loading spinner while checking authentication
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 via-green-50 to-green-50">
+        <div className="flex flex-col items-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-green-500 border-t-transparent mb-4"></div>
+          <p className="text-gray-600">Yuklanmoqda...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-green-50 via-green-50 to-green-50 relative overflow-hidden">
@@ -468,6 +574,32 @@ function AuthPage() {
             ))}
           </div>
 
+          {/* Login Type Selector (only for login tab) */}
+          {activeTab === "login" && (
+            <div className="flex bg-gray-50 rounded-xl p-1 mb-6">
+              <button
+                onClick={() => setLoginType("sms")}
+                className={`flex-1 py-2 px-3 text-sm cursor-pointer font-medium rounded-lg transition-all duration-300 ${
+                  loginType === "sms"
+                    ? "bg-white text-green-600 shadow-sm"
+                    : "text-gray-600 hover:text-gray-800"
+                }`}
+              >
+                SMS orqali
+              </button>
+              <button
+                onClick={() => setLoginType("system")}
+                className={`flex-1 py-2 px-3 text-sm cursor-pointer font-medium rounded-lg transition-all duration-300 ${
+                  loginType === "system"
+                    ? "bg-white text-green-600 shadow-sm"
+                    : "text-gray-600 hover:text-gray-800"
+                }`}
+              >
+                Parol bilan
+              </button>
+            </div>
+          )}
+
           {/* Form */}
           <div className="space-y-6">
             <div className="text-center mb-6">
@@ -476,7 +608,9 @@ function AuthPage() {
               </h2>
               <p className="text-gray-600 text-sm">
                 {activeTab === "login"
-                  ? "Telefon raqamingizni kiriting, sizga SMS kod yuboramiz"
+                  ? loginType === "system"
+                    ? "Telefon raqam va parolingizni kiriting"
+                    : "Telefon raqamingizni kiriting, sizga SMS kod yuboramiz"
                   : "Yangi hisob yaratish uchun ma'lumotlaringizni kiriting"}
               </p>
             </div>
@@ -518,6 +652,23 @@ function AuthPage() {
               </div>
             </div>
 
+            {/* Password field for system login */}
+            {activeTab === "login" && loginType === "system" && (
+              <div className="relative">
+                <input
+                  type="password"
+                  placeholder="Parolingizni kiriting"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  onKeyPress={(e) => handleKeyPress(e, handleFormSubmit)}
+                  className="w-full px-4 py-3 border border-gray-300 outline-none rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 bg-gray-50 focus:bg-white"
+                />
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  🔒
+                </div>
+              </div>
+            )}
+
             <button
               onClick={handleFormSubmit}
               disabled={isLoading}
@@ -526,8 +677,12 @@ function AuthPage() {
               {isLoading ? (
                 <div className="flex items-center justify-center">
                   <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-2"></div>
-                  SMS yuborilmoqda...
+                  {activeTab === "login" && loginType === "system"
+                    ? "Kirilmoqda..."
+                    : "SMS yuborilmoqda..."}
                 </div>
+              ) : activeTab === "login" && loginType === "system" ? (
+                "Kirish"
               ) : (
                 "SMS Kodi Olish"
               )}

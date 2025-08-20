@@ -1,0 +1,116 @@
+{
+  "navbar": {
+    "location": "Tashkent",
+    "contact": "Contact Us",
+    "catalog": "CATALOG",
+    "search_placeholder": "Search products",
+    "brand_name": "CUSTOMS",
+    "brand_service": "SERVICE",
+    "download": "DOWNLOAD",
+    "notifications": "Notification",
+    "wishlist": "Wishlist",
+    "cart": "Cart",
+    "profile": "Profile",
+    "login": "LOGIN",
+    "search_results": "Search Results",
+    "recent_searches": "Recent Searches",
+    "clear_searches": "Clear",
+    "popular_searches": "Popular Searches",
+    "no_results": "Nothing found",
+    "no_categories": "No categories found",
+    "no_subcategories": "No products in this category yet",
+    "select_category": "Select a category",
+    "home": "Home"
+  },
+  "home": {
+    "title": "BS Market - The Best Online Store in Uzbekistan",
+    "description": "BS Market - the best online store in Uzbekistan. Electronics, clothing, household goods, and more at affordable prices. Fast delivery and quality service.",
+    "keywords": "online store, BS Market, electronics, clothing, household goods, Uzbekistan, shopping, affordable prices, fast delivery"
+  },
+  "discounted_products": {
+    "title": "Discounted Products",
+    "no_products": "No discounted products available at the moment",
+    "error_loading": "An error occurred while loading discounted products",
+    "error_message": "Error loading discounted products",
+    "retry_button": "Retry "
+  },
+  "product_card": {
+    "reviews": "reviews",
+    "loading": "Loading...",
+    "add_to_cart": "Add to Cart",
+    "add_to_cart_tooltip": "Add to cart",
+    "decrease_tooltip": "Decrease",
+    "increase_tooltip": "Increase"
+  },
+  "bestsellers": {
+    "title": "Best Sellers",
+    "no_products": "No products available at the moment",
+    "data_format_error": "Data format error",
+    "loading_error": "An error occurred while loading data",
+    "error_message": "Error loading products",
+    "retry_button": "Try again"
+  },
+  "services": {
+    "title": "Document Services",
+    "catalog": "Product Catalog",
+    "transport": "Transport Service",
+    "terms": "General Terms",
+    "stores": "Stores"
+  },
+  "about": {
+    "title": "About Us",
+    "archive": "Offers Archive",
+    "regulations": "Regulations",
+    "certificate": "Certificate",
+    "promocodes": "Promo Codes"
+  },
+  "catalogs": {
+    "title": "Catalogs",
+    "electronics": "Electronics Catalog",
+    "clothes": "Clothing Catalog",
+    "home": "Home Appliances Catalog",
+    "all": "All Catalogs"
+  },
+  "contact": {
+    "title": "Contact Information",
+    "telegram": "Telegram Support Bot",
+    "country": "Uzbekistan",
+    "city": "Tashkent City"
+  },
+  "newsletter": {
+    "title": "Subscribe to our newsletter",
+    "subtitle": "Stay updated with the latest offers and news",
+    "placeholder": "Your email address...",
+    "button": "Subscribe",
+    "socail_media": "Connect with us on social media"
+  },
+  "rights": "All rights reserved",
+  "policies": {
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Use",
+    "cookies": "Cookie Policy"
+  },
+  "product": {
+    "products": "Products",
+    "write_review": "Write a review",
+    "colors": "Colors",
+    "quantity": "Quantity",
+    "in_stock": "In stock",
+    "piece": "pcs",
+    "add_to_cart": "Add to cart",
+    "buy_now": "Buy now",
+    "description": "Description",
+    "details": "Product details",
+    "color": "Color",
+    "unit": "Unit",
+    "available": "Available",
+    "low_stock": "Low stock",
+    "out_of_stock": "Out of stock",
+    "with_discount": "With {{discount}}% discount"
+  },
+  "categories": {
+    "loading": "Loading...",
+    "notFound": "Categories not found",
+    "more": "More"
+  }
+}

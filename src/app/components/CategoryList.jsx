@@ -1,32 +1,31 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import $api from "../http/api";
+import i18next from "../../i18n/i18n";
+import { useTranslation } from "react-i18next";
 
 export default function CategoryList({ onMoreClick }) {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [language, setLanguage] = useState("UZ");
+  const { t } = useTranslation();
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
     const fetchCategories = async () => {
       try {
         setLoading(true);
         const response = await $api.get("/categories/get/all", {
-          params: {
-            page: 1,
-            limit: 50,
-            sort: "asc",
-          },
+          params: { page: 1, limit: 50, sort: "asc" },
         });
-        console.log("Categories API response:", response.data);
-        if (response.data.success) {
-          setCategories(response.data.data);
-        }
+        if (response.data.success) setCategories(response.data.data);
       } catch (error) {
-        console.error("Error fetching categories:", error);
         setCategories([]);
       } finally {
         setLoading(false);
@@ -34,33 +33,34 @@ export default function CategoryList({ onMoreClick }) {
     };
 
     fetchCategories();
-  }, []);
-
+  }, [mounted]);
   const getCategoryName = (category) => {
     if (!category) return "";
 
-    switch (language) {
-      case "RU":
-        return category.nameRu || category.name;
-      case "ENG":
-        return category.nameEn || category.name;
+    switch (i18next.language) {
+      case "ru":
+        return category.name_ru || category.name;
+      case "en":
+        return category.name_en || category.name;
       default:
         return category.name;
     }
   };
 
-  const previewCategories = categories.slice(0, 9);
-
+  const previewCategories = categories.slice(0, 8);
+  if (!mounted) return null;
   return (
     <div className="max-w-[1240px] w-full flex items-start justify-between pt-4 mx-auto">
       <div className="bg-white py-2 px-4 flex gap-10 items-center overflow-x-auto no-scrollbar max-[1100px]:hidden">
         {loading ? (
           <div className="flex items-center gap-2">
             <Loader2 className="animate-spin w-4 h-4 text-green-500" />
-            <span className="text-sm text-gray-600">Yuklanmoqda...</span>
+            <span className="text-sm text-gray-600">
+              {t("categories.loading")}
+            </span>
           </div>
         ) : categories.length === 0 ? (
-          <p className="text-sm text-gray-500">Kategoriyalar topilmadi</p>
+          <p className="text-sm text-gray-500">{t("categories.notFound")}</p>
         ) : (
           <>
             {previewCategories.map((cat, index) => (
@@ -78,7 +78,7 @@ export default function CategoryList({ onMoreClick }) {
               onClick={onMoreClick}
               className="text-[#249B73] font-semibold hover:underline whitespace-nowrap cursor-pointer"
             >
-              Yana →
+              {t("categories.more")} →
             </button>
           </>
         )}

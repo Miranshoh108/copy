@@ -9,7 +9,6 @@ import {
   Bell,
   LogOut,
   Camera,
-  Gift,
 } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import ProfileTab from "./info/ProfileTab";
@@ -38,7 +37,7 @@ const Profile = () => {
       setLoading(true);
       setError(null);
 
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("accessToken");
       if (!token) {
         throw new Error("Token mavjud emas");
       }
@@ -72,15 +71,12 @@ const Profile = () => {
           lastActivity: profileData.last_activity,
           telegramId: profileData.telegramId,
           tokenVersion: profileData.tokenVersion,
-          // Default qiymatlar (keyinchalik boshqa API'lardan to'ldirilishi mumkin)
-          totalOrders: 24, // Bu ma'lumot orders API dan kelishi kerak
-          totalSpent: "2,450,000", // Bu ma'lumot orders API dan kelishi kerak
-          loyaltyPoints: 1250, // Bu ma'lumot loyalty API dan kelishi kerak
           memberSince: new Date(profileData.createdAt).toLocaleDateString(
             "uz-UZ"
           ),
-          orders: [], // Orders API dan keladi
-          addresses: [], // Addresses API dan keladi
+          createdAt: profileData.createdAt,
+          step: profileData.step,
+          __v: profileData.__v,
         };
 
         setUser(formattedUser);
@@ -112,14 +108,14 @@ const Profile = () => {
   // Profile ma'lumotlarini yangilash
   const updateUserProfile = async (updatedData) => {
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("accessToken");
       if (!token) {
         throw new Error("Token mavjud emas");
       }
 
       $api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
-      const response = await $api.put("/users/profile/me", {
+      const response = await $api.put("/users/update/me", {
         firstName: updatedData.firstName,
         lastName: updatedData.lastName,
         email: updatedData.email,
@@ -128,7 +124,7 @@ const Profile = () => {
         age: updatedData.age,
       });
 
-      if (response.data.status === 200) {
+      if (response.data.status === 200 || response.status === 200) {
         // Yangilangan ma'lumotlarni qayta yuklash
         await fetchUserProfile();
         return true;
@@ -151,7 +147,7 @@ const Profile = () => {
     if (!file) return;
 
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("accessToken");
       if (!token) {
         throw new Error("Token mavjud emas");
       }
@@ -167,33 +163,14 @@ const Profile = () => {
         },
       });
 
-      if (response.data.status === 200) {
+      if (response.data.status === 200 || response.status === 200) {
         // Avatar muvaffaqiyatli yuklandi, user ma'lumotlarini yangilash
-        const newAvatarUrl = `${
-          process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"
-        }${response.data.avatar}`;
-
-        setUser((prev) => ({
-          ...prev,
-          avatar: newAvatarUrl,
-        }));
-
-        // LocalStorage'ni yangilash
-        const updatedUser = {
-          ...user,
-          avatar: newAvatarUrl,
-        };
-        localStorage.setItem("user", JSON.stringify(updatedUser));
+        await fetchUserProfile();
       }
     } catch (error) {
       console.error("Avatar yuklashda xatolik:", error);
-
-      // Fallback: faqat local ko'rinish uchun
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setUser((prev) => ({ ...prev, avatar: reader.result }));
-      };
-      reader.readAsDataURL(file);
+      // Xatolik haqida foydalanuvchiga xabar berish
+      setError("Avatar yuklashda xatolik yuz berdi");
     }
   };
 
@@ -203,7 +180,7 @@ const Profile = () => {
       id: "orders",
       icon: ShoppingBag,
       label: "Buyurtmalarim",
-      count: user?.orders?.length || 0,
+      count: null,
     },
     { id: "favorites", icon: Heart, label: "Sevimlilar", count: likes.length },
     { id: "cards", icon: CreditCard, label: "To'lov kartalari", count: null },
@@ -211,7 +188,7 @@ const Profile = () => {
       id: "addresses",
       icon: MapPin,
       label: "Manzillarim",
-      count: user?.addresses?.length || 0,
+      count: null,
     },
     { id: "notifications", icon: Bell, label: "Bildirishnomalar", count: null },
     { id: "settings", icon: Settings, label: "Sozlamalar", count: null },
@@ -219,7 +196,7 @@ const Profile = () => {
 
   const handleLogout = async () => {
     try {
-      const token = localStorage.getItem("token");
+      const token = localStorage.getItem("accessToken");
       if (token) {
         $api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
         // Server'ga logout so'rovi yuborish
@@ -228,11 +205,9 @@ const Profile = () => {
     } catch (error) {
       console.error("Logout xatolik:", error);
     } finally {
-      // Local ma'lumotlarni tozalash
-      localStorage.removeItem("token");
+      localStorage.removeItem("accessToken");
       localStorage.removeItem("user");
       localStorage.removeItem("avatar");
-      // Authorization header ni tozalash
       delete $api.defaults.headers.common["Authorization"];
       window.location.href = "/register";
     }
@@ -370,14 +345,22 @@ const Profile = () => {
 
                 <div className="mt-4 grid grid-cols-2 gap-4 text-center">
                   <div>
-                    <div className="text-2xl font-bold">{user.totalOrders}</div>
-                    <div className="text-green-200 text-xs">Buyurtmalar</div>
+                    <div className="text-xl font-bold">
+                      {user.role === "admin"
+                        ? "Admin"
+                        : user.isWorker
+                        ? "Xodim"
+                        : "Mijoz"}
+                    </div>
+                    <div className="text-green-200 text-xs">
+                      Foydalanuvchi turi
+                    </div>
                   </div>
                   <div>
-                    <div className="text-2xl font-bold">
-                      {user.loyaltyPoints}
+                    <div className="text-xl font-bold">
+                      {user.interests?.length || 0}
                     </div>
-                    <div className="text-green-200 text-xs">Bonus ball</div>
+                    <div className="text-green-200 text-xs">Qiziqishlar</div>
                   </div>
                 </div>
               </div>
@@ -426,6 +409,7 @@ const Profile = () => {
                 setIsEditing={setIsEditing}
                 setUser={setUser}
                 updateUserProfile={updateUserProfile}
+                refreshProfile={fetchUserProfile}
               />
             )}
             {activeTab === "orders" && <Orders />}
