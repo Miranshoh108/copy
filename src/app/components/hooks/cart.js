@@ -8,13 +8,11 @@ export const useCartStore = create(
     (set, get) => ({
       cart: [],
 
-      // Add item to cart
       addCart: (product) => {
         const { cart } = get();
         const existingItem = cart.find((item) => item.id === product.id);
 
         if (existingItem) {
-          // If item exists, increase quantity
           set({
             cart: cart.map((item) =>
               item.id === product.id
@@ -23,7 +21,6 @@ export const useCartStore = create(
             ),
           });
         } else {
-          // If new item, add to cart
           set({
             cart: [
               ...cart,
@@ -37,7 +34,6 @@ export const useCartStore = create(
         }
       },
 
-      // Remove item from cart
       removeCart: (productId) => {
         set({
           cart: get().cart.filter((item) => item.id !== productId),
@@ -48,7 +44,6 @@ export const useCartStore = create(
         set((state) => ({
           cart: state.cart.filter((item) => !item.checked),
         })),
-      // Update item quantity
       updateQuantity: (productId, quantity) => {
         if (quantity <= 0) {
           get().removeCart(productId);
@@ -62,7 +57,6 @@ export const useCartStore = create(
         });
       },
 
-      // Toggle item checked state
       toggleChecked: (productId) => {
         set({
           cart: get().cart.map((item) =>
@@ -71,26 +65,22 @@ export const useCartStore = create(
         });
       },
 
-      // Check all items
       onChecked: () => {
         set({
           cart: get().cart.map((item) => ({ ...item, checked: true })),
         });
       },
 
-      // Uncheck all items
       offChecked: () => {
         set({
           cart: get().cart.map((item) => ({ ...item, checked: false })),
         });
       },
 
-      // Clear entire cart
       clearCart: () => {
         set({ cart: [] });
       },
 
-      // Get total price of checked items
       getTotalPrice: () => {
         return get()
           .cart.filter((item) => item.checked)
@@ -103,7 +93,6 @@ export const useCartStore = create(
       },
       getCheckedItems: () => get().cart.filter((item) => item.checked),
 
-      // Get checked items count
       getCheckedCount: () => {
         return get().cart.filter((item) => item.checked).length;
       },

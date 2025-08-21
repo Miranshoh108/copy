@@ -1,6 +1,6 @@
 import { Montserrat } from "next/font/google";
 import "./globals.css";
-
+import ScrollToTop from "./components/ScrollToTop";
 const montserrat = Montserrat({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -20,6 +20,7 @@ export default async function RootLayout({ children }) {
         suppressHydrationWarning
       >
         {children}
+        <ScrollToTop />
       </body>
     </html>
   );

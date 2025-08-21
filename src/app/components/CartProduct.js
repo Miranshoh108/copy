@@ -20,7 +20,7 @@ export default function CartProduct({ product }) {
     setIsRemoving(true);
     setTimeout(() => {
       removeCart(product.id);
-    }, 200);
+    });
   };
 
   const formatPrice = (price) => {
@@ -150,7 +150,6 @@ export default function CartProduct({ product }) {
                 </button>
               </div>
 
-              {/* Remove Button */}
               <button
                 onClick={handleRemove}
                 className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg cursor-pointer  transition-colors"
@@ -171,7 +170,6 @@ export default function CartProduct({ product }) {
             </div>
           </div>
 
-          {/* Total Price for this item */}
           {product.quantity > 1 && (
             <div className="mt-2 text-right">
               <span className="text-sm text-gray-600">

@@ -39,7 +39,7 @@ export const useHomeLikes = create(
 
         try {
           await axios.post(
-            "https://your-api.com/api/liked-products", // <-- API URL
+            "https://your-api.com/api/liked-products", 
             { products: likes },
             {
               headers: {

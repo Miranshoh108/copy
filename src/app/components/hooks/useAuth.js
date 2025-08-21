@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import $api from "@/app/http/api";
 
@@ -10,7 +10,10 @@ export const useAuth = (redirectIfUnauthenticated = false) => {
   const [error, setError] = useState(null);
   const router = useRouter();
 
-  // Clear auth data helper
+  const isRefreshingRef = useRef(false);
+  const authCheckInProgressRef = useRef(false);
+  const interceptorsSetupRef = useRef(false);
+
   const clearAuthData = useCallback(() => {
     try {
       if (typeof window !== "undefined") {
@@ -26,18 +29,23 @@ export const useAuth = (redirectIfUnauthenticated = false) => {
     }
   }, []);
 
-  // Refresh token function
   const refreshToken = useCallback(async () => {
-    const storedRefreshToken =
-      typeof window !== "undefined"
-        ? localStorage.getItem("refreshToken")
-        : null;
-
-    if (!storedRefreshToken) {
-      throw new Error("No refresh token found");
+    if (isRefreshingRef.current) {
+      return null;
     }
 
+    isRefreshingRef.current = true;
+
     try {
+      const storedRefreshToken =
+        typeof window !== "undefined"
+          ? localStorage.getItem("refreshToken")
+          : null;
+
+      if (!storedRefreshToken) {
+        throw new Error("No refresh token available");
+      }
+      console.log("response", response);
       const response = await $api.post(
         "/auth/refresh/token",
         {},
@@ -45,12 +53,14 @@ export const useAuth = (redirectIfUnauthenticated = false) => {
           headers: {
             refreshToken: storedRefreshToken,
           },
+          // Don't use interceptors for this request to avoid loops
+          _skipAuthRetry: true,
         }
       );
 
-      if (response.data?.success) {
+      if (response.data?.success || response.data?.status === 200) {
         const { accessToken, refreshToken: newRefreshToken } =
-          response.data.data;
+          response.data.data || response.data;
 
         if (typeof window !== "undefined") {
           localStorage.setItem("accessToken", accessToken);
@@ -66,11 +76,17 @@ export const useAuth = (redirectIfUnauthenticated = false) => {
     } catch (error) {
       console.error("Token refresh error:", error);
       throw error;
+    } finally {
+      isRefreshingRef.current = false;
     }
   }, []);
 
-  // Check authentication status
   const checkAuth = useCallback(async () => {
+    if (authCheckInProgressRef.current) {
+      return;
+    }
+
+    authCheckInProgressRef.current = true;
     setLoading(true);
     setError(null);
 
@@ -80,7 +96,6 @@ export const useAuth = (redirectIfUnauthenticated = false) => {
           ? localStorage.getItem("accessToken")
           : null;
 
-      // If no access token, user is not authenticated
       if (!accessToken) {
         setIsAuthenticated(false);
         setUser(null);
@@ -91,8 +106,9 @@ export const useAuth = (redirectIfUnauthenticated = false) => {
       }
 
       try {
-        // Try to fetch user profile with current token
-        const response = await $api.get("/users/profile/me");
+        const response = await $api.get("/users/profile/me", {
+          _skipAuthRetry: true,
+        });
 
         if (response.data?.success) {
           const userData = response.data.data;
@@ -109,33 +125,39 @@ export const useAuth = (redirectIfUnauthenticated = false) => {
       } catch (apiError) {
         console.error("Initial token validation failed:", apiError);
 
-        // If 401 error, try to refresh token
         if (apiError.response?.status === 401) {
           try {
             console.log("Attempting token refresh...");
-            await refreshToken();
+            const newAccessToken = await refreshToken();
 
-            // Retry the profile request with new token
-            const retryResponse = await $api.get("/users/profile/me");
+            if (newAccessToken) {
+              const retryResponse = await $api.get("/users/profile/me", {
+                headers: {
+                  Authorization: `Bearer ${newAccessToken}`,
+                },
+                _skipAuthRetry: true,
+              });
 
-            if (retryResponse.data?.success) {
-              const userData = retryResponse.data.data;
+              if (retryResponse.data?.success) {
+                const userData = retryResponse.data.data;
 
-              if (typeof window !== "undefined") {
-                localStorage.setItem("user", JSON.stringify(userData));
+                if (typeof window !== "undefined") {
+                  localStorage.setItem("user", JSON.stringify(userData));
+                }
+
+                setIsAuthenticated(true);
+                setUser(userData);
+              } else {
+                throw new Error(
+                  "Failed to fetch user profile after token refresh"
+                );
               }
-
-              setIsAuthenticated(true);
-              setUser(userData);
             } else {
-              throw new Error(
-                "Failed to fetch user profile after token refresh"
-              );
+              throw new Error("Token refresh returned null");
             }
           } catch (refreshError) {
             console.error("Token refresh failed:", refreshError);
 
-            // Clear everything and redirect if needed
             clearAuthData();
 
             if (redirectIfUnauthenticated) {
@@ -145,7 +167,6 @@ export const useAuth = (redirectIfUnauthenticated = false) => {
             setError("Session expired. Please log in again.");
           }
         } else {
-          // For non-401 errors, clear auth data
           clearAuthData();
 
           if (redirectIfUnauthenticated) {
@@ -166,16 +187,15 @@ export const useAuth = (redirectIfUnauthenticated = false) => {
       setError("Authentication check failed.");
     } finally {
       setLoading(false);
+      authCheckInProgressRef.current = false;
     }
   }, [refreshToken, clearAuthData, redirectIfUnauthenticated, router]);
 
-  // Logout function
   const logout = useCallback(() => {
     clearAuthData();
     router.push("/register");
   }, [clearAuthData, router]);
 
-  // Update user data
   const updateUser = useCallback((newUserData) => {
     try {
       if (typeof window !== "undefined") {
@@ -187,13 +207,17 @@ export const useAuth = (redirectIfUnauthenticated = false) => {
     }
   }, []);
 
-  // Load user data from localStorage on initial load
   useEffect(() => {
     if (typeof window !== "undefined" && !user && !loading) {
       try {
         const storedUser = localStorage.getItem("user");
         if (storedUser) {
-          setUser(JSON.parse(storedUser));
+          const parsedUser = JSON.parse(storedUser);
+          setUser(parsedUser);
+          const accessToken = localStorage.getItem("accessToken");
+          if (accessToken) {
+            setIsAuthenticated(true);
+          }
         }
       } catch (err) {
         console.error("Error loading stored user data:", err);
@@ -201,15 +225,23 @@ export const useAuth = (redirectIfUnauthenticated = false) => {
     }
   }, [user, loading]);
 
-  // Initial auth check
   useEffect(() => {
     checkAuth();
-  }, [checkAuth]);
+  }, []); 
 
-  // Set up axios interceptors
   useEffect(() => {
+    if (interceptorsSetupRef.current) {
+      return;
+    }
+
+    interceptorsSetupRef.current = true;
+
     const requestInterceptor = $api.interceptors.request.use(
       (config) => {
+        if (config._skipAuthRetry) {
+          return config;
+        }
+
         const token =
           typeof window !== "undefined"
             ? localStorage.getItem("accessToken")
@@ -230,47 +262,46 @@ export const useAuth = (redirectIfUnauthenticated = false) => {
       async (error) => {
         const original = error.config;
 
-        // Only retry once and if it's a 401 error
-        if (error.response?.status === 401 && !original._retry) {
-          original._retry = true;
-
-          try {
-            await refreshToken();
-            // Update the failed request with new token
-            const newToken =
-              typeof window !== "undefined"
-                ? localStorage.getItem("accessToken")
-                : null;
-
-            if (newToken) {
-              original.headers.Authorization = `Bearer ${newToken}`;
-            }
-
-            return $api(original);
-          } catch (refreshError) {
-            console.error("Token refresh failed in interceptor:", refreshError);
-
-            // Clear auth data and redirect if needed
-            clearAuthData();
-
-            if (redirectIfUnauthenticated) {
-              router.push("/register");
-            }
-
-            return Promise.reject(error);
-          }
+        if (
+          original._skipAuthRetry ||
+          original._retry ||
+          isRefreshingRef.current ||
+          error.response?.status !== 401
+        ) {
+          return Promise.reject(error);
         }
 
-        return Promise.reject(error);
+        original._retry = true;
+
+        try {
+          const newAccessToken = await refreshToken();
+
+          if (newAccessToken) {
+            original.headers.Authorization = `Bearer ${newAccessToken}`;
+            return $api(original);
+          } else {
+            throw new Error("Failed to refresh token");
+          }
+        } catch (refreshError) {
+          console.error("Token refresh failed in interceptor:", refreshError);
+
+          clearAuthData();
+
+          if (redirectIfUnauthenticated) {
+            router.push("/register");
+          }
+
+          return Promise.reject(error);
+        }
       }
     );
 
-    // Cleanup interceptors
     return () => {
       $api.interceptors.request.eject(requestInterceptor);
       $api.interceptors.response.eject(responseInterceptor);
+      interceptorsSetupRef.current = false;
     };
-  }, [refreshToken, clearAuthData, redirectIfUnauthenticated, router]);
+  }, []); 
 
   return {
     isAuthenticated,

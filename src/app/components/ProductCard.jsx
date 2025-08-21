@@ -121,7 +121,7 @@ export default function ProductCard({ product }) {
       addCart(cartProduct);
       setAdded(true);
       setIsLoading(false);
-    }, 300);
+    });
   };
 
   const handleProductClick = () => {
@@ -189,7 +189,7 @@ export default function ProductCard({ product }) {
       onClick={handleProductClick}
     >
       {price && discountedPrice && price > discountedPrice && (
-        <div className="absolute top-2 left-2 bg-green-600 text-white text-xs font-bold px-2 py-1 rounded-lg shadow-md z-20">
+        <div className="absolute top-2 left-2 bg-[#249B73] text-white text-xs font-bold px-2 py-1 rounded-lg shadow-md z-20">
           -{Math.round(((price - discountedPrice) / price) * 100)}%
         </div>
       )}
@@ -240,15 +240,16 @@ export default function ProductCard({ product }) {
         {price && discountedPrice && price !== discountedPrice ? (
           <>
             <span className="text-gray-400 line-through text-sm">
-              {price} {currencyText}
+              {new Intl.NumberFormat("ru-RU").format(price)} {currencyText}
             </span>
             <span className="text-gray-800 font-bold text-lg">
-              {discountedPrice} {currencyText}
+              {new Intl.NumberFormat("ru-RU").format(discountedPrice)}{" "}
+              {currencyText}
             </span>
           </>
         ) : (
           <p className="text-lg font-bold text-gray-800">
-            {price} {currencyText}
+            {new Intl.NumberFormat("ru-RU").format(price)} {currencyText}
           </p>
         )}
       </div>

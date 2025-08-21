@@ -88,25 +88,130 @@ export default function Navbar() {
     }
 
     try {
+      const searchParams = {
+        name: query,
+        q: query,
+        limit: 10,
+      };
+
       const res = await $api.get("/products/get/query", {
-        params: { q: query, limit: 10 },
+        params: searchParams,
       });
 
-      if (res.data && Array.isArray(res.data)) {
-        setSuggestions(res.data);
-      } else {
-        setSuggestions([]);
+      console.log("Search API Response:", res.data);
+
+      // Handle different response structures
+      let products = [];
+
+      if (res.data && res.data.results && Array.isArray(res.data.results)) {
+        // If response has results array (like in your JSON structure)
+        products = res.data.results;
+      } else if (res.data && Array.isArray(res.data)) {
+        // If response is directly an array
+        products = res.data;
+      } else if (res.data && res.data.data && Array.isArray(res.data.data)) {
+        // If response has data property with array
+        products = res.data.data;
       }
+
+      // Filter and format products for suggestions
+      const suggestions = products.map((product) => ({
+        _id: product._id,
+        name: getProductName(product), // Get localized name
+        shortDescription: getProductDescription(product),
+        mainImage: product.mainImage,
+        price:
+          product.variants && product.variants[0]
+            ? product.variants[0].price
+            : null,
+      }));
+
+      setSuggestions(suggestions);
     } catch (err) {
       console.error("Search API error:", err);
       setSuggestions([]);
     }
   };
 
+  const getProductName = (product) => {
+    switch (i18next.language) {
+      case "ru":
+        return product.name_ru || product.name;
+      case "en":
+        return product.name_en || product.name;
+      default:
+        return product.name;
+    }
+  };
+
+  const getProductDescription = (product) => {
+    switch (i18next.language) {
+      case "ru":
+        return product.shortDescription_ru || product.shortDescription;
+      case "en":
+        return product.shortDescription_en || product.shortDescription;
+      default:
+        return product.shortDescription;
+    }
+  };
+
+  const SearchResults = ({ suggestions, onSelect, searchQuery }) => {
+    const { t } = useTranslation();
+
+    if (!suggestions.length) {
+      return (
+        <div className="p-4 text-center text-gray-500">
+          <Search size={24} className="mx-auto mb-2 text-gray-300" />
+          <p className="text-sm">
+            {searchQuery ? t("navbar.no_results") : t("navbar.start_typing")}
+          </p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="max-h-80 overflow-y-auto">
+        {suggestions.map((product) => (
+          <button
+            key={product._id}
+            onClick={() => onSelect(product.name)}
+            className="w-full text-left px-3 py-3 hover:bg-gray-50 rounded-md flex items-center gap-3 transition-colors border-b border-gray-50 last:border-b-0"
+          >
+            {product.mainImage && (
+              <img
+                src={`${process.env.NEXT_PUBLIC_API_URL}/${product.mainImage}`}
+                alt={product.name}
+                className="w-10 h-10 object-cover rounded-md"
+                onError={(e) => {
+                  e.target.style.display = "none";
+                }}
+              />
+            )}
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-gray-900 truncate">
+                {product.name}
+              </p>
+              {product.shortDescription && (
+                <p className="text-xs text-gray-500 truncate">
+                  {product.shortDescription}
+                </p>
+              )}
+            </div>
+            {product.price && (
+              <div className="text-sm font-medium text-green-600">
+                {product.price.toLocaleString()} so'm
+              </div>
+            )}
+          </button>
+        ))}
+      </div>
+    );
+  };
+
   useEffect(() => {
     const timer = setTimeout(() => {
       fetchSearchSuggestions(searchQuery);
-    }, 300);
+    });
 
     return () => clearTimeout(timer);
   }, [searchQuery]);
@@ -166,7 +271,6 @@ export default function Navbar() {
             sort: "asc",
           },
         });
-        console.log("Categories API response:", response.data);
         if (response.data.success) {
           setCategories(response.data.data);
           if (response.data.data.length > 0) {
@@ -225,7 +329,7 @@ export default function Navbar() {
         }
       } catch (error) {
         console.error("User data parsing error:", error);
-        localStorage.removeItem("user"); 
+        localStorage.removeItem("user");
       }
     }
   }, []);
@@ -253,7 +357,7 @@ export default function Navbar() {
       setTimeout(() => {
         setIsOpen(false);
         setIsAnimating(false);
-      }, 200);
+      });
     } else {
       setIsOpen(true);
     }
@@ -591,7 +695,7 @@ export default function Navbar() {
               </Link>
             ) : (
               <Link className="self-start" href="/register">
-                <button className="px-8 py-3 text-black rounded-md cursor-pointer bg-gradient-to-r from-[#EED3DC] to-[#CDD6FD] hover:from-[#e6c7d3] hover:to-[#c4cefb] transition-all duration-200 transform hover:scale-105">
+                <button className="px-8 py-3 text-white rounded-md cursor-pointer bg-[#249B73] from-[#EED3DC] to-[#CDD6FD] hover:from-[#e6c7d3] hover:to-[#c4cefb] transition-all duration-200 transform hover:scale-105">
                   {mounted ? t("navbar.login") : null}
                 </button>
               </Link>
@@ -682,12 +786,6 @@ export default function Navbar() {
                                       iconElement.style.display =
                                         "inline-block";
                                     }
-                                  }}
-                                  onLoad={(e) => {
-                                    console.log(
-                                      "Image loaded successfully:",
-                                      imageUrl
-                                    );
                                   }}
                                 />
                               ) : null}

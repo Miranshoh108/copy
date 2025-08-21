@@ -24,7 +24,7 @@ const Favorites = () => {
       });
 
       setIsLoading((prev) => ({ ...prev, [product.id]: false }));
-    }, 300);
+    }, );
   };
 
   const handleQuantityChange = (e, productId, change) => {

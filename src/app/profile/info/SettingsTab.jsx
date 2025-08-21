@@ -113,7 +113,7 @@ const SettingsTab = ({ onLogout, currentUser }) => {
         localStorage.setItem("userSettings", JSON.stringify(userSettings));
         setSaveStatus("success");
 
-        setTimeout(() => setSaveStatus(null), 3000);
+        setTimeout(() => setSaveStatus(null));
       } else {
         throw new Error("Sozlamalarni saqlashda xatolik");
       }
@@ -124,7 +124,7 @@ const SettingsTab = ({ onLogout, currentUser }) => {
       // Fallback: faqat localStorage'ga saqlash
       localStorage.setItem("userSettings", JSON.stringify(userSettings));
 
-      setTimeout(() => setSaveStatus(null), 3000);
+      setTimeout(() => setSaveStatus(null));
     } finally {
       setLoading(false);
     }

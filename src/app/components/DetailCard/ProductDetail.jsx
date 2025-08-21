@@ -164,7 +164,7 @@ export default function ProductDetail() {
   // Reset modal animation
   useEffect(() => {
     if (modalAnimate) {
-      const timer = setTimeout(() => setModalAnimate(false), 500);
+      const timer = setTimeout(() => setModalAnimate(false));
       return () => clearTimeout(timer);
     }
   }, [modalAnimate]);
@@ -265,7 +265,7 @@ export default function ProductDetail() {
       setAdded(true);
       setQuantity(1);
       setIsLoading(false);
-    }, 300);
+    });
   };
 
   const handleBuyNow = () => {
@@ -331,7 +331,7 @@ export default function ProductDetail() {
 
   useEffect(() => {
     if (animate) {
-      const timer = setTimeout(() => setAnimate(false), 500);
+      const timer = setTimeout(() => setAnimate(false));
       return () => clearTimeout(timer);
     }
   }, [animate]);

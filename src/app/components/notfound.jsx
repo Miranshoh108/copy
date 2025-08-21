@@ -29,7 +29,7 @@ export default function NotFound() {
     setIsAnimating(true);
     setTimeout(() => {
       window.history.back();
-    }, 300);
+    }, );
   };
 
   const popularProducts = [

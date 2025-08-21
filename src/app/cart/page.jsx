@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useState, useEffect } from "react";
 import Footer from "../components/Footer";
 import Head from "next/head";
@@ -10,7 +9,6 @@ import Image from "next/image";
 import Button from "../components/ui/button";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../components/hooks/useAuth";
-import NewProducts from "../components/NewProducts";
 
 export default function Cart() {
   const { cart, onChecked, offChecked, getTotalPrice, getCheckedCount } =
@@ -40,17 +38,6 @@ export default function Cart() {
     },
   };
 
-  // Handle authentication state changes
-  useEffect(() => {
-    if (!authLoading && isAuthenticated === false) {
-      setAuthError(
-        "Siz tizimga kirmagan holdasiz. Buyurtma berish uchun ro'yxatdan o'ting."
-      );
-    } else {
-      setAuthError("");
-    }
-  }, [isAuthenticated, authLoading]);
-
   const toggleChecked = () => {
     if (isAllChecked) {
       offChecked();
@@ -65,13 +52,11 @@ export default function Cart() {
       return;
     }
 
-    // Check authentication status before proceeding
     if (authLoading) {
-      return; // Wait for auth check to complete
+      return;
     }
 
     if (!isAuthenticated) {
-      // Save redirect path and go to register
       if (typeof window !== "undefined") {
         localStorage.setItem("redirectAfterLogin", "/checkout");
       }
@@ -80,10 +65,8 @@ export default function Cart() {
     }
 
     try {
-      // Get selected items
       const selectedItems = cart.filter((item) => item.checked);
 
-      // Create new order
       const newOrder = {
         id: Date.now(),
         status: "processing",
@@ -94,21 +77,17 @@ export default function Cart() {
       };
 
       if (typeof window !== "undefined") {
-        // Get existing orders
         const existingOrders = JSON.parse(
           localStorage.getItem("orders") || "[]"
         );
 
-        // Add new order
         const updatedOrders = [newOrder, ...existingOrders];
         localStorage.setItem("orders", JSON.stringify(updatedOrders));
 
-        // Remove selected items from cart
         const remainingCart = cart.filter((item) => !item.checked);
         localStorage.setItem("cart", JSON.stringify(remainingCart));
       }
 
-      // Navigate to checkout
       route.push("/checkout");
     } catch (error) {
       console.error("Checkout error:", error);
@@ -145,10 +124,27 @@ export default function Cart() {
 
   const discount = calculateDiscount();
   const total = subtotal - discount;
-  const delivery = subtotal > 200000 ? 0 : 25000;
+  const calculateDelivery = () => {
+    const hasKg = cart.some((item) => item.kg);
+
+    if (hasKg) {
+      const totalKg = cart
+        .filter((item) => item.kg)
+        .reduce((sum, item) => sum + item.kg, 0);
+      return totalKg * 15000; 
+    }
+
+    if (subtotal > 0) {
+      const per100k = Math.ceil(subtotal / 100000);
+      return per100k * 10000; 
+    }
+
+    return Math.floor(subtotal * 0.1); 
+  };
+
+  const delivery = calculateDelivery();
   const finalTotal = total + delivery;
 
-  // Retry authentication
   const retryAuth = () => {
     setAuthError("");
     checkAuth();
@@ -164,7 +160,6 @@ export default function Cart() {
       <Navbar />
 
       <div className="max-w-7xl mx-auto px-4 py-6">
-        {/* Authentication Error Banner */}
         {authError && (
           <div className="mb-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
             <div className="flex items-start">
@@ -204,7 +199,6 @@ export default function Cart() {
         )}
 
         {cart.length === 0 ? (
-          // Empty Cart State
           <div className="flex flex-col items-center justify-center min-h-[500px]">
             <div className="text-center max-w-md">
               <div className="mb-8">
@@ -235,9 +229,7 @@ export default function Cart() {
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Cart Items - Left Side */}
             <div className="lg:col-span-2 space-y-4">
-              {/* Header */}
               <div className="flex items-center justify-between mb-6">
                 <h1 className="text-2xl font-semibold text-gray-900">
                   Savatcha
@@ -245,7 +237,6 @@ export default function Cart() {
                 <span className="text-gray-500">{cart.length} ta mahsulot</span>
               </div>
 
-              {/* Enhanced Select All */}
               <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-200">
                 <div className="flex items-center justify-between">
                   <label className="flex items-center cursor-pointer group">
@@ -289,7 +280,6 @@ export default function Cart() {
                   </div>
                 </div>
 
-                {/* Progress bar for selected items */}
                 {cart.length > 0 && (
                   <div className="mt-3">
                     <div className="w-full bg-gray-200 rounded-full h-1.5">
@@ -304,7 +294,6 @@ export default function Cart() {
                 )}
               </div>
 
-              {/* Products List */}
               <div className="space-y-3">
                 {cart.map((product, index) => (
                   <div
@@ -317,9 +306,7 @@ export default function Cart() {
               </div>
             </div>
 
-            {/* Order Summary - Right Side */}
             <div className="space-y-4">
-              {/* Promo Code */}
               <div className="bg-white rounded-lg p-6 shadow-sm border">
                 <h3 className="font-semibold text-gray-900 mb-4">Promokod</h3>
 
@@ -378,7 +365,6 @@ export default function Cart() {
                 )}
               </div>
 
-              {/* Order Total */}
               <div className="bg-white rounded-lg p-6 shadow-sm border">
                 <h3 className="font-semibold text-gray-900 mb-4">
                   Buyurtmangiz
@@ -439,7 +425,6 @@ export default function Cart() {
                 )}
               </div>
 
-              {/* Benefits */}
               <div className="bg-gradient-to-r from-green-50 to-green-50 rounded-lg p-4 border">
                 <div className="space-y-2">
                   <div className="flex items-center text-sm text-gray-700">

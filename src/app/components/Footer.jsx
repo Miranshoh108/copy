@@ -13,9 +13,7 @@ const Footer = () => {
   return (
     <footer className="bg-white border-t border-gray-200 mt-16">
       <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-        {/* Main Footer Content */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
-          {/* Column 1 - Services */}
           <div>
             <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">
               {t("services.title")}
@@ -44,7 +42,6 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Column 2 - About Us */}
           <div>
             <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">
               {t("about.title")}
@@ -73,7 +70,6 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Column 3 - Catalogs */}
           <div>
             <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">
               {t("catalogs.title")}
@@ -102,7 +98,6 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Column 4 - Contact Info */}
           <div className="sm:col-span-2 lg:col-span-1">
             <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">
               {t("contact.title")}
@@ -269,7 +264,6 @@ const Footer = () => {
           </div>
         </div>
 
-        {/* Newsletter */}
         <div className="mt-8 sm:mt-12 pt-6 sm:pt-8 border-t border-gray-200">
           <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center space-y-4 lg:space-y-0">
             <div>
@@ -294,7 +288,6 @@ const Footer = () => {
           </div>
         </div>
 
-        {/* Bottom Bar */}
         <div className="mt-6 sm:mt-8 pt-6 border-t border-gray-200">
           <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center">
             <div className="flex flex-col sm:flex-row sm:items-center">

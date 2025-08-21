@@ -18,17 +18,28 @@ function AuthPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [tempRegistrationData, setTempRegistrationData] = useState(null);
   const [smsStep, setSmsStep] = useState(""); // "login" or "register"
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true); // Add loading state for auth check
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+
   const inputRefs = useRef([]);
   const router = useRouter();
+  const authCheckDoneRef = useRef(false);
+  const interceptorsSetupRef = useRef(false);
 
+  // Single auth check on mount
   useEffect(() => {
-    checkAuthStatus();
+    if (!authCheckDoneRef.current) {
+      checkAuthStatus();
+      authCheckDoneRef.current = true;
+    }
   }, []);
 
   const checkAuthStatus = async () => {
     setIsCheckingAuth(true);
-    const accessToken = localStorage.getItem("accessToken");
+
+    const accessToken =
+      typeof window !== "undefined"
+        ? localStorage.getItem("accessToken")
+        : null;
 
     if (!accessToken) {
       setIsCheckingAuth(false);
@@ -36,7 +47,12 @@ function AuthPage() {
     }
 
     try {
-      const { data } = await $api.get("/users/profile/me");
+      const { data } = await $api.get("/users/profile/me", {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+        _skipAuthRetry: true, // Prevent interceptor retry during initial check
+      });
 
       if (data?.success && data?.data) {
         const user = data.data;
@@ -50,13 +66,26 @@ function AuthPage() {
       }
     } catch (error) {
       console.error("Token verification error:", error);
-      // Only try refresh if we have a refresh token
-      const refreshToken = localStorage.getItem("refreshToken");
+
+      // Only try refresh if we have a refresh token and it's a 401 error
+      const refreshToken =
+        typeof window !== "undefined"
+          ? localStorage.getItem("refreshToken")
+          : null;
+
       if (refreshToken && error.response?.status === 401) {
         try {
           await handleTokenRefresh();
+
           // Retry checking auth after refresh
-          const retryResponse = await $api.get("/users/profile/me");
+          const newAccessToken = localStorage.getItem("accessToken");
+          const retryResponse = await $api.get("/users/profile/me", {
+            headers: {
+              Authorization: `Bearer ${newAccessToken}`,
+            },
+            _skipAuthRetry: true,
+          });
+
           if (retryResponse.data?.success && retryResponse.data?.data) {
             const user = retryResponse.data.data;
             localStorage.setItem("user", JSON.stringify(user));
@@ -80,7 +109,6 @@ function AuthPage() {
 
   const showNotification = (type, message) => {
     setNotification({ type, message });
-    setTimeout(() => setNotification({ type: "", message: "" }), 4000);
   };
 
   const handleTabChange = (tab) => {
@@ -217,7 +245,6 @@ function AuthPage() {
       const response = await $api.post("/auth/system/login", requestData);
 
       if (response.data.status === 200) {
-        // Handle the response structure from your API
         const authData = {
           user: {
             firstName: response.data.firstName || "",
@@ -226,14 +253,14 @@ function AuthPage() {
             phoneNumber: phoneNumber.replace(/[^\d]/g, ""),
           },
           accessToken: response.data.accessToken,
-          refreshToken: response.data.refreshToken || null, // Get refresh token from response if available
+          refreshToken: response.data.refreshToken || null,
         };
 
         await handleAuthSuccess(authData);
 
         setTimeout(() => {
           router.push("/");
-        }, 1500);
+        }, 1000);
       } else {
         showNotification("error", "Login ma'lumotlari noto'g'ri!");
       }
@@ -247,7 +274,6 @@ function AuthPage() {
     }
   };
 
-  // SMS-based login (existing functionality)
   const handleLoginRequest = async () => {
     if (!validatePhone()) return;
 
@@ -360,7 +386,7 @@ function AuthPage() {
 
         setTimeout(() => {
           router.push("/");
-        }, 1500);
+        }, 1000);
       } else {
         showNotification(
           "error",
@@ -396,12 +422,14 @@ function AuthPage() {
           headers: {
             refreshToken: storedRefreshToken,
           },
+          _skipAuthRetry: true, // Prevent interceptor loops
         }
       );
 
-      if (response.data.success) {
+      if (response.data.success || response.data.status === 200) {
         const { accessToken, refreshToken: newRefreshToken } =
-          response.data.data;
+          response.data.data || response.data;
+
         localStorage.setItem("accessToken", accessToken);
         if (newRefreshToken) {
           localStorage.setItem("refreshToken", newRefreshToken);
@@ -434,7 +462,9 @@ function AuthPage() {
       const newCode = [...smsCode];
       newCode[index] = value;
       setSmsCode(newCode);
-      if (value && index < 5) inputRefs.current[index + 1]?.focus();
+      if (value && index < 5) {
+        setTimeout(() => inputRefs.current[index + 1]?.focus(), 0);
+      }
     }
   };
 
@@ -470,10 +500,21 @@ function AuthPage() {
     setSmsStep("");
   };
 
-  // Remove the redirect effect - let checkAuthStatus handle it
+  // Setup interceptors only once
   useEffect(() => {
+    if (interceptorsSetupRef.current) {
+      return;
+    }
+
+    interceptorsSetupRef.current = true;
+
     const requestInterceptor = $api.interceptors.request.use(
       (config) => {
+        // Skip interceptor if marked
+        if (config._skipAuthRetry) {
+          return config;
+        }
+
         const token = localStorage.getItem("accessToken");
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
@@ -490,14 +531,26 @@ function AuthPage() {
       async (error) => {
         const original = error.config;
 
-        if (error.response?.status === 401 && !original._retry) {
-          original._retry = true;
-          try {
-            await handleTokenRefresh();
+        // Skip retry if already tried, marked to skip, or not 401
+        if (
+          original._retry ||
+          original._skipAuthRetry ||
+          error.response?.status !== 401
+        ) {
+          return Promise.reject(error);
+        }
+
+        original._retry = true;
+
+        try {
+          const newToken = await handleTokenRefresh();
+          if (newToken) {
+            original.headers.Authorization = `Bearer ${newToken}`;
             return $api(original);
-          } catch (refreshError) {
-            return Promise.reject(error);
           }
+        } catch (refreshError) {
+          console.error("Token refresh failed in interceptor:", refreshError);
+          return Promise.reject(error);
         }
 
         return Promise.reject(error);
@@ -507,8 +560,19 @@ function AuthPage() {
     return () => {
       $api.interceptors.request.eject(requestInterceptor);
       $api.interceptors.response.eject(responseInterceptor);
+      interceptorsSetupRef.current = false;
     };
-  }, []);
+  }, []); // Empty dependency array
+
+  // Auto-dismiss notifications
+  useEffect(() => {
+    if (notification.message) {
+      const timer = setTimeout(() => {
+        setNotification({ type: "", message: "" });
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [notification]);
 
   // Show loading spinner while checking authentication
   if (isCheckingAuth) {
