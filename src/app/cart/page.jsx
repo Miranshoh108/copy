@@ -8,8 +8,6 @@ import CartProduct from "../components/CartProduct";
 import Image from "next/image";
 import Button from "../components/ui/button";
 import { useRouter } from "next/navigation";
-import { useAuth } from "../components/hooks/useAuth";
-
 export default function Cart() {
   const { cart, onChecked, offChecked, getTotalPrice, getCheckedCount } =
     useCartStore();
@@ -17,12 +15,43 @@ export default function Cart() {
   const [appliedPromo, setAppliedPromo] = useState(null);
   const [promoError, setPromoError] = useState("");
   const [authError, setAuthError] = useState("");
-  const { isAuthenticated, loading: authLoading, checkAuth } = useAuth();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState(null);
   const isAllChecked = cart.every((item) => item.checked);
   const subtotal = getTotalPrice();
   const checkedCount = getCheckedCount();
   const route = useRouter();
-
+  useEffect(() => {
+    checkAuthStatus();
+  }, []);
+  const checkAuthStatus = () => {
+    setAuthLoading(true);
+    try {
+      const accessToken =
+        typeof window !== "undefined"
+          ? localStorage.getItem("accessToken")
+          : null;
+      const storedUser =
+        typeof window !== "undefined" ? localStorage.getItem("user") : null;
+      if (accessToken && storedUser) {
+        const user = JSON.parse(storedUser);
+        setCurrentUser(user);
+        setIsAuthenticated(true);
+        setAuthError("");
+      } else {
+        setIsAuthenticated(false);
+        setCurrentUser(null);
+      }
+    } catch (error) {
+      console.error("Auth check error:", error);
+      setIsAuthenticated(false);
+      setCurrentUser(null);
+      setAuthError("Autentifikatsiya tekshirishda xatolik yuz berdi");
+    } finally {
+      setAuthLoading(false);
+    }
+  };
   const promoCodes = {
     UZUM10: { discount: 10, type: "percent", description: "10% chegirma" },
     WELCOME15: { discount: 15, type: "percent", description: "15% chegirma" },
@@ -32,7 +61,7 @@ export default function Cart() {
       description: "50,000 so'm chegirma",
     },
     NEWUSER: {
-      discount: 20,
+      discount: 50,
       type: "percent",
       description: "20% chegirma yangi foydalanuvchi uchun",
     },
@@ -48,7 +77,7 @@ export default function Cart() {
 
   const handleCheckout = async () => {
     if (checkedCount === 0) {
-      alert("Buyurtma berish uchun kamida bitta mahsulot tanlang");
+      console.log("Buyurtma berish uchun kamida bitta mahsulot tanlang");
       return;
     }
 
@@ -91,9 +120,6 @@ export default function Cart() {
       route.push("/checkout");
     } catch (error) {
       console.error("Checkout error:", error);
-      alert(
-        "Buyurtma berishda xatolik yuz berdi. Iltimos, qaytadan urinib ko'ring."
-      );
     }
   };
 
@@ -124,6 +150,7 @@ export default function Cart() {
 
   const discount = calculateDiscount();
   const total = subtotal - discount;
+
   const calculateDelivery = () => {
     const hasKg = cart.some((item) => item.kg);
 
@@ -131,15 +158,15 @@ export default function Cart() {
       const totalKg = cart
         .filter((item) => item.kg)
         .reduce((sum, item) => sum + item.kg, 0);
-      return totalKg * 15000; 
+      return totalKg * 15000;
     }
 
     if (subtotal > 0) {
       const per100k = Math.ceil(subtotal / 100000);
-      return per100k * 10000; 
+      return per100k * 10000;
     }
 
-    return Math.floor(subtotal * 0.1); 
+    return Math.floor(subtotal * 0.1);
   };
 
   const delivery = calculateDelivery();
@@ -147,13 +174,13 @@ export default function Cart() {
 
   const retryAuth = () => {
     setAuthError("");
-    checkAuth();
+    checkAuthStatus();
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Head>
-        <title>Savatcha - Bojxona Servis</title>
+        <title>Bojxona Servis</title>
         <meta name="description" content="Online shopping platform" />
       </Head>
 

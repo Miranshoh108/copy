@@ -352,10 +352,10 @@ export default function ProductDetail() {
           </span>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-6 md:gap-10">
-          <div className="w-full lg:w-1/2 flex flex-col gap-6">
+        <div className="flex flex-col lg:flex-row gap-6 ">
+          <div className="w-full lg:w-[60%] flex flex-col gap-6">
             <div className="relative">
-              <div className="flex justify-center w-full max-w-full h-[600px] lg:max-w-[500px] aspect-square bg-white rounded-xl relative overflow-hidden shadow-md">
+              <div className="flex justify-center w-full max-w-full h-[600px] lg:max-w-[600px] aspect-square bg-white rounded-xl relative overflow-hidden shadow-md">
                 <div className="relative w-full h-full flex items-center justify-center p-4">
                   <Image
                     src={images[activeIndex] || "/images/placeholder.png"}
@@ -461,7 +461,7 @@ export default function ProductDetail() {
             )}
           </div>
 
-          <div className="w-full lg:w-1/2">
+          <div className="w-full lg:w-[40%]">
             <div className="mb-6">
               <div className="flex flex-col md:flex-row md:items-start justify-between gap-3 mb-3">
                 <h1 className="text-[#1E1E1E] font-bold text-2xl lg:text-3xl leading-tight">

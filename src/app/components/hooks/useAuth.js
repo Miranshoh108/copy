@@ -45,7 +45,7 @@ export const useAuth = (redirectIfUnauthenticated = false) => {
       if (!storedRefreshToken) {
         throw new Error("No refresh token available");
       }
-      console.log("response", response);
+
       const response = await $api.post(
         "/auth/refresh/token",
         {},
@@ -53,14 +53,13 @@ export const useAuth = (redirectIfUnauthenticated = false) => {
           headers: {
             refreshToken: storedRefreshToken,
           },
-          // Don't use interceptors for this request to avoid loops
           _skipAuthRetry: true,
         }
       );
 
       if (response.data?.success || response.data?.status === 200) {
-        const { accessToken, refreshToken: newRefreshToken } =
-          response.data.data || response.data;
+        const responseData = response.data.data || response.data;
+        const { accessToken, refreshToken: newRefreshToken } = responseData;
 
         if (typeof window !== "undefined") {
           localStorage.setItem("accessToken", accessToken);
@@ -71,15 +70,16 @@ export const useAuth = (redirectIfUnauthenticated = false) => {
 
         return accessToken;
       } else {
-        throw new Error("Failed to refresh token");
+        throw new Error("Invalid refresh response");
       }
     } catch (error) {
       console.error("Token refresh error:", error);
+      clearAuthData();
       throw error;
     } finally {
       isRefreshingRef.current = false;
     }
-  }, []);
+  }, [clearAuthData]);
 
   const checkAuth = useCallback(async () => {
     if (authCheckInProgressRef.current) {
@@ -99,10 +99,21 @@ export const useAuth = (redirectIfUnauthenticated = false) => {
       if (!accessToken) {
         setIsAuthenticated(false);
         setUser(null);
-        if (redirectIfUnauthenticated) {
-          router.push("/register");
-        }
         return;
+      }
+
+      // First, try to get user data from localStorage
+      const storedUser =
+        typeof window !== "undefined" ? localStorage.getItem("user") : null;
+
+      if (storedUser) {
+        try {
+          const parsedUser = JSON.parse(storedUser);
+          setUser(parsedUser);
+          setIsAuthenticated(true);
+        } catch (parseError) {
+          console.error("Error parsing stored user:", parseError);
+        }
       }
 
       try {
@@ -110,7 +121,7 @@ export const useAuth = (redirectIfUnauthenticated = false) => {
           _skipAuthRetry: true,
         });
 
-        if (response.data?.success) {
+        if (response.data?.success && response.data?.data) {
           const userData = response.data.data;
 
           if (typeof window !== "undefined") {
@@ -120,25 +131,19 @@ export const useAuth = (redirectIfUnauthenticated = false) => {
           setIsAuthenticated(true);
           setUser(userData);
         } else {
-          throw new Error("Failed to fetch user profile");
+          throw new Error("Invalid profile response");
         }
       } catch (apiError) {
-        console.error("Initial token validation failed:", apiError);
+        console.error("Profile API error:", apiError);
 
+        // Only clear auth data for specific authentication errors
         if (apiError.response?.status === 401) {
           try {
-            console.log("Attempting token refresh...");
             const newAccessToken = await refreshToken();
-
             if (newAccessToken) {
-              const retryResponse = await $api.get("/users/profile/me", {
-                headers: {
-                  Authorization: `Bearer ${newAccessToken}`,
-                },
-                _skipAuthRetry: true,
-              });
-
-              if (retryResponse.data?.success) {
+              // Retry with new token
+              const retryResponse = await $api.get("/users/profile/me");
+              if (retryResponse.data?.success && retryResponse.data?.data) {
                 const userData = retryResponse.data.data;
 
                 if (typeof window !== "undefined") {
@@ -148,48 +153,53 @@ export const useAuth = (redirectIfUnauthenticated = false) => {
                 setIsAuthenticated(true);
                 setUser(userData);
               } else {
-                throw new Error(
-                  "Failed to fetch user profile after token refresh"
-                );
+                throw new Error("Retry failed");
               }
-            } else {
-              throw new Error("Token refresh returned null");
             }
           } catch (refreshError) {
             console.error("Token refresh failed:", refreshError);
-
             clearAuthData();
-
-            if (redirectIfUnauthenticated) {
-              router.push("/register");
-            }
-
-            setError("Session expired. Please log in again.");
           }
-        } else {
+        } else if (apiError.response?.status === 403) {
+          // Forbidden - clear auth data
           clearAuthData();
+        } else {
+          // For network errors or other issues, keep the user logged in
+          // but set error state so UI can show appropriate message
+          console.warn(
+            "Network or server error, keeping user logged in:",
+            apiError.message
+          );
+          setError(
+            "Failed to verify authentication. Please check your connection."
+          );
 
-          if (redirectIfUnauthenticated) {
-            router.push("/register");
+          // If we have stored user data and access token, keep user logged in
+          if (accessToken && storedUser) {
+            try {
+              const parsedUser = JSON.parse(storedUser);
+              setUser(parsedUser);
+              setIsAuthenticated(true);
+            } catch (parseError) {
+              console.error("Error parsing stored user:", parseError);
+              clearAuthData();
+            }
+          } else {
+            clearAuthData();
           }
-
-          setError("Authentication failed. Please try again.");
         }
       }
     } catch (error) {
       console.error("Auth check error:", error);
-      clearAuthData();
+      setError("Authentication check failed");
 
-      if (redirectIfUnauthenticated) {
-        router.push("/register");
-      }
-
-      setError("Authentication check failed.");
+      // Don't clear auth data for general errors
+      // Only clear if we're sure it's an auth issue
     } finally {
       setLoading(false);
       authCheckInProgressRef.current = false;
     }
-  }, [refreshToken, clearAuthData, redirectIfUnauthenticated, router]);
+  }, [refreshToken, clearAuthData]);
 
   const logout = useCallback(() => {
     clearAuthData();
@@ -207,27 +217,35 @@ export const useAuth = (redirectIfUnauthenticated = false) => {
     }
   }, []);
 
+  // Initialize auth state from localStorage on mount
   useEffect(() => {
-    if (typeof window !== "undefined" && !user && !loading) {
-      try {
-        const storedUser = localStorage.getItem("user");
-        if (storedUser) {
+    if (typeof window !== "undefined") {
+      const accessToken = localStorage.getItem("accessToken");
+      const storedUser = localStorage.getItem("user");
+
+      if (accessToken && storedUser) {
+        try {
           const parsedUser = JSON.parse(storedUser);
           setUser(parsedUser);
-          const accessToken = localStorage.getItem("accessToken");
-          if (accessToken) {
-            setIsAuthenticated(true);
-          }
+          setIsAuthenticated(true);
+        } catch (err) {
+          console.error("Error loading stored user data:", err);
+          clearAuthData();
         }
-      } catch (err) {
-        console.error("Error loading stored user data:", err);
+      } else {
+        setIsAuthenticated(false);
+        setUser(null);
       }
+      setLoading(false);
     }
-  }, [user, loading]);
+  }, [clearAuthData]);
 
+  // Only run checkAuth after initial load
   useEffect(() => {
-    checkAuth();
-  }, []); 
+    if (!loading && isAuthenticated) {
+      checkAuth();
+    }
+  }, [loading]); // Remove checkAuth from dependencies to avoid loops
 
   useEffect(() => {
     if (interceptorsSetupRef.current) {
@@ -301,7 +319,7 @@ export const useAuth = (redirectIfUnauthenticated = false) => {
       $api.interceptors.response.eject(responseInterceptor);
       interceptorsSetupRef.current = false;
     };
-  }, []); 
+  }, [refreshToken, clearAuthData, router, redirectIfUnauthenticated]);
 
   return {
     isAuthenticated,

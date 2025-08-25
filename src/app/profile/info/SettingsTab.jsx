@@ -157,14 +157,14 @@ const SettingsTab = ({ onLogout, currentUser }) => {
       const response = await $api.delete("/users/profile/me");
 
       if (response.data.status === 200) {
-        alert("Akkaunt muvaffaqiyatli o'chirildi");
+        console.log("Akkaunt muvaffaqiyatli o'chirildi");
         onLogout();
       } else {
         throw new Error("Akkauntni o'chirishda xatolik");
       }
     } catch (error) {
       console.error("Akkauntni o'chirishda xatolik:", error);
-      alert("Akkauntni o'chirishda xatolik yuz berdi");
+      console.log("Akkauntni o'chirishda xatolik yuz berdi");
     }
   };
 

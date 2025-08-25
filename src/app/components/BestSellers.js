@@ -7,9 +7,7 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import dynamic from "next/dynamic";
 import { ChevronLeft, ChevronRight, MoveRight } from "lucide-react";
-import Link from "next/link";
 import $api from "../http/api";
-import Image from "next/image";
 import { useTranslation } from "react-i18next";
 import i18next from "../../i18n/i18n";
 
@@ -101,14 +99,12 @@ export default function BestSellers() {
           const mappedProducts = response.data.data.map((item) => {
             const variant = item.variants?.[0] || {};
 
-            // Rasm URL
             let imageUrl = "/placeholder.png";
             if (item.mainImage) {
               const cleanPath = item.mainImage.replace(/\\/g, "/");
               imageUrl = `${process.env.NEXT_PUBLIC_API_URL}/${cleanPath}`;
             }
 
-            // Get localized product name
             const getLocalizedName = () => {
               switch (i18next.language) {
                 case "ru":
@@ -120,7 +116,6 @@ export default function BestSellers() {
               }
             };
 
-            // Get localized description
             const getLocalizedDescription = () => {
               switch (i18next.language) {
                 case "ru":
@@ -142,7 +137,7 @@ export default function BestSellers() {
               discount: variant.discount || 0,
               discountedPrice: variant.discountedPrice || variant.price || 0,
               image: imageUrl,
-              variants: item.variants || [], // Pass the entire variants array
+              variants: item.variants || [], 
               mainImage: item.mainImage,
               reviews_count: item.reviews_count || 0,
             };
@@ -161,7 +156,7 @@ export default function BestSellers() {
     };
 
     fetchProducts();
-  }, [i18next.language, t]); // Add language dependency to refetch when language changes
+  }, [i18next.language, t]); 
 
   const sliderSettings = {
     dots: false,

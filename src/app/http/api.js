@@ -6,15 +6,21 @@ const API_BASE_URL =
 const $api = axios.create({
   baseURL: API_BASE_URL,
   withCredentials: true,
-  timeout: 15000, 
+  timeout: 15000,
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
   },
 });
 
+// Request interceptor => token qo‘shib yuboradi
 $api.interceptors.request.use(
   (config) => {
+    const token = localStorage.getItem("accessToken"); // tokenni olamiz
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`; // headerga qo‘shamiz
+    }
+
     if (process.env.NODE_ENV === "development") {
       process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
     }
@@ -25,10 +31,9 @@ $api.interceptors.request.use(
   }
 );
 
+// Response interceptor
 $api.interceptors.response.use(
-  (response) => {
-    return response;
-  },
+  (response) => response,
   (error) => {
     if (error.code === "ENOTFOUND") {
       console.error("Server topilmadi:", error.config?.baseURL);

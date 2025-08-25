@@ -373,6 +373,9 @@ export default function Navbar() {
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   const handleCategoryClick = (category) => {
+    if (selectedCategory && selectedCategory._id === category._id) {
+      return;
+    }
     console.log("Category clicked:", category._id, category.name);
     setSelectedCategory(category);
     setSubCategories([]);
