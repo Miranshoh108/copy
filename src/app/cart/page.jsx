@@ -242,10 +242,6 @@ export default function Cart() {
                 Savatingiz bo'sh
               </h2>
 
-              <p className="text-gray-500 mb-8 leading-relaxed">
-                Lekin uni to'ldirish hech qachon kech emas :)
-              </p>
-
               <Button
                 onClick={() => route.push("/")}
                 className="bg-[#249B73] hover:bg-[#249B73] text-white px-8 py-3 rounded-lg font-medium cursor-pointer transition-colors"

@@ -19,6 +19,7 @@ import { useRouter } from "next/navigation";
 import { useCartStore } from "../hooks/cart";
 import { useHomeLikes } from "../hooks/likes";
 import { useTranslation } from "react-i18next";
+import $api from "@/app/http/api";
 
 export default function ProductDetail() {
   const { t } = useTranslation();
@@ -33,6 +34,7 @@ export default function ProductDetail() {
   const isInWishlist = isLiked(currentProduct?.id);
   const [isLoading, setIsLoading] = useState(false);
   const [added, setAdded] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -40,10 +42,26 @@ export default function ProductDetail() {
   const [modalDirection, setModalDirection] = useState("right");
   const [modalAnimate, setModalAnimate] = useState(false);
 
-  const { addCart } = useCartStore();
+  const { addCart, updateQuantity, removeCart, cart } = useCartStore();
   const router = useRouter();
 
   const THUMB_PER_PAGE = 4;
+
+  // Check authentication status
+  useEffect(() => {
+    const checkAuth = () => {
+      try {
+        const token =
+          localStorage.getItem("accessToken") || localStorage.getItem("token");
+        setIsAuthenticated(
+          !!token && token !== "undefined" && token.length > 0
+        );
+      } catch (error) {
+        setIsAuthenticated(false);
+      }
+    };
+    checkAuth();
+  }, []);
 
   if (!currentProduct)
     return (
@@ -51,6 +69,39 @@ export default function ProductDetail() {
         Loading...
       </div>
     );
+
+  const getCurrentCartItem = () => {
+    const productId = currentProduct.id || currentProduct._id;
+    const currentVariant =
+      currentProduct?.variants?.[selectedVariant] ||
+      currentProduct?.variants?.[0] ||
+      {};
+    const variantId = currentVariant._id;
+
+    return cart.find(
+      (item) =>
+        (item.id === productId || item.productId === productId) &&
+        item.variantId === variantId
+    );
+  };
+
+  const cartItem = getCurrentCartItem();
+  const currentQuantityInCart = cartItem ? cartItem.quantity : 0;
+
+  // Get total quantity for this product across all variants
+  const getTotalProductQuantity = () => {
+    const productId = currentProduct.id || currentProduct._id;
+    return cart
+      .filter((item) => item.id === productId || item.productId === productId)
+      .reduce((total, item) => total + item.quantity, 0);
+  };
+
+  const showNotification = (message, type = "success") => {
+    console.log(`${type}: ${message}`);
+    if (typeof window !== "undefined" && window.toast) {
+      window.toast(message, type);
+    }
+  };
 
   const getCurrentImage = () => {
     return images[activeIndex] || "/images/placeholder.png";
@@ -121,12 +172,12 @@ export default function ProductDetail() {
   const openModal = (index) => {
     setModalActiveIndex(index);
     setIsModalOpen(true);
-    document.body.style.overflow = "hidden"; // Prevent body scroll
+    document.body.style.overflow = "hidden";
   };
 
   const closeModal = () => {
     setIsModalOpen(false);
-    document.body.style.overflow = "unset"; // Restore body scroll
+    document.body.style.overflow = "unset";
   };
 
   const handleModalNext = () => {
@@ -151,6 +202,9 @@ export default function ProductDetail() {
   useEffect(() => {
     setActiveIndex(0);
     setThumbStartIndex(0);
+    // Reset quantity to match cart when variant changes
+    const newCartItem = getCurrentCartItem();
+    setQuantity(1); // Reset input to 1, but cart counter will show actual amount
   }, [selectedVariant]);
 
   // Modal keyboard events
@@ -240,37 +294,174 @@ export default function ProductDetail() {
     }
   };
 
-  const handleAddToCart = (e) => {
+  const createLocalCartProduct = (qty = 1) => {
+    const productId = currentProduct.id || currentProduct._id;
+    return {
+      ...currentProduct,
+      id: productId,
+      productId: productId,
+      variantId: currentVariant._id,
+      name: currentProduct.name,
+      image: getCurrentImage(),
+      price: displayPrice,
+      discountedPrice: displayDiscountedPrice,
+      sale_price: displayDiscountedPrice || displayPrice,
+      axiom_monthly_price: currentProduct.axiom_monthly_price,
+      quantity: qty,
+      checked: false,
+      variant: {
+        color: currentVariant.color,
+        unit: currentVariant.unit,
+        stockQuantity: currentVariant.stockQuantity,
+      },
+    };
+  };
+
+  const handleAddToCart = async (e) => {
     e.stopPropagation();
     setIsLoading(true);
 
-    setTimeout(() => {
-      addCart({
-        id: currentProduct._id,
-        variantId: currentVariant._id,
-        name: currentProduct.name,
-        image: getCurrentImage(),
-        price: displayPrice,
-        discountedPrice: displayDiscountedPrice,
-        sale_price: displayDiscountedPrice || displayPrice,
-        axiom_monthly_price: currentProduct.axiom_monthly_price,
-        quantity: quantity,
-        checked: false,
-        variant: {
-          color: currentVariant.color,
-          unit: currentVariant.unit,
-          stockQuantity: currentVariant.stockQuantity,
-        },
-      });
-      setAdded(true);
-      setQuantity(1);
+    try {
+      const productId = currentProduct.id || currentProduct._id;
+      const variantId = currentVariant._id;
+      const localCartProduct = createLocalCartProduct(quantity);
+
+      if (isAuthenticated) {
+        const cartData = {
+          products: [
+            {
+              productId: productId,
+              variantId: variantId,
+              quantity: quantity,
+              price: displayDiscountedPrice || displayPrice,
+            },
+          ],
+        };
+
+        const response = await $api.post("/cart/add/product", cartData);
+
+        if (response.data && response.data.status === 200) {
+          addCart(localCartProduct, variantId);
+          showNotification(
+            "Mahsulot muvaffaqiyatli savatga qo'shildi!",
+            "success"
+          );
+        } else {
+          throw new Error("API javobida xatolik");
+        }
+      } else {
+        addCart(localCartProduct, variantId);
+        showNotification(
+          "Mahsulot savatga qo'shildi! (Mahalliy saqlash)",
+          "success"
+        );
+      }
+
+      setQuantity(1); 
+    } catch (error) {
+      console.error("Error in handleAddToCart:", error);
+
+      if (isAuthenticated) {
+        showNotification(
+          "Savatga qo'shishda xatolik yuz berdi. Qaytadan urinib ko'ring.",
+          "error"
+        );
+        const localCartProduct = createLocalCartProduct(quantity);
+        addCart(localCartProduct, currentVariant._id);
+      } else {
+        showNotification(
+          "Xatolik yuz berdi. Qaytadan urinib ko'ring.",
+          "error"
+        );
+      }
+    } finally {
       setIsLoading(false);
-    });
+    }
+  };
+
+  const handleIncrement = async (e) => {
+    e.stopPropagation();
+    const productId = currentProduct.id || currentProduct._id;
+    const variantId = currentVariant._id;
+    const newQty = currentQuantityInCart + 1;
+
+    updateQuantity(productId, newQty, variantId);
+
+    if (isAuthenticated) {
+      try {
+        const updateData = {
+          products: [
+            {
+              productId: productId,
+              variantId: variantId,
+              quantity: newQty,
+              price: displayDiscountedPrice || displayPrice,
+            },
+          ],
+        };
+
+        await $api.post("/cart/add/product", updateData);
+      } catch (error) {
+        console.error("Error updating cart via API:", error);
+        updateQuantity(productId, currentQuantityInCart, variantId);
+        showNotification("Miqdorni yangilashda xatolik yuz berdi.", "error");
+      }
+    }
+  };
+
+  const handleDecrement = async (e) => {
+    e.stopPropagation();
+    const productId = currentProduct.id || currentProduct._id;
+    const variantId = currentVariant._id;
+
+    if (currentQuantityInCart === 1) {
+      removeCart(productId, variantId);
+
+      if (isAuthenticated) {
+        try {
+          await $api.delete(`/cart/remove/${productId}?variantId=${variantId}`);
+        } catch (error) {
+          console.error("Error removing from cart via API:", error);
+          const cartProduct = createLocalCartProduct(1);
+          addCart(cartProduct, variantId);
+          showNotification(
+            "Mahsulotni olib tashlashda xatolik yuz berdi.",
+            "error"
+          );
+        }
+      }
+    } else {
+      const newQty = currentQuantityInCart - 1;
+      updateQuantity(productId, newQty, variantId);
+
+      if (isAuthenticated) {
+        try {
+          const updateData = {
+            products: [
+              {
+                productId: productId,
+                variantId: variantId,
+                quantity: newQty,
+                price: displayDiscountedPrice || displayPrice,
+              },
+            ],
+          };
+
+          await $api.post("/cart/add/product", updateData);
+        } catch (error) {
+          console.error("Error updating cart via API:", error);
+          updateQuantity(productId, currentQuantityInCart, variantId);
+          showNotification("Miqdorni yangilashda xatolik yuz berdi.", "error");
+        }
+      }
+    }
   };
 
   const handleBuyNow = () => {
+    const productId = currentProduct.id || currentProduct._id;
     const productToBuy = {
-      id: currentProduct._id,
+      id: productId,
+      productId: productId,
       variantId: currentVariant._id,
       name: currentProduct.name,
       image: getCurrentImage(),
@@ -324,11 +515,6 @@ export default function ProductDetail() {
     }
   };
 
-  // Variant o'zgarganda miqdorni qayta tiklash
-  useEffect(() => {
-    setQuantity(1);
-  }, [selectedVariant]);
-
   useEffect(() => {
     if (animate) {
       const timer = setTimeout(() => setAnimate(false));
@@ -341,7 +527,6 @@ export default function ProductDetail() {
   return (
     <>
       <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Breadcrumb */}
         <div className="flex flex-wrap gap-2 text-[#A0A0A0] mb-6 text-sm md:text-base">
           <span className="cursor-pointer hover:text-[#249B73]">
             {t("product.products")}
@@ -355,14 +540,14 @@ export default function ProductDetail() {
         <div className="flex flex-col lg:flex-row gap-6 ">
           <div className="w-full lg:w-[60%] flex flex-col gap-6">
             <div className="relative">
-              <div className="flex justify-center w-full max-w-full h-[600px] lg:max-w-[600px] aspect-square bg-white rounded-xl relative overflow-hidden shadow-md">
-                <div className="relative w-full h-full flex items-center justify-center p-4">
+              <div className="flex justify-center w-full max-w-full h-[600px] lg:max-w-[100%] aspect-square bg-white rounded-xl relative overflow-hidden shadow-md">
+                <div className="relative w-full h-[600px] flex items-center justify-center p-4">
                   <Image
                     src={images[activeIndex] || "/images/placeholder.png"}
                     alt="Product image"
                     fill
                     className={clsx(
-                      "transition-transform duration-500 ease-in-out cursor-zoom-in",
+                      "object-cover transition-transform duration-500 ease-in-out",
                       animate &&
                         direction === "right" &&
                         "animate-slide-in-right",
@@ -374,7 +559,7 @@ export default function ProductDetail() {
                 </div>
 
                 <div
-                  className="absolute bottom-60 right-60 bg-black/50 text-white p-4 rounded-full opacity-0 hover:opacity-100 transition-opacity cursor-pointer"
+                  className="absolute bottom-75 right-85 bg-black/50 text-white p-4 rounded-full opacity-0 hover:opacity-100 transition-opacity cursor-pointer"
                   onClick={() => openModal(activeIndex)}
                 >
                   <Eye size={22} />
@@ -537,35 +722,60 @@ export default function ProductDetail() {
                   <span className="text-lg font-medium mr-3">
                     {t("product.quantity")}:
                   </span>
-                  <div className="flex items-center border border-gray-300 rounded-lg">
-                    <button
-                      onClick={() => handleQuantityChange("decrease")}
-                      disabled={quantity <= 1}
-                      className="p-2 hover:bg-gray-100 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
-                    >
-                      <Minus size={16} />
-                    </button>
-                    <span className="px-4 py-2 font-semibold min-w-[60px] text-center">
-                      {quantity}
-                    </span>
-                    <button
-                      onClick={() => handleQuantityChange("increase")}
-                      disabled={quantity >= stockQuantity}
-                      className="p-2 cursor-pointer hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed"
-                    >
-                      <Plus size={16} />
-                    </button>
-                  </div>
+
+                  {currentQuantityInCart > 0 ? (
+                    <div className="flex items-center border border-[#249B73] rounded-lg bg-white shadow-sm transition-all duration-300">
+                      <button
+                        onClick={handleDecrement}
+                        className="p-2 text-red-500 cursor-pointer hover:bg-gray-100 transition-colors"
+                      >
+                        <Minus size={16} />
+                      </button>
+                      <span className="px-4 py-2 font-semibold min-w-[60px] text-center bg-[#249B73] text-white">
+                        {currentQuantityInCart}
+                      </span>
+                      <button
+                        onClick={handleIncrement}
+                        disabled={currentQuantityInCart >= stockQuantity}
+                        className="p-2 cursor-pointer text-green-500 hover:bg-gray-100 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                      >
+                        <Plus size={16} />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center border border-gray-300 rounded-lg">
+                      <button
+                        onClick={() => handleQuantityChange("decrease")}
+                        disabled={quantity <= 1}
+                        className="p-2 hover:bg-gray-100 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+                      >
+                        <Minus size={16} />
+                      </button>
+                      <span className="px-4 py-2 font-semibold min-w-[60px] text-center">
+                        {quantity}
+                      </span>
+                      <button
+                        onClick={() => handleQuantityChange("increase")}
+                        disabled={quantity >= stockQuantity}
+                        className="p-2 cursor-pointer hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed"
+                      >
+                        <Plus size={16} />
+                      </button>
+                    </div>
+                  )}
                 </div>
                 <span className="text-sm text-gray-500">
-                  {t("product.in_stock")}: {stockQuantity}{" "}
+                  {t("product.in_stock")}: {stockQuantity}
                   {unit || t("product.piece")}
                 </span>
               </div>
+
               <div className="flex flex-col sm:flex-row gap-4">
                 <button
                   onClick={handleAddToCart}
-                  disabled={stockQuantity === 0 || saleStatus !== "active"}
+                  disabled={
+                    stockQuantity === 0 || saleStatus !== "active" || isLoading
+                  }
                   className={clsx(
                     "flex-1 py-3 px-6 rounded-lg cursor-pointer font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2",
                     stockQuantity === 0 || saleStatus !== "active"
@@ -573,8 +783,14 @@ export default function ProductDetail() {
                       : "bg-white border-2 border-[#249B73] text-[#249B73] hover:bg-[#249B73] hover:text-white"
                   )}
                 >
-                  <Plus size={18} />
-                  {t("product.add_to_cart")}
+                  {isLoading ? (
+                    <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <>
+                      <Plus size={18} />
+                      {t("product.add_to_cart")}
+                    </>
+                  )}
                 </button>
                 <button
                   onClick={handleBuyNow}
@@ -610,25 +826,25 @@ export default function ProductDetail() {
                 <div className="space-y-2 text-sm text-gray-600">
                   {color && (
                     <p>
-                      <span className="font-medium">{t("product.color")}:</span>{" "}
+                      <span className="font-medium">{t("product.color")}:</span>
                       {color}
                     </p>
                   )}
                   {unit && (
                     <p>
-                      <span className="font-medium">{t("product.unit")}:</span>{" "}
+                      <span className="font-medium">{t("product.unit")}:</span>
                       {unit}
                     </p>
                   )}
                   <p>
-                    <span className="font-medium">{t("product.stock")}:</span>{" "}
+                    <span className="font-medium">{t("product.stock")}:</span>
                     {stockQuantity} {unit || t("product.piece")}
                   </p>
                   {discount > 0 && (
                     <p>
                       <span className="font-medium">
                         {t("product.discount")}:
-                      </span>{" "}
+                      </span>
                       {t("product.with_discount", { discount })}
                     </p>
                   )}
@@ -645,7 +861,6 @@ export default function ProductDetail() {
 
       {isModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center">
-          {/* Close button */}
           <button
             onClick={closeModal}
             className="absolute top-4 cursor-pointer right-4 text-white hover:text-gray-300 transition-colors z-10"
@@ -653,9 +868,7 @@ export default function ProductDetail() {
             <X size={32} />
           </button>
 
-          {/* Modal content */}
           <div className="relative w-full h-full flex items-center justify-center">
-            {/* Previous button */}
             {images.length > 1 && (
               <button
                 onClick={handleModalPrev}
@@ -665,7 +878,6 @@ export default function ProductDetail() {
               </button>
             )}
 
-            {/* Image container */}
             <div className="relative max-w-[90vw] max-h-[90vh] w-full h-full flex items-center justify-center">
               <Image
                 src={images[modalActiveIndex] || "/images/placeholder.png"}
@@ -700,7 +912,6 @@ export default function ProductDetail() {
             )}
           </div>
 
-          {/* Thumbnail navigation */}
           {images.length > 1 && (
             <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2 max-w-[80vw] overflow-x-auto">
               {images.map((img, index) => (

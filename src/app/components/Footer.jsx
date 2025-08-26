@@ -142,8 +142,7 @@ const Footer = () => {
                   rel="noopener noreferrer"
                   className="footer-link"
                 >
-                  {" "}
-                  {t("contact.telegram")}{" "}
+                  {t("contact.telegram")}
                 </a>
               </div>
 

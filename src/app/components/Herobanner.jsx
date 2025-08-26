@@ -74,7 +74,6 @@ export default function HeroBanner() {
         </div>
       </div>
 
-      {/* Custom styles */}
       <style jsx global>{`
         .slick-list {
           overflow: hidden !important;

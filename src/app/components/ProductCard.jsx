@@ -15,7 +15,6 @@ export default function ProductCard({ product }) {
   const { t } = useTranslation();
   const router = useRouter();
   const { toggleLike, likes } = useHomeLikes();
-  const [added, setAdded] = useState(false);
   const setCurrentProduct = useProductStore((state) => state.setCurrentProduct);
   const { addCart, updateQuantity, removeCart, cart } = useCartStore();
   const [isLoading, setIsLoading] = useState(false);
@@ -57,10 +56,9 @@ export default function ProductCard({ product }) {
     variants = [],
   } = product;
 
-  const cartItem = cart.find((item) => item.id === id);
+  const cartItem = cart.find((item) => item.productId === id || item.id === id);
   const currentQuantity = cartItem ? cartItem.quantity : 0;
 
-  // Get localized product name
   const getLocalizedName = () => {
     switch (i18next.language) {
       case "ru":
@@ -72,7 +70,6 @@ export default function ProductCard({ product }) {
     }
   };
 
-  // Get currency text based on language
   const getCurrencyText = () => {
     switch (i18next.language) {
       case "ru":
@@ -131,17 +128,17 @@ export default function ProductCard({ product }) {
     }
   };
 
-  // createLocalCartProduct funksiyasini yangilang
   const createLocalCartProduct = (quantity = 1, variantId = null) => {
     return {
       ...product,
       id: id,
+      productId: id,
+      variantId: variantId,
       sale_price: discountedPrice || price,
       original_price: discountedPrice ? price : null,
       quantity: quantity,
+      price: discountedPrice || price,
       checked: false,
-      selectedVariant: variantId,
-      // Variant ma'lumotlarini qo'shing
       variant: variantId ? variants.find((v) => v._id === variantId) : null,
     };
   };
@@ -149,7 +146,6 @@ export default function ProductCard({ product }) {
   const handleAddToCart = async (e) => {
     e.stopPropagation();
 
-    // Agar variantlar mavjud bo'lsa, modal oyna ochish
     if (variants && variants.length > 0) {
       setShowVariantModal(true);
       return;
@@ -159,18 +155,17 @@ export default function ProductCard({ product }) {
     const authStatus = checkAuthentication();
 
     try {
-      const localCartProduct = createLocalCartProduct(1);
+      const variantId = variants[0]?._id || null;
+      const localCartProduct = createLocalCartProduct(1, variantId);
 
       if (authStatus) {
-        // Authenticated user - API bilan ishlash
         console.log("Adding to cart via API for authenticated user");
 
-        // API formatiga moslash - products array bilan yuborish
         const cartData = {
           products: [
             {
               productId: id,
-              variantId: variants[0]?._id || null,
+              variantId: variantId,
               quantity: 1,
               price: discountedPrice || price,
             },
@@ -180,7 +175,8 @@ export default function ProductCard({ product }) {
         const response = await $api.post("/cart/add/product", cartData);
 
         if (response.data && response.data.status === 200) {
-          addCart(localCartProduct);
+          addCart(localCartProduct, variantId);
+
           showNotification(
             "Mahsulot muvaffaqiyatli savatga qo'shildi!",
             "success"
@@ -190,7 +186,7 @@ export default function ProductCard({ product }) {
         }
       } else {
         console.log("Adding to local cart for guest user");
-        addCart(localCartProduct);
+        addCart(localCartProduct, variantId);
         showNotification(
           "Mahsulot savatga qo'shildi! (Mahalliy saqlash)",
           "success"
@@ -200,14 +196,13 @@ export default function ProductCard({ product }) {
       console.error("Error in handleAddToCart:", error);
 
       if (authStatus) {
-        // Authenticated user uchun API xatoligi
         showNotification(
           "Savatga qo'shishda xatolik yuz berdi. Qaytadan urinib ko'ring.",
           "error"
         );
-        // Fallback: local cartga qo'shish
-        const localCartProduct = createLocalCartProduct(1);
-        addCart(localCartProduct);
+        const variantId = variants[0]?._id || null;
+        const localCartProduct = createLocalCartProduct(1, variantId);
+        addCart(localCartProduct, variantId);
       } else {
         showNotification(
           "Xatolik yuz berdi. Qaytadan urinib ko'ring.",
@@ -230,10 +225,8 @@ export default function ProductCard({ product }) {
       );
 
       if (authStatus) {
-        // Authenticated user - API bilan ishlash
         console.log("Adding variant to cart via API for authenticated user");
 
-        // API formatiga moslash - products array bilan yuborish
         const apiData = {
           products: [
             {
@@ -248,7 +241,7 @@ export default function ProductCard({ product }) {
         const response = await $api.post("/cart/add/product", apiData);
 
         if (response.data && response.data.status === 200) {
-          addCart(localCartProduct);
+          addCart(localCartProduct, variantData.variantId);
           showNotification(
             "Variant muvaffaqiyatli savatga qo'shildi!",
             "success"
@@ -258,7 +251,7 @@ export default function ProductCard({ product }) {
         }
       } else {
         console.log("Adding variant to local cart for guest user");
-        addCart(localCartProduct);
+        addCart(localCartProduct, variantData.variantId);
         showNotification(
           "Variant savatga qo'shildi! (Mahalliy saqlash)",
           "success"
@@ -276,13 +269,13 @@ export default function ProductCard({ product }) {
           variantData.quantity,
           variantData.variantId
         );
-        addCart(localCartProduct);
+        addCart(localCartProduct, variantData.variantId);
       } else {
         showNotification(
           "Xatolik yuz berdi. Qaytadan urinib ko'ring.",
           "error"
         );
-        throw error; // Modal uchun xatolikni qayta tashlash
+        throw error;
       }
     } finally {
       setIsLoading(false);
@@ -334,7 +327,8 @@ export default function ProductCard({ product }) {
     const newQty = currentQuantity + 1;
     const authStatus = checkAuthentication();
 
-    updateQuantity(id, newQty);
+    const variantId = cartItem?.variantId || variants[0]?._id || null;
+    updateQuantity(id, newQty, variantId);
 
     if (authStatus) {
       try {
@@ -342,7 +336,7 @@ export default function ProductCard({ product }) {
           products: [
             {
               productId: id,
-              variantId: cartItem?.selectedVariant || variants[0]?._id || null,
+              variantId: variantId,
               quantity: newQty,
               price: discountedPrice || price,
             },
@@ -353,54 +347,47 @@ export default function ProductCard({ product }) {
         console.log("Cart updated via API");
       } catch (error) {
         console.error("Error updating cart via API:", error);
-        // API xatolik bergan bo'lsa, local o'zgarishni qaytarish
-        updateQuantity(id, currentQuantity);
+        updateQuantity(id, currentQuantity, variantId);
         showNotification("Miqdorni yangilashda xatolik yuz berdi.", "error");
       }
-    } else {
-      console.log("Cart updated locally for guest user");
     }
   };
 
   const handleDecrement = async (e) => {
     e.stopPropagation();
     const authStatus = checkAuthentication();
+    const variantId = cartItem?.variantId || variants[0]?._id || null;
 
     if (currentQuantity === 1) {
-      // Savatdan olib tashlash
-      removeCart(id);
+      removeCart(id, variantId);
 
       if (authStatus) {
         try {
-          await $api.delete(`/cart/remove/${id}`);
+          await $api.delete(
+            `/cart/remove/${id}${variantId ? `?variantId=${variantId}` : ""}`
+          );
           console.log("Product removed from cart via API");
         } catch (error) {
           console.error("Error removing from cart via API:", error);
-          const cartProduct = createLocalCartProduct(1);
-          addCart(cartProduct);
+          const cartProduct = createLocalCartProduct(1, variantId);
+          addCart(cartProduct, variantId);
           showNotification(
             "Mahsulotni olib tashlashda xatolik yuz berdi.",
             "error"
           );
         }
-      } else {
-        console.log("Product removed from local cart for guest user");
       }
     } else {
       const newQty = currentQuantity - 1;
-
-      // Local cartni darhol yangilash (UX uchun)
-      updateQuantity(id, newQty);
+      updateQuantity(id, newQty, variantId);
 
       if (authStatus) {
         try {
-          // API formatiga moslash - products array bilan yuborish
           const updateData = {
             products: [
               {
                 productId: id,
-                variantId:
-                  cartItem?.selectedVariant || variants[0]?._id || null,
+                variantId: variantId,
                 quantity: newQty,
                 price: discountedPrice || price,
               },
@@ -411,12 +398,9 @@ export default function ProductCard({ product }) {
           console.log("Cart quantity decreased via API");
         } catch (error) {
           console.error("Error updating cart via API:", error);
-          // API xatolik bergan bo'lsa, local o'zgarishni qaytarish
-          updateQuantity(id, currentQuantity);
+          updateQuantity(id, currentQuantity, variantId);
           showNotification("Miqdorni yangilashda xatolik yuz berdi.", "error");
         }
-      } else {
-        console.log("Cart quantity decreased locally for guest user");
       }
     }
   };
@@ -485,7 +469,7 @@ export default function ProductCard({ product }) {
                 {new Intl.NumberFormat("ru-RU").format(price)} {currencyText}
               </span>
               <span className="text-gray-800 font-bold text-lg">
-                {new Intl.NumberFormat("ru-RU").format(discountedPrice)}{" "}
+                {new Intl.NumberFormat("ru-RU").format(discountedPrice)}
                 {currencyText}
               </span>
             </>
@@ -502,7 +486,7 @@ export default function ProductCard({ product }) {
           <p className="text-gray-700 text-xs">
             {reviews_count && reviews_count > 0
               ? reviews_count
-              : Math.floor(Math.random() * 6) + 1}{" "}
+              : Math.floor(Math.random() * 6) + 1}
             {mounted ? t("product_card.reviews") : ""}
           </p>
 

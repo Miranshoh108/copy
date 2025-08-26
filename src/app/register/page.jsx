@@ -778,7 +778,7 @@ function AuthPage() {
               </p>
               {tempRegistrationData && (
                 <p className="text-green-600 text-sm font-medium mt-2">
-                  {tempRegistrationData.firstName}{" "}
+                  {tempRegistrationData.firstName}
                   {tempRegistrationData.lastName}
                 </p>
               )}

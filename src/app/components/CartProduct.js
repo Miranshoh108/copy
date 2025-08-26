@@ -7,18 +7,22 @@ export default function CartProduct({ product }) {
   const { toggleChecked, updateQuantity, removeCart } = useCartStore();
   const [isRemoving, setIsRemoving] = useState(false);
 
+  const itemId = product.variant?._id || product.id;
+  const productId = product.productId || product.id;
+  const variantId = product.variantId || product.variant?._id || null;
+
   const handleQuantityChange = (newQuantity) => {
     if (newQuantity < 1) {
       handleRemove();
     } else {
-      updateQuantity(product.id, newQuantity);
+      updateQuantity(productId, newQuantity, variantId);
     }
   };
 
   const handleRemove = () => {
     setIsRemoving(true);
     setTimeout(() => {
-      removeCart(product.id);
+      removeCart(productId, variantId);
     });
   };
 
@@ -40,16 +44,43 @@ export default function CartProduct({ product }) {
     }
   };
 
+  const handleToggleChecked = () => {
+    toggleChecked(productId, variantId);
+  };
+
+  const getVariantData = () => {
+    if (product.variant) {
+      return {
+        price: product.variant.discountedPrice || product.variant.price,
+        originalPrice: product.variant.price,
+        image: product.variant.mainImg
+          ? `https://bsmarket.uz/api/${product.variant.mainImg}`
+          : product.image,
+        color: product.variant.color,
+        unit: product.variant.unit,
+        stockQuantity: product.variant.stockQuantity,
+      };
+    }
+    return {
+      price: product.sale_price || product.price,
+      originalPrice: product.original_price,
+      image: product.image,
+      color: null,
+      unit: null,
+      stockQuantity: null,
+    };
+  };
+
+  const variantData = getVariantData();
+
   return (
-    <div
-      className={`p-4 transition-all duration-200 `}
-    >
+    <div className={`p-4 transition-all duration-200 `}>
       <div className="flex items-start space-x-4">
         <div className="flex-shrink-0 mt-2">
           <input
             type="checkbox"
             checked={product.checked}
-            onChange={() => toggleChecked(product.id)}
+            onChange={handleToggleChecked}
             className="w-5 h-5 mt-5 text-green-600 cursor-pointer border-2 border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:ring-offset-1"
           />
         </div>
@@ -57,7 +88,7 @@ export default function CartProduct({ product }) {
         <div className="flex-shrink-0">
           <div className="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden">
             <Image
-              src={product.image || "/images/placeholder.jpg"}
+              src={variantData.image || "/images/placeholder.jpg"}
               alt={product.name}
               width={80}
               height={80}
@@ -71,6 +102,17 @@ export default function CartProduct({ product }) {
             {product.name}
           </h3>
 
+          {product.variant && (
+            <div className="text-xs text-gray-500 mb-2">
+              {variantData.color && <span>Rang: {variantData.color}</span>}
+              {variantData.color && variantData.unit && <span> • </span>}
+              {variantData.unit && <span>Birlik: {variantData.unit}</span>}
+              {variantData.stockQuantity && (
+                <span> • Omborda: {variantData.stockQuantity}</span>
+              )}
+            </div>
+          )}
+
           {product.attributes && (
             <p className="text-xs text-gray-500 mb-2">{product.attributes}</p>
           )}
@@ -78,12 +120,12 @@ export default function CartProduct({ product }) {
           <div className="flex items-center justify-between max-[480px]:flex-col max-[480px]:text-start">
             <div className="flex flex-col">
               <span className="text-lg font-semibold text-gray-900">
-                {formatPrice(product.sale_price)} so&apos;m
+                {formatPrice(variantData.price)} so&apos;m
               </span>
-              {product.original_price &&
-                product.original_price !== product.sale_price && (
+              {variantData.originalPrice &&
+                variantData.originalPrice !== variantData.price && (
                   <span className="text-sm text-gray-500 line-through">
-                    {formatPrice(product.original_price)} so&apos;m
+                    {formatPrice(variantData.originalPrice)} so&apos;m
                   </span>
                 )}
             </div>
@@ -172,12 +214,12 @@ export default function CartProduct({ product }) {
           {product.quantity > 1 && (
             <div className="mt-2 text-right">
               <span className="text-sm text-gray-600">
-                Jami:{" "}
+                Jami:
                 {formatPrice(
                   parseFloat(
-                    product.sale_price?.toString().replace(/[^\d.-]/g, "") || 0
+                    variantData.price?.toString().replace(/[^\d.-]/g, "") || 0
                   ) * product.quantity
-                )}{" "}
+                )}
                 so&apos;m
               </span>
             </div>

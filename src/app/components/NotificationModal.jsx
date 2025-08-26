@@ -15,15 +15,20 @@ export default function NotificationModal({ open, setOpen }) {
     deleteNotification,
   } = useNotificationsStore();
 
+  const safeNotifications = Array.isArray(notifications) ? notifications : [];
+
   useEffect(() => {
     if (open) {
       $api
         .get("/notifications/my")
         .then((res) => {
-          setNotifications(res.data);
+          setNotifications(
+            Array.isArray(res.data.notifications) ? res.data.notifications : []
+          );
         })
         .catch((err) => {
           console.error("Bildirishnomalarni olishda xatolik:", err.message);
+          setNotifications([]);
         });
     }
   }, [open, setNotifications]);
@@ -42,15 +47,15 @@ export default function NotificationModal({ open, setOpen }) {
               className="flex items-center gap-1 text-sm text-[#249B73] hover:underline cursor-pointer"
             >
               <BookOpenCheck size={18} />
-              <span>Barchasini o‘qish</span>
+              <span>Barchasini o'qish</span>
             </Button>
           </div>
 
           <div className="p-4 space-y-3 max-h-[300px] overflow-y-auto">
-            {notifications.length === 0 ? (
-              <p className="text-gray-500 text-center">Bildirishnoma yo‘q</p>
+            {safeNotifications.length === 0 ? (
+              <p className="text-gray-500 text-center">Bildirishnoma yo'q</p>
             ) : (
-              notifications.map((item) => (
+              safeNotifications.map((item) => (
                 <div
                   key={item.id}
                   className={`p-3 rounded border ${
@@ -64,10 +69,10 @@ export default function NotificationModal({ open, setOpen }) {
                       <div className="flex items-center gap-2">
                         <h3
                           className={`font-medium ${
-                            item.read ? "text-gray-700" : "text-gray-900"
+                            item.readAt ? "text-gray-700" : "text-gray-900"
                           }`}
                         >
-                          {item.title}
+                          Bildirishnoma
                         </h3>
                         {!item.read && (
                           <span className="w-2 h-2 bg-green-500 rounded-full"></span>
@@ -75,17 +80,17 @@ export default function NotificationModal({ open, setOpen }) {
                       </div>
                       <p
                         className={`text-sm mt-1 ${
-                          item.read ? "text-gray-500" : "text-gray-700"
+                          item.readAt ? "text-gray-500" : "text-gray-700"
                         }`}
                       >
-                        {item.description}
+                        {item.message}
                       </p>
                       <p
                         className={`text-xs mt-1 ${
-                          item.read ? "text-gray-400" : "text-gray-500"
+                          item.readAt ? "text-gray-400" : "text-gray-500"
                         }`}
                       >
-                        {item.time}
+                        {new Date(item.createdAt).toLocaleString()}
                       </p>
                     </div>
                     <div className="flex gap-2">
@@ -95,7 +100,7 @@ export default function NotificationModal({ open, setOpen }) {
                           onClick={() => markAsRead(item.id)}
                           className="text-green-600 hover:text-green-800 text-xs cursor-pointer"
                         >
-                          O‘qish
+                          O'qish
                         </Button>
                       )}
                       <Button

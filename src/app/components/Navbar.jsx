@@ -100,24 +100,19 @@ export default function Navbar() {
 
       console.log("Search API Response:", res.data);
 
-      // Handle different response structures
       let products = [];
 
       if (res.data && res.data.results && Array.isArray(res.data.results)) {
-        // If response has results array (like in your JSON structure)
         products = res.data.results;
       } else if (res.data && Array.isArray(res.data)) {
-        // If response is directly an array
         products = res.data;
       } else if (res.data && res.data.data && Array.isArray(res.data.data)) {
-        // If response has data property with array
         products = res.data.data;
       }
 
-      // Filter and format products for suggestions
       const suggestions = products.map((product) => ({
         _id: product._id,
-        name: getProductName(product), // Get localized name
+        name: getProductName(product),
         shortDescription: getProductDescription(product),
         mainImage: product.mainImage,
         price:
@@ -241,7 +236,7 @@ export default function Navbar() {
       setRecentSearches(updated);
       localStorage.setItem("recentSearches", JSON.stringify(updated));
 
-      router.push(`/search?q=${encodeURIComponent(searchTerm)}`);
+      router.push(`?name=${encodeURIComponent(searchTerm)}`);
       setSearchQuery("");
       setShowSearchDropdown(false);
     }
@@ -370,7 +365,9 @@ export default function Navbar() {
   };
 
   const notifications = useNotificationsStore((state) => state.notifications);
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  const unreadCount = Array.isArray(notifications)
+    ? notifications.filter((n) => !n.readAt).length
+    : 0;
 
   const handleCategoryClick = (category) => {
     if (selectedCategory && selectedCategory._id === category._id) {
@@ -436,7 +433,7 @@ export default function Navbar() {
             rel="noopener noreferrer"
             className="flex items-center gap-2 hover:underline"
           >
-            <MapPin className="text-[#249B73]" />{" "}
+            <MapPin className="text-[#249B73]" />
             <>{mounted ? t("navbar.location") : null}</>
           </a>
 

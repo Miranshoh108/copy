@@ -104,7 +104,6 @@ export default function DiscountedProducts() {
               imageUrl = `${process.env.NEXT_PUBLIC_API_URL}/${cleanPath}`;
             }
 
-            // Get product name based on current language
             const getProductName = () => {
               switch (i18next.language) {
                 case "ru":
@@ -116,7 +115,6 @@ export default function DiscountedProducts() {
               }
             };
 
-            // Get product description based on current language
             const getProductDescription = () => {
               switch (i18next.language) {
                 case "ru":
@@ -134,10 +132,10 @@ export default function DiscountedProducts() {
 
             return {
               ...product,
-              id: product._id, // Add id field
-              name: getProductName(), // Use localized name
-              shortDescription: getProductDescription(), // Use localized description
-              image: imageUrl, // Add processed image field
+              id: product._id,
+              name: getProductName(), 
+              shortDescription: getProductDescription(),
+              image: imageUrl,
               mainVariant: bestDiscountVariant,
               discountedVariants: product.variants.filter(
                 (variant) => variant.discount > 0
@@ -159,7 +157,7 @@ export default function DiscountedProducts() {
     };
 
     fetchDiscountedProducts();
-  }, [i18next.language, t]); // Add language dependency to refetch when language changes
+  }, [i18next.language, t]);
 
   const sliderSettings = {
     dots: false,

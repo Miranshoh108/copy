@@ -138,7 +138,7 @@ const VariantSelectionModal = ({
         } else {
           console.log("Adding multiple variants to local storage");
           for (const cartData of cartRequests) {
-            await onAddToCart(cartData);
+            await onAddToCart(cartData);  
           }
         }
 
@@ -434,7 +434,7 @@ const VariantSelectionModal = ({
                     Jami ({selectedVariants.size} ta variant):
                   </span>
                   <span className="text-lg font-bold text-[#249B73]">
-                    {new Intl.NumberFormat("ru-RU").format(totalPrice)}{" "}
+                    {new Intl.NumberFormat("ru-RU").format(totalPrice)}
                     {currencyText}
                   </span>
                 </div>

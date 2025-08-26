@@ -63,7 +63,6 @@ export default function NotFound() {
       </div>
 
       <div className="relative z-10 container mx-auto px-4 py-16 flex flex-col items-center justify-center min-h-screen text-center">
-        {/* Logo/Brand */}
         <div className="mb-8">
           <div className="flex items-center justify-center space-x-3 mb-4">
             <div className="p-3 bg-gradient-to-r from-green-600 to-green-600 rounded-xl shadow-lg">
@@ -75,7 +74,6 @@ export default function NotFound() {
           </div>
         </div>
 
-        {/* 404 Animation */}
         <div className="mb-8 relative">
           <div className="text-8xl md:text-9xl font-bold text-gray-300 relative">
             4
@@ -97,7 +95,6 @@ export default function NotFound() {
           </div>
         </div>
 
-        {/* Main Message */}
         <div className="max-w-2xl mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
             Sahifa topilmadi
