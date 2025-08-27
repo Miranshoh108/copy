@@ -50,6 +50,9 @@
     "error_message": "Error loading products",
     "retry_button": "Try again"
   },
+  "catagories": {
+    "title": "Office supplies"
+  },
   "services": {
     "title": "Document Services",
     "catalog": "Product Catalog",

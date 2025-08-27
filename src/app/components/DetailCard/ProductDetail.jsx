@@ -47,7 +47,6 @@ export default function ProductDetail() {
 
   const THUMB_PER_PAGE = 4;
 
-  // Check authentication status
   useEffect(() => {
     const checkAuth = () => {
       try {
@@ -357,7 +356,7 @@ export default function ProductDetail() {
         );
       }
 
-      setQuantity(1); 
+      setQuantity(1);
     } catch (error) {
       console.error("Error in handleAddToCart:", error);
 
@@ -409,50 +408,37 @@ export default function ProductDetail() {
     }
   };
 
-  const handleDecrement = async (e) => {
+  const handleDecrementDetail = async (e) => {
     e.stopPropagation();
     const productId = currentProduct.id || currentProduct._id;
     const variantId = currentVariant._id;
 
     if (currentQuantityInCart === 1) {
-      removeCart(productId, variantId);
+      showNotification("Mahsulotni o'chirish uchun savatga kiring", "info");
+      return;
+    }
 
-      if (isAuthenticated) {
-        try {
-          await $api.delete(`/cart/remove/${productId}?variantId=${variantId}`);
-        } catch (error) {
-          console.error("Error removing from cart via API:", error);
-          const cartProduct = createLocalCartProduct(1);
-          addCart(cartProduct, variantId);
-          showNotification(
-            "Mahsulotni olib tashlashda xatolik yuz berdi.",
-            "error"
-          );
-        }
-      }
-    } else {
-      const newQty = currentQuantityInCart - 1;
-      updateQuantity(productId, newQty, variantId);
+    const newQty = currentQuantityInCart - 1;
+    updateQuantity(productId, newQty, variantId);
 
-      if (isAuthenticated) {
-        try {
-          const updateData = {
-            products: [
-              {
-                productId: productId,
-                variantId: variantId,
-                quantity: newQty,
-                price: displayDiscountedPrice || displayPrice,
-              },
-            ],
-          };
+    if (isAuthenticated) {
+      try {
+        const updateData = {
+          products: [
+            {
+              productId: productId,
+              variantId: variantId,
+              quantity: newQty,
+              price: displayDiscountedPrice || displayPrice,
+            },
+          ],
+        };
 
-          await $api.post("/cart/add/product", updateData);
-        } catch (error) {
-          console.error("Error updating cart via API:", error);
-          updateQuantity(productId, currentQuantityInCart, variantId);
-          showNotification("Miqdorni yangilashda xatolik yuz berdi.", "error");
-        }
+        await $api.post("/cart/add/product", updateData);
+      } catch (error) {
+        console.error("Error updating cart via API:", error);
+        updateQuantity(productId, currentQuantityInCart, variantId);
+        showNotification("Miqdorni yangilashda xatolik yuz berdi.", "error");
       }
     }
   };
@@ -726,7 +712,7 @@ export default function ProductDetail() {
                   {currentQuantityInCart > 0 ? (
                     <div className="flex items-center border border-[#249B73] rounded-lg bg-white shadow-sm transition-all duration-300">
                       <button
-                        onClick={handleDecrement}
+                        onClick={handleDecrementDetail}
                         className="p-2 text-red-500 cursor-pointer hover:bg-gray-100 transition-colors"
                       >
                         <Minus size={16} />

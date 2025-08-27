@@ -5,29 +5,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 const ProfileTab = ({
   user,
   isEditing,
   setIsEditing,
-  setUser,
   updateUserProfile,
-  refreshProfile,
 }) => {
   const [formData, setFormData] = useState({
     firstName: user.firstName || "",
     lastName: user.lastName || "",
     email: user.email || "",
     phone: user.phone || "",
-    gender: user.gender || "",
-    age: user.age || "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -37,24 +26,17 @@ const ProfileTab = ({
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSelectChange = (name, value) => {
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
   const handleSave = async () => {
-    // Validate inputs
     if (!formData.firstName || !formData.lastName || !formData.phone) {
       setError("Ism, familiya va telefon raqami to'ldirilishi shart");
       return;
     }
 
-    // Email validation
     if (formData.email && !/\S+@\S+\.\S+/.test(formData.email)) {
       setError("Email manzili noto'g'ri formatda");
       return;
     }
 
-    // Phone validation
     if (!/^\+998\d{9}$/.test(formData.phone)) {
       setError("Telefon raqami +998XXXXXXXXX formatida bo'lishi kerak");
       return;
@@ -64,7 +46,6 @@ const ProfileTab = ({
       setLoading(true);
       setError(null);
 
-      // API orqali ma'lumotlarni yangilash
       await updateUserProfile(formData);
 
       setIsEditing(false);
@@ -77,14 +58,11 @@ const ProfileTab = ({
   };
 
   const handleCancel = () => {
-    // Reset to original user data
     setFormData({
       firstName: user.firstName || "",
       lastName: user.lastName || "",
       email: user.email || "",
       phone: user.phone || "",
-      gender: user.gender || "",
-      age: user.age || "",
     });
     setIsEditing(false);
     setError(null);
@@ -96,8 +74,6 @@ const ProfileTab = ({
       lastName: user.lastName || "",
       email: user.email || "",
       phone: user.phone || "",
-      gender: user.gender || "",
-      age: user.age || "",
     });
     setIsEditing(true);
     setError(null);
@@ -124,7 +100,6 @@ const ProfileTab = ({
 
   return (
     <div className="space-y-6">
-      {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardContent className="pt-6">
@@ -175,7 +150,6 @@ const ProfileTab = ({
         </Card>
       </div>
 
-      {/* Profile Form */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -282,27 +256,11 @@ const ProfileTab = ({
               >
                 Jins
               </Label>
-              {isEditing ? (
-                <Select
-                  value={formData.gender}
-                  onValueChange={(value) => handleSelectChange("gender", value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Jinsni tanlang" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="male">Erkak</SelectItem>
-                    <SelectItem value="female">Ayol</SelectItem>
-                    <SelectItem value="other">Boshqa</SelectItem>
-                  </SelectContent>
-                </Select>
-              ) : (
-                <Input
-                  value={getGenderDisplay(formData.gender)}
-                  disabled
-                  className="w-full bg-gray-50"
-                />
-              )}
+              <Input
+                value={getGenderDisplay(user.gender)}
+                disabled
+                className="w-full bg-gray-50"
+              />
             </div>
 
             <div>
@@ -313,16 +271,9 @@ const ProfileTab = ({
                 Yosh
               </Label>
               <Input
-                id="age"
-                name="age"
-                type="number"
-                value={formData.age || ""}
-                onChange={handleInputChange}
-                disabled={!isEditing}
-                className="w-full"
-                placeholder="Yoshingizni kiriting"
-                min="1"
-                max="120"
+                value={user.age || "Belgilanmagan"}
+                disabled
+                className="w-full bg-gray-50"
               />
             </div>
 

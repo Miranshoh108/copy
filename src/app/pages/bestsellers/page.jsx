@@ -1,15 +1,15 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import "rc-slider/assets/index.css";
-import ProductCard from "./ProductCard";
+import ProductCard from "../../components/ProductCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import dynamic from "next/dynamic";
 import { ChevronLeft, ChevronRight, MoveRight } from "lucide-react";
-import $api from "../http/api";
+import $api from "@/app/http/api";
 import { useTranslation } from "react-i18next";
-import i18next from "../../i18n/i18n";
+import i18next from "@/i18n/i18n";
 
 const Slider = dynamic(() => import("react-slick"), {
   ssr: false,
@@ -62,14 +62,14 @@ const PrevArrow = (props) => {
   return (
     <div
       onClick={onClick}
-      className="absolute max-[600px]:hidden -left-10 top-1/2 transform -translate-y-1/2 z-10 cursor-pointer bg-white rounded-full shadow p-2 hover:bg-gray-200 transition"
+      className="absolute -left-10 top-1/2 transform -translate-y-1/2 z-10 cursor-pointer bg-white rounded-full shadow p-2 hover:bg-gray-200 transition"
     >
       <ChevronLeft />
     </div>
   );
 };
 
-export default function DiscountedProducts() {
+export default function BestSellers() {
   const { t } = useTranslation();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -83,80 +83,79 @@ export default function DiscountedProducts() {
   }, []);
 
   useEffect(() => {
-    const fetchDiscountedProducts = async () => {
+    const fetchProducts = async () => {
       try {
         setLoading(true);
         setError(null);
 
-        const response = await $api.get("/products/get/discounted");
+        const response = await $api.get(
+          `${process.env.NEXT_PUBLIC_API_URL}/products/get/popular`,
+          {
+            timeout: 10000,
+          }
+        );
 
-        if (response.status === 200) {
-          const discountedProducts = response.data.products.map((product) => {
-            const bestDiscountVariant = product.variants.reduce(
-              (best, current) =>
-                current.discount > best.discount ? current : best,
-              product.variants[0]
-            );
+        if (response.data.success && response.data.data) {
+          const mappedProducts = response.data.data.map((item) => {
+            const variant = item.variants?.[0] || {};
 
             let imageUrl = "/placeholder.png";
-            if (product.mainImage) {
-              const cleanPath = product.mainImage.replace(/\\/g, "/");
+            if (item.mainImage) {
+              const cleanPath = item.mainImage.replace(/\\/g, "/");
               imageUrl = `${process.env.NEXT_PUBLIC_API_URL}/${cleanPath}`;
             }
 
-            const getProductName = () => {
+            const getLocalizedName = () => {
               switch (i18next.language) {
                 case "ru":
-                  return product.name_ru || product.name;
+                  return item.name_ru || item.name;
                 case "en":
-                  return product.name_en || product.name;
+                  return item.name_en || item.name;
                 default:
-                  return product.name;
+                  return item.name;
               }
             };
 
-            const getProductDescription = () => {
+            const getLocalizedDescription = () => {
               switch (i18next.language) {
                 case "ru":
-                  return (
-                    product.shortDescription_ru || product.shortDescription
-                  );
+                  return item.description_ru || item.description;
                 case "en":
-                  return (
-                    product.shortDescription_en || product.shortDescription
-                  );
+                  return item.description_en || item.description;
                 default:
-                  return product.shortDescription;
+                  return item.description;
               }
             };
 
             return {
-              ...product,
-              id: product._id,
-              name: getProductName(), 
-              shortDescription: getProductDescription(),
+              id: item._id,
+              name: getLocalizedName(),
+              name_ru: item.name_ru,
+              name_en: item.name_en,
+              description: getLocalizedDescription(),
+              price: variant.price || 0,
+              discount: variant.discount || 0,
+              discountedPrice: variant.discountedPrice || variant.price || 0,
               image: imageUrl,
-              mainVariant: bestDiscountVariant,
-              discountedVariants: product.variants.filter(
-                (variant) => variant.discount > 0
-              ),
-              price: bestDiscountVariant?.price,
-              discountedPrice: bestDiscountVariant?.discountedPrice,
-              discount: bestDiscountVariant?.discount,
+              variants: item.variants || [],
+              mainImage: item.mainImage,
+              reviews_count: item.reviews_count || 0,
             };
           });
 
-          setProducts(discountedProducts);
+          setProducts(mappedProducts);
+        } else {
+          throw new Error(t("bestsellers.data_format_error"));
         }
       } catch (error) {
-        console.error("Error fetching discounted products:", error);
-        setError(t("discounted_products.error_loading"));
+        console.error("Mahsulotlarni yuklashda xatolik:", error);
+        setError(error.message || t("bestsellers.loading_error"));
       } finally {
         setLoading(false);
       }
     };
 
-    fetchDiscountedProducts();
+    fetchProducts();
   }, [i18next.language, t]);
 
   const sliderSettings = {
@@ -168,7 +167,6 @@ export default function DiscountedProducts() {
     arrows: products.length > 6,
     nextArrow: <NextArrow />,
     prevArrow: <PrevArrow />,
-    variableHeight: true,
     responsive: [
       {
         breakpoint: 1024,
@@ -199,22 +197,22 @@ export default function DiscountedProducts() {
 
   if (error) {
     return (
-      <section className="py-8">
+      <section className="py-4">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-gray-800">
-              {mounted ? t("discounted_products.title") : ""}
+              {mounted ? t("bestsellers.title") : ""}
             </h2>
           </div>
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
             <p className="text-red-600">
-              {mounted ? t("discounted_products.error_message") : ""}: {error}
+              {mounted ? t("bestsellers.error_message") : ""}: {error}
             </p>
             <button
               onClick={() => window.location.reload()}
               className="mt-2 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 cursor-pointer"
             >
-              {mounted ? t("discounted_products.retry_button") : ""}
+              {mounted ? t("bestsellers.retry_button") : ""}
             </button>
           </div>
         </div>
@@ -224,10 +222,10 @@ export default function DiscountedProducts() {
 
   return (
     <section className="py-4">
-      <div className="max-w-7xl mx-auto px-4 ">
-        <div className="flex items-center justify-between mb-6">
+      <div className="max-w-7xl mx-auto px-4">
+        <div className="flex items-center justify-between mb-4">
           <h2 className="text-2xl font-bold text-gray-800">
-            {mounted ? t("discounted_products.title") : ""}
+            {mounted ? t("bestsellers.title") : ""}
           </h2>
         </div>
 
@@ -239,7 +237,7 @@ export default function DiscountedProducts() {
           </div>
         ) : products.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
-            {mounted ? t("discounted_products.no_products") : ""}
+            {mounted ? t("bestsellers.no_products") : ""}
           </div>
         ) : products.length <= 6 ? (
           <div className="flex gap-4 overflow-x-auto">
@@ -257,7 +255,7 @@ export default function DiscountedProducts() {
               className="slider-transition"
             >
               {products.map((product) => (
-                <div key={product._id} className="px-2">
+                <div key={product.id} className="px-2">
                   <div className="w-[200px]">
                     <ProductCard product={product} />
                   </div>

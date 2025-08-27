@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import NewProducts from "@/app/components/NewProducts";
+import DiscountedProducts from "../../pages/discounted/page";
 import ProductDetail from "../../components/DetailCard/ProductDetail";
 import Footer from "../../components/Footer";
 import Navbar from "../../components/Navbar";
@@ -31,7 +31,6 @@ export default function ProductDetailPage() {
           throw new Error("Mahsulot topilmadi");
         }
 
-        console.log("API Response:", data);
 
         if (data.status === 200 && data.productData) {
           // Process product data with correct image URLs
@@ -125,7 +124,7 @@ export default function ProductDetailPage() {
       <main className="bg-[#ECF4FF] flex items-center justify-center flex-1">
         <div className="w-full max-w-[1240px] py-6">
           <ProductDetail />
-          <NewProducts />
+          <DiscountedProducts />
         </div>
       </main>
       <Footer className="mt-auto" />

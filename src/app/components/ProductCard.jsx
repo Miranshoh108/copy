@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Heart, ShoppingCart } from "lucide-react";
 import { useHomeLikes } from "./hooks/likes";
 import { useCartStore } from "./hooks/cart";
@@ -9,7 +9,7 @@ import useProductStore from "../store/productStore";
 import { useTranslation } from "react-i18next";
 import i18next from "../../i18n/i18n";
 import VariantSelectionModal from "./VariantSelectionModal";
-import $api from "../http/api";
+import $api from "../http/api";   
 
 export default function ProductCard({ product }) {
   const { t } = useTranslation();
@@ -23,11 +23,49 @@ export default function ProductCard({ product }) {
   const [mounted, setMounted] = useState(false);
   const [showVariantModal, setShowVariantModal] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [rating, setRating] = useState(null);
+  const [loadingRating, setLoadingRating] = useState(false);
+
+  // Random reviews count ni faqat bir marta hosil qilish
+  const randomReviewsCount = useMemo(() => {
+    return Math.floor(Math.random() * 15) + 5;
+  }, [product.id]); // product.id dependency sifatida qo'shildi, har product uchun alohida random raqam
 
   useEffect(() => {
     setMounted(true);
     checkAuthentication();
+    fetchProductRating();
   }, []);
+
+  const fetchProductRating = async () => {
+    setLoadingRating(true);
+    try {
+      const response = await $api.get(`/review/get/by/product/${id}`);
+      if (response.data && response.data.data) {
+        const reviews = response.data.data;
+        if (reviews.length > 0) {
+          const totalRating = reviews.reduce(
+            (sum, review) => sum + (review.rating || 0),
+            0
+          );
+          const avgRating = totalRating / reviews.length;
+          setRating(avgRating);
+        } else {
+          const randomRating = (Math.random() * 1 + 4).toFixed(1);
+          setRating(parseFloat(randomRating));
+        }
+      } else {
+        const randomRating = (Math.random() * 1 + 4).toFixed(1);
+        setRating(parseFloat(randomRating));
+      }
+    } catch (error) {
+      console.error("Error fetching product rating:", error);
+      const randomRating = (Math.random() * 1 + 4).toFixed(1);
+      setRating(parseFloat(randomRating));
+    } finally {
+      setLoadingRating(false);
+    }
+  };
 
   const checkAuthentication = () => {
     try {
@@ -359,48 +397,32 @@ export default function ProductCard({ product }) {
     const variantId = cartItem?.variantId || variants[0]?._id || null;
 
     if (currentQuantity === 1) {
-      removeCart(id, variantId);
+      showNotification("Mahsulotni o'chirish uchun savatga kiring", "info");
+      return;
+    }
 
-      if (authStatus) {
-        try {
-          await $api.delete(
-            `/cart/remove/${id}${variantId ? `?variantId=${variantId}` : ""}`
-          );
-          console.log("Product removed from cart via API");
-        } catch (error) {
-          console.error("Error removing from cart via API:", error);
-          const cartProduct = createLocalCartProduct(1, variantId);
-          addCart(cartProduct, variantId);
-          showNotification(
-            "Mahsulotni olib tashlashda xatolik yuz berdi.",
-            "error"
-          );
-        }
-      }
-    } else {
-      const newQty = currentQuantity - 1;
-      updateQuantity(id, newQty, variantId);
+    const newQty = currentQuantity - 1;
+    updateQuantity(id, newQty, variantId);
 
-      if (authStatus) {
-        try {
-          const updateData = {
-            products: [
-              {
-                productId: id,
-                variantId: variantId,
-                quantity: newQty,
-                price: discountedPrice || price,
-              },
-            ],
-          };
+    if (authStatus) {
+      try {
+        const updateData = {
+          products: [
+            {
+              productId: id,
+              variantId: variantId,
+              quantity: newQty,
+              price: discountedPrice || price,
+            },
+          ],
+        };
 
-          await $api.post("/cart/add/product", updateData);
-          console.log("Cart quantity decreased via API");
-        } catch (error) {
-          console.error("Error updating cart via API:", error);
-          updateQuantity(id, currentQuantity, variantId);
-          showNotification("Miqdorni yangilashda xatolik yuz berdi.", "error");
-        }
+        await $api.post("/cart/add/product", updateData);
+        console.log("Cart quantity decreased via API");
+      } catch (error) {
+        console.error("Error updating cart via API:", error);
+        updateQuantity(id, currentQuantity, variantId);
+        showNotification("Miqdorni yangilashda xatolik yuz berdi.", "error");
       }
     }
   };
@@ -445,24 +467,21 @@ export default function ProductCard({ product }) {
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
+        </div>
 
+        <div className="min-h-[45px] flex flex-col justify-center px-2 mt-[2px]">
           {allImages.length > 1 && isHovering && (
-            <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1 z-10">
+            <div className="absolute bottom-[148px] left-1 right-1 flex gap-1 z-10">
               {allImages.map((_, index) => (
                 <div
                   key={index}
-                  className={`w-1.5 h-1.5 rounded-full transition-all duration-200 ${
-                    index === currentImageIndex
-                      ? "bg-green-500 scale-125"
-                      : "bg-white/60"
+                  className={`flex-1 h-0.5 rounded-full transition-all duration-200 ${
+                    index === currentImageIndex ? "bg-green-600" : "bg-white/1"
                   }`}
                 />
               ))}
             </div>
           )}
-        </div>
-
-        <div className="min-h-[45px] flex flex-col justify-center px-2">
           {price && discountedPrice && price !== discountedPrice ? (
             <>
               <span className="text-gray-400 line-through text-sm">
@@ -483,12 +502,25 @@ export default function ProductCard({ product }) {
         <h3 className="text-gray-800 font-medium px-2">{displayName}</h3>
 
         <div className="p-2">
-          <p className="text-gray-700 text-xs">
-            {reviews_count && reviews_count > 0
-              ? reviews_count
-              : Math.floor(Math.random() * 6) + 1}
-            {mounted ? t("product_card.reviews") : ""}
-          </p>
+          <div className="flex items-center gap-2 text-xs text-gray-700">
+            <div className="flex items-center gap-1">
+              <span>⭐</span>
+              {loadingRating ? (
+                <span>...</span>
+              ) : (
+                <span className="font-medium">
+                  {rating?.toFixed(1) || "4.5"}
+                </span>
+              )}
+            </div>
+            <span>•</span>
+            <span>
+              {reviews_count && reviews_count > 0
+                ? reviews_count
+                : randomReviewsCount}
+              {mounted ? t("product_card.reviews") : ""}
+            </span>
+          </div>
 
           <div className="flex items-center justify-between mt-1">
             {isLoading ? (

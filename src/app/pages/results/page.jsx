@@ -1,15 +1,15 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import "rc-slider/assets/index.css";
-import ProductCard from "./ProductCard";
+import ProductCard from "../../components/ProductCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import dynamic from "next/dynamic";
 import { ChevronLeft, ChevronRight, MoveRight } from "lucide-react";
-import $api from "../http/api";
+import $api from "@/app/http/api";
 import { useTranslation } from "react-i18next";
-import i18next from "../../i18n/i18n";
+import i18next from "@/i18n/i18n";
 
 const Slider = dynamic(() => import("react-slick"), {
   ssr: false,
@@ -69,7 +69,7 @@ const PrevArrow = (props) => {
   );
 };
 
-export default function BestSellers() {
+export default function ResultsProduct() {
   const { t } = useTranslation();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -137,7 +137,7 @@ export default function BestSellers() {
               discount: variant.discount || 0,
               discountedPrice: variant.discountedPrice || variant.price || 0,
               image: imageUrl,
-              variants: item.variants || [], 
+              variants: item.variants || [],
               mainImage: item.mainImage,
               reviews_count: item.reviews_count || 0,
             };
@@ -156,7 +156,7 @@ export default function BestSellers() {
     };
 
     fetchProducts();
-  }, [i18next.language, t]); 
+  }, [i18next.language, t]);
 
   const sliderSettings = {
     dots: false,

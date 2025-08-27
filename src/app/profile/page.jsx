@@ -1,7 +1,6 @@
 "use client";
 import {
   User,
-  Settings,
   ShoppingBag,
   Heart,
   CreditCard,
@@ -14,10 +13,7 @@ import { useEffect, useState, useRef } from "react";
 import ProfileTab from "./info/ProfileTab";
 import Orders from "./info/Orders";
 import Favorites from "./info/Favorites";
-import Cards from "./info/Cards";
-import Addresses from "./info/Addresses";
 import Notifications from "./info/Notifications";
-import SettingsTab from "./info/SettingsTab";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { useHomeLikes } from "../components/hooks/likes";
@@ -81,7 +77,6 @@ const Profile = () => {
 
         setUser(formattedUser);
 
-        // LocalStorage'da cache uchun saqlash
         localStorage.setItem("user", JSON.stringify(formattedUser));
       } else {
         throw new Error("Profile ma'lumotlarini olishda xatolik");
@@ -90,12 +85,11 @@ const Profile = () => {
       console.error("Profile yuklashda xatolik:", error);
       setError(error.message || "Profile yuklashda xatolik yuz berdi");
 
-      // Fallback: localStorage dan olishga harakat qilamiz
       const storedUser = localStorage.getItem("user");
       if (storedUser) {
         try {
           setUser(JSON.parse(storedUser));
-          setError(null); // Cache mavjud bo'lsa xatolikni yashirish
+          setError(null); 
         } catch (parseError) {
           console.error("localStorage parse xatolik:", parseError);
         }
@@ -105,7 +99,6 @@ const Profile = () => {
     }
   };
 
-  // Profile ma'lumotlarini yangilash
   const updateUserProfile = async (updatedData) => {
     try {
       const token = localStorage.getItem("accessToken");
@@ -115,17 +108,28 @@ const Profile = () => {
 
       $api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
-      const response = await $api.put("/users/update/me", {
-        firstName: updatedData.firstName,
-        lastName: updatedData.lastName,
-        email: updatedData.email,
-        phoneNumber: updatedData.phone,
-        gender: updatedData.gender,
-        age: updatedData.age,
-      });
+      const changedFields = {};
+
+      if (updatedData.firstName !== user.firstName) {
+        changedFields.firstName = updatedData.firstName;
+      }
+      if (updatedData.lastName !== user.lastName) {
+        changedFields.lastName = updatedData.lastName;
+      }
+      if (updatedData.email !== user.email) {
+        changedFields.email = updatedData.email;
+      }
+      if (updatedData.phone !== user.phone) {
+        changedFields.phoneNumber = updatedData.phone;
+      }
+
+      if (Object.keys(changedFields).length === 0) {
+        return true;
+      }
+
+      const response = await $api.patch("/users/update/me", changedFields);
 
       if (response.data.status === 200 || response.status === 200) {
-        // Yangilangan ma'lumotlarni qayta yuklash
         await fetchUserProfile();
         return true;
       } else {
@@ -141,10 +145,19 @@ const Profile = () => {
     fetchUserProfile();
   }, []);
 
-  // Avatar o'zgartirish
   const handleAvatarChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
+
+    if (file.size > 15 * 1024 * 1024) {
+      setError("Fayl hajmi 5MB dan oshmasligi kerak");
+      return;
+    }
+
+    if (!file.type.startsWith("image/")) {
+      setError("Faqat rasm fayllari qabul qilinadi");
+      return;
+    }
 
     try {
       const token = localStorage.getItem("accessToken");
@@ -155,8 +168,7 @@ const Profile = () => {
       const formData = new FormData();
       formData.append("avatar", file);
 
-      // Avatar uchun Content-Type ni o'chirish (FormData o'zi belgilaydi)
-      const response = await $api.post("/users/profile/avatar", formData, {
+      const response = await $api.patch("/users/update/me", formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",
@@ -164,12 +176,11 @@ const Profile = () => {
       });
 
       if (response.data.status === 200 || response.status === 200) {
-        // Avatar muvaffaqiyatli yuklandi, user ma'lumotlarini yangilash
         await fetchUserProfile();
+        setError(null); 
       }
     } catch (error) {
       console.error("Avatar yuklashda xatolik:", error);
-      // Xatolik haqida foydalanuvchiga xabar berish
       setError("Avatar yuklashda xatolik yuz berdi");
     }
   };
@@ -183,15 +194,7 @@ const Profile = () => {
       count: null,
     },
     { id: "favorites", icon: Heart, label: "Sevimlilar", count: likes.length },
-    { id: "cards", icon: CreditCard, label: "To'lov kartalari", count: null },
-    {
-      id: "addresses",
-      icon: MapPin,
-      label: "Manzillarim",
-      count: null,
-    },
     { id: "notifications", icon: Bell, label: "Bildirishnomalar", count: null },
-    { id: "settings", icon: Settings, label: "Sozlamalar", count: null },
   ];
 
   const handleLogout = async () => {
@@ -199,7 +202,6 @@ const Profile = () => {
       const token = localStorage.getItem("accessToken");
       if (token) {
         $api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-        // Server'ga logout so'rovi yuborish
         await $api.post("/auth/logout");
       }
     } catch (error) {
@@ -267,7 +269,6 @@ const Profile = () => {
     <div className="min-h-screen bg-gray-50">
       <Navbar />
 
-      {/* Error banner agar cache ishlatayotgan bo'lsa */}
       {error && user && (
         <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mx-4 mt-4">
           <div className="flex">
@@ -286,13 +287,12 @@ const Profile = () => {
             </div>
             <div className="ml-3">
               <p className="text-sm text-yellow-700">
-                Server bilan aloqa uzilgan. Saqlangan ma'lumotlar
-                ko'rsatilmoqda.
+                {error}
                 <button
-                  onClick={fetchUserProfile}
+                  onClick={() => setError(null)}
                   className="ml-2 underline hover:no-underline"
                 >
-                  Qayta urinish
+                  Yashirish
                 </button>
               </p>
             </div>
@@ -302,7 +302,6 @@ const Profile = () => {
 
       <div className="max-w-7xl mx-auto px-4 py-6">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Sidebar */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-xl shadow-sm overflow-hidden">
               <div className="p-6 bg-gradient-to-r from-green-600 to-green-700 text-white">
@@ -365,7 +364,6 @@ const Profile = () => {
                 </div>
               </div>
 
-              {/* Menu */}
               <div className="p-2">
                 {menuItems.map((item) => (
                   <button
@@ -400,7 +398,6 @@ const Profile = () => {
             </div>
           </div>
 
-          {/* Main Content */}
           <div className="lg:col-span-3">
             {activeTab === "profile" && (
               <ProfileTab
@@ -414,16 +411,8 @@ const Profile = () => {
             )}
             {activeTab === "orders" && <Orders />}
             {activeTab === "favorites" && <Favorites />}
-            {activeTab === "cards" && <Cards />}
-            {activeTab === "addresses" && <Addresses />}
             {activeTab === "notifications" && <Notifications />}
-            {activeTab === "settings" && (
-              <SettingsTab
-                onLogout={handleLogout}
-                isAuthenticated={true}
-                currentUser={user}
-              />
-            )}
+           
           </div>
         </div>
       </div>

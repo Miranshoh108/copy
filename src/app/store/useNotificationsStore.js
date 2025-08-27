@@ -1,91 +1,79 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
 
-export const useNotificationsStore = create(
-  persist(
-    (set, get) => ({
-      notifications: [],
-      setNotifications: (newNotifications) => {
-        set({
-          notifications: Array.isArray(newNotifications)
-            ? newNotifications
-            : [],
-        });
-      },
+export const useNotificationsStore = create((set, get) => ({
+  notifications: [],
 
-      addNotification: (notification) => {
-        const currentNotifications = get().notifications;
-        const safeNotifications = Array.isArray(currentNotifications)
-          ? currentNotifications
-          : [];
+  setNotifications: (newNotifications) => {
+    set({
+      notifications: Array.isArray(newNotifications) ? newNotifications : [],
+    });
+  },
 
-        set({
-          notifications: [
-            ...safeNotifications,
-            {
-              ...notification,
-              id: safeNotifications.length + 1,
-              read: false,
-            },
-          ],
-        });
-      },
+  addNotification: (notification) => {
+    const currentNotifications = get().notifications;
+    const safeNotifications = Array.isArray(currentNotifications)
+      ? currentNotifications
+      : [];
 
-      markAsRead: (id) => {
-        const currentNotifications = get().notifications;
-        const safeNotifications = Array.isArray(currentNotifications)
-          ? currentNotifications
-          : [];
+    set({
+      notifications: [
+        ...safeNotifications,
+        {
+          ...notification,
+          id: notification.id || Date.now(), // API dan id keladi, agar yo'q bo'lsa vaqt ishlatamiz
+          read: notification.read || false,
+        },
+      ],
+    });
+  },
 
-        set({
-          notifications: safeNotifications.map((notif) =>
-            notif.id === id ? { ...notif, read: true } : notif
-          ),
-        });
-      },
+  markAsRead: (id) => {
+    const currentNotifications = get().notifications;
+    const safeNotifications = Array.isArray(currentNotifications)
+      ? currentNotifications
+      : [];
 
-      markAllAsRead: () => {
-        const currentNotifications = get().notifications;
-        const safeNotifications = Array.isArray(currentNotifications)
-          ? currentNotifications
-          : [];
+    set({
+      notifications: safeNotifications.map((notif) =>
+        notif.id === id ? { ...notif, read: true } : notif
+      ),
+    });
+  },
 
-        set({
-          notifications: safeNotifications.map((notif) => ({
-            ...notif,
-            read: true,
-          })),
-        });
-      },
+  markAllAsRead: () => {
+    const currentNotifications = get().notifications;
+    const safeNotifications = Array.isArray(currentNotifications)
+      ? currentNotifications
+      : [];
 
-      deleteNotification: (id) => {
-        const currentNotifications = get().notifications;
-        const safeNotifications = Array.isArray(currentNotifications)
-          ? currentNotifications
-          : [];
+    set({
+      notifications: safeNotifications.map((notif) => ({
+        ...notif,
+        read: true,
+      })),
+    });
+  },
 
-        set({
-          notifications: safeNotifications.filter((notif) => notif.id !== id),
-        });
-      },
+  deleteNotification: (id) => {
+    const currentNotifications = get().notifications;
+    const safeNotifications = Array.isArray(currentNotifications)
+      ? currentNotifications
+      : [];
 
-      getUnreadCount: () => {
-        const currentNotifications = get().notifications;
-        const safeNotifications = Array.isArray(currentNotifications)
-          ? currentNotifications
-          : [];
-        return safeNotifications.filter((notif) => !notif.read).length;
-      },
-    }),
-    {
-      name: "notifications-storage",
-      getStorage: () =>
-        typeof window !== "undefined" ? localStorage : undefined,
-      onRehydrateStorage: () => (state) => {
-        if (state && !Array.isArray(state.notifications)) {
-          state.notifications = [];
-        }
-      },
-    }
-  )
-);
+    set({
+      notifications: safeNotifications.filter((notif) => notif.id !== id),
+    });
+  },
+
+  getUnreadCount: () => {
+    const currentNotifications = get().notifications;
+    const safeNotifications = Array.isArray(currentNotifications)
+      ? currentNotifications
+      : [];
+    return safeNotifications.filter((notif) => !notif.read).length;
+  },
+
+  clearNotifications: () => {
+    set({ notifications: [] });
+  },
+}));

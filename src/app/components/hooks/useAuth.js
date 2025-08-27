@@ -240,12 +240,11 @@ export const useAuth = (redirectIfUnauthenticated = false) => {
     }
   }, [clearAuthData]);
 
-  // Only run checkAuth after initial load
   useEffect(() => {
     if (!loading && isAuthenticated) {
       checkAuth();
     }
-  }, [loading]); // Remove checkAuth from dependencies to avoid loops
+  }, [loading, isAuthenticated, checkAuth]); 
 
   useEffect(() => {
     if (interceptorsSetupRef.current) {

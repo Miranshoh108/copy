@@ -33,7 +33,6 @@ export default function Navbar() {
   const [subCategories, setSubCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [subCategoriesLoading, setSubCategoriesLoading] = useState(false);
-  const [language, setLanguage] = useState("UZ");
   const router = useRouter();
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [expandedGroups, setExpandedGroups] = useState({});
@@ -98,7 +97,6 @@ export default function Navbar() {
         params: searchParams,
       });
 
-      console.log("Search API Response:", res.data);
 
       let products = [];
 
@@ -148,59 +146,6 @@ export default function Navbar() {
       default:
         return product.shortDescription;
     }
-  };
-
-  const SearchResults = ({ suggestions, onSelect, searchQuery }) => {
-    const { t } = useTranslation();
-
-    if (!suggestions.length) {
-      return (
-        <div className="p-4 text-center text-gray-500">
-          <Search size={24} className="mx-auto mb-2 text-gray-300" />
-          <p className="text-sm">
-            {searchQuery ? t("navbar.no_results") : t("navbar.start_typing")}
-          </p>
-        </div>
-      );
-    }
-
-    return (
-      <div className="max-h-80 overflow-y-auto">
-        {suggestions.map((product) => (
-          <button
-            key={product._id}
-            onClick={() => onSelect(product.name)}
-            className="w-full text-left px-3 py-3 hover:bg-gray-50 rounded-md flex items-center gap-3 transition-colors border-b border-gray-50 last:border-b-0"
-          >
-            {product.mainImage && (
-              <img
-                src={`${process.env.NEXT_PUBLIC_API_URL}/${product.mainImage}`}
-                alt={product.name}
-                className="w-10 h-10 object-cover rounded-md"
-                onError={(e) => {
-                  e.target.style.display = "none";
-                }}
-              />
-            )}
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate">
-                {product.name}
-              </p>
-              {product.shortDescription && (
-                <p className="text-xs text-gray-500 truncate">
-                  {product.shortDescription}
-                </p>
-              )}
-            </div>
-            {product.price && (
-              <div className="text-sm font-medium text-green-600">
-                {product.price.toLocaleString()} so'm
-              </div>
-            )}
-          </button>
-        ))}
-      </div>
-    );
   };
 
   useEffect(() => {
@@ -293,7 +238,6 @@ export default function Navbar() {
           `/sub/types/get/by/category/${selectedCategory._id}`
         );
 
-        console.log("Subcategories API response:", response.data);
 
         if (response.data.status === 200 && response.data.data) {
           setSubCategories(response.data.data || []);

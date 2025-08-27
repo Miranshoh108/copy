@@ -50,6 +50,9 @@
     "error_message": "Mahsulotlarni yuklashda xatolik",
     "retry_button": "Qaytadan urinish"
   },
+  "catagories": {
+    "title": "Ofis anjomlari"
+  },
   "services": {
     "title": "Hujjatlar servisi",
     "catalog": "Mahsulotlar katalogi",

@@ -72,7 +72,7 @@ export default function NotificationModal({ open, setOpen }) {
                             item.readAt ? "text-gray-700" : "text-gray-900"
                           }`}
                         >
-                          Bildirishnoma
+                          {item.title || "Bildirishnoma"}
                         </h3>
                         {!item.read && (
                           <span className="w-2 h-2 bg-green-500 rounded-full"></span>
@@ -83,7 +83,7 @@ export default function NotificationModal({ open, setOpen }) {
                           item.readAt ? "text-gray-500" : "text-gray-700"
                         }`}
                       >
-                        {item.message}
+                        {item.message || item.description}
                       </p>
                       <p
                         className={`text-xs mt-1 ${

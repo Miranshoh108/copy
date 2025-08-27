@@ -12,7 +12,6 @@ const useCategoryStore = create((set) => ({
     set({ loading: true, error: null });
     try {
       const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/catalogs/all`);
-      console.log("API Response:", response.data); // Debugging
       set({
         categories: Array.isArray(response.data.data) ? response.data.data : response.data,
         loading: false,

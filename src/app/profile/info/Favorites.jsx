@@ -47,7 +47,6 @@ const Favorites = () => {
 
   const handleProductClick = (e, id) => {
     e.stopPropagation();
-    // Bu yerda mahsulot sahifasiga o'tish logikasi qo'shilishi mumkin
     console.log(`Mahsulot ${id} sahifasiga o'tish`);
   };
 

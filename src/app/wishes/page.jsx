@@ -8,7 +8,7 @@ import { useHomeLikes } from "../components/hooks/likes";
 import ProductCard from "../components/ProductCard";
 import Image from "next/image";
 import Button from "../components/ui/button";
-import NewProducts from "../components/NewProducts";
+import DiscountedProducts from "../pages/discounted/page";
 
 export default function Wishes() {
   const { likes, syncLikesWithBackend } = useHomeLikes();
@@ -60,7 +60,7 @@ export default function Wishes() {
           </div>
         )}
       </section>
-      <NewProducts />
+      <DiscountedProducts />
       <Footer />
     </div>
   );

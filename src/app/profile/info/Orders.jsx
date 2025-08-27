@@ -19,14 +19,6 @@ const Orders = () => {
     }
   }, []);
 
-  const handleStatusChange = (id, newStatus) => {
-    const updated = orders.map((order) =>
-      order.id === id ? { ...order, status: newStatus } : order
-    );
-    setOrders(updated);
-    localStorage.setItem("orders", JSON.stringify(updated));
-  };
-
   const getStatusColor = (status) => {
     switch (status) {
       case "delivered":
