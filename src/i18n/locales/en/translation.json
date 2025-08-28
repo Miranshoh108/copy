@@ -53,6 +53,36 @@
   "catagories": {
     "title": "Office supplies"
   },
+  "catagories1": {
+    "title": "Telephones"
+  },
+  "catagories2": {
+    "title": "Household appliances"
+  },
+  "catagories3": {
+    "title": "Clothes"
+  },
+  "catagories4": {
+    "title": "Sport and recreation"
+  },
+  "catagories5": {
+    "title": "Hobbies"
+  },
+  "catagories6": {
+    "title": "Laptop and computer"
+  },
+  "catagories7": {
+    "title": "Health"
+  },
+  "catagories8": {
+    "title": "Auto goods"
+  },
+  "catagories9": {
+    "title": "Household substances"
+  },
+  "catagories10": {
+    "title": "Shoes"
+  },
   "services": {
     "title": "Document Services",
     "catalog": "Product Catalog",

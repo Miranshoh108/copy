@@ -53,6 +53,36 @@
   "catagories": {
     "title": "Ofis anjomlari"
   },
+  "catagories1": {
+    "title": "Telefonlar"
+  },
+  "catagories2": {
+    "title": "Maishiy texnika"
+  },
+  "catagories3": {
+    "title": "Kiyim"
+  },
+  "catagories4": {
+    "title": "Sport va hordiq"
+  },
+  "catagories5": {
+    "title": "Xobbi va ijod"
+  },
+  "catagories6": {
+    "title": "Noutbuk va kompyuter"
+  },
+  "catagories7": {
+    "title": "Salomatlik"
+  },
+  "catagories8": {
+    "title": "Salomatlik"
+  },
+  "catagories9": {
+    "title": "Maishiy moddalar"
+  },
+  "catagories10": {
+    "title": "Poyabzallar"
+  },
   "services": {
     "title": "Hujjatlar servisi",
     "catalog": "Mahsulotlar katalogi",

@@ -2,13 +2,16 @@ import Head from "next/head";
 import HeroBanner from "./components/Herobanner";
 import Footer from "./components/Footer";
 import BestSellers from "./pages/bestsellers/page";
+import SportProduct from "./pages/sport/page";
+import HouseholdProduct from "./pages/household/page";
+import HobbiesProduct from "./pages/hobbies/page";
+import ClothesProduct from "./pages/clothes/page";
 import ResultsProduct from "./pages/results/page";
 import DiscountedProducts from "./pages/discounted/page";
 import CatagoriesProduct from "./pages/catagoriesproduct/catagoriesproduct";
 import Navbar from "./components/Navbar";
 import Showcase from "./components/Showcase";
 import { Suspense } from "react";
-
 export default function Home() {
   const structuredData = {
     "@context": "https://schema.org",
@@ -98,17 +101,17 @@ export default function Home() {
 
       <Navbar />
       <HeroBanner />
+      <BestSellers />
+      <DiscountedProducts />
       <ResultsProduct />
       <Suspense fallback={<div>Loading...</div>}>
         <CatagoriesProduct />
       </Suspense>
-      <BestSellers />
-      <DiscountedProducts />
       <Showcase />
-      <BestSellers />
-      <DiscountedProducts />
-      <BestSellers />
-      <DiscountedProducts />
+      <SportProduct />
+      <HouseholdProduct />
+      <HobbiesProduct />
+      <ClothesProduct />
       <Footer />
     </div>
   );

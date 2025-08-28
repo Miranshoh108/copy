@@ -187,3 +187,6 @@ body {
   animation: spin 1s linear infinite;
 }
 
+.footer-link {
+  @apply text-gray-600 hover:text-[#249B73] transition-colors text-sm;
+}

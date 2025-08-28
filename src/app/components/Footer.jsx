@@ -2,101 +2,117 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import $api from "../http/api";
 
 const Footer = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [mounted, setMounted] = useState(false);
+  const [footerCategories, setFooterCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => setMounted(true), []);
+  const FOOTER_CATEGORY_IDS = [
+    "689dc751e9443d84b885e458",
+    "689dc8d8e9443d84b885e47e",
+    "689dc9cbe9443d84b885e499",
+  ];
+
+  const getName = (item) => {
+    const currentLang = i18n.language;
+    if (currentLang === "ru") return item.name_ru || item.name;
+    if (currentLang === "en") return item.name_en || item.name;
+    return item.name;
+  };
+
+  const fetchFooterData = async () => {
+    try {
+      setLoading(true);
+
+      const categoriesResponse = await $api.get("/categories/get/all", {
+        params: { page: 1, limit: 50, sort: "asc" },
+      });
+
+      if (categoriesResponse.data.success) {
+        const selectedCategories = categoriesResponse.data.data.filter(
+          (category) => FOOTER_CATEGORY_IDS.includes(category._id)
+        );
+
+        const categoriesWithSubs = await Promise.all(
+          selectedCategories.map(async (category) => {
+            try {
+              const subResponse = await $api.get(
+                `/sub/types/get/by/category/${category._id}`
+              );
+
+              return {
+                ...category,
+                subCategories: subResponse.data.data || [],
+              };
+            } catch (error) {
+              console.error(
+                `Sub-kategoriyalarni yuklashda xato: ${category.name}`,
+                error
+              );
+              return {
+                ...category,
+                subCategories: [],
+              };
+            }
+          })
+        );
+
+        setFooterCategories(categoriesWithSubs);
+      }
+    } catch (error) {
+      console.error("Footer ma'lumotlarini yuklashda xato:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    setMounted(true);
+    fetchFooterData();
+  }, []);
 
   if (!mounted) return null;
+
   return (
     <footer className="bg-white border-t border-gray-200 mt-16">
       <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
-          <div>
-            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">
-              {t("services.title")}
-            </h3>
-            <ul className="space-y-2 sm:space-y-3">
-              <li>
-                <Link href="/catalog" className="footer-link">
-                  {t("services.catalog")}
-                </Link>
-              </li>
-              <li>
-                <Link href="/transport" className="footer-link">
-                  {t("services.transport")}
-                </Link>
-              </li>
-              <li>
-                <Link href="/terms" className="footer-link">
-                  {t("services.terms")}
-                </Link>
-              </li>
-              <li>
-                <Link href="/stores" className="footer-link">
-                  {t("services.stores")}
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">
-              {t("about.title")}
-            </h3>
-            <ul className="space-y-2 sm:space-y-3">
-              <li>
-                <Link href="/archive" className="footer-link">
-                  {t("about.archive")}
-                </Link>
-              </li>
-              <li>
-                <Link href="/regulations" className="footer-link">
-                  {t("about.regulations")}
-                </Link>
-              </li>
-              <li>
-                <Link href="/certificate" className="footer-link">
-                  {t("about.certificate")}
-                </Link>
-              </li>
-              <li>
-                <Link href="/promocodes" className="footer-link">
-                  {t("about.promocodes")}
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">
-              {t("catalogs.title")}
-            </h3>
-            <ul className="space-y-2 sm:space-y-3">
-              <li>
-                <Link href="/catalog-1" className="footer-link">
-                  {t("catalogs.electronics")}
-                </Link>
-              </li>
-              <li>
-                <Link href="/catalog-2" className="footer-link">
-                  {t("catalogs.clothes")}
-                </Link>
-              </li>
-              <li>
-                <Link href="/catalog-3" className="footer-link">
-                  {t("catalogs.home")}
-                </Link>
-              </li>
-              <li>
-                <Link href="/all-catalogs" className="footer-link">
-                  {t("catalogs.all")}
-                </Link>
-              </li>
-            </ul>
-          </div>
+          {loading
+            ? Array.from({ length: 3 }).map((_, index) => (
+                <div key={index}>
+                  <div className="h-6 bg-gray-200 rounded mb-4 animate-pulse"></div>
+                  <div className="space-y-2">
+                    {Array.from({ length: 4 }).map((_, i) => (
+                      <div
+                        key={i}
+                        className="h-4 bg-gray-100 rounded animate-pulse"
+                      ></div>
+                    ))}
+                  </div>
+                </div>
+              ))
+            : footerCategories.map((category, index) => (
+                <div key={category._id}>
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">
+                    {getName(category)}
+                  </h3>
+                  <ul className="space-y-2 sm:space-y-3">
+                    {category.subCategories.slice(0, 4).map((subCategory) => (
+                      <li key={subCategory._id}>
+                        <Link
+                          href={`?subType=${subCategory._id}`}
+                          className="footer-link"
+                        >
+                          {getName(subCategory)}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
 
           <div className="sm:col-span-2 lg:col-span-1">
             <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">

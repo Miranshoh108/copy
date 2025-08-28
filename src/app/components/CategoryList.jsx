@@ -4,6 +4,7 @@ import { Loader2 } from "lucide-react";
 import $api from "../http/api";
 import i18next from "../../i18n/i18n";
 import { useTranslation } from "react-i18next";
+import Link from "next/link";
 
 export default function CategoryList({ onMoreClick }) {
   const [categories, setCategories] = useState([]);
@@ -63,15 +64,15 @@ export default function CategoryList({ onMoreClick }) {
         ) : (
           <>
             {previewCategories.map((cat, index) => (
-              <div
+              <Link
                 key={cat._id || index}
-                href={`/search?category=${cat._id}`}
+                href={`?category=${cat._id}`}
                 className="group flex flex-col items-center justify-center min-w-[80px] cursor-pointer hover:scale-105 transition-transform duration-200"
               >
                 <span className="text-sm text-center whitespace-nowrap text-gray-700 group-hover:text-[#249B73] transition-colors duration-200">
                   {getCategoryName(cat)}
                 </span>
-              </div>
+              </Link>
             ))}
 
             <button

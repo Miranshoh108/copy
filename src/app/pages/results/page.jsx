@@ -6,10 +6,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import dynamic from "next/dynamic";
-import { ChevronLeft, ChevronRight, MoveRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import $api from "@/app/http/api";
 import { useTranslation } from "react-i18next";
 import i18next from "@/i18n/i18n";
+import { useSearchParams } from "next/navigation";
 
 const Slider = dynamic(() => import("react-slick"), {
   ssr: false,
@@ -62,7 +63,7 @@ const PrevArrow = (props) => {
   return (
     <div
       onClick={onClick}
-      className="absolute -left-10 top-1/2 transform -translate-y-1/2 z-10 cursor-pointer bg-white rounded-full shadow p-2 hover:bg-gray-200 transition"
+      className="absolute max-[600px]:hidden -left-10 top-1/2 transform -translate-y-1/2 z-10 cursor-pointer bg-white rounded-full shadow p-2 hover:bg-gray-200 transition"
     >
       <ChevronLeft />
     </div>
@@ -71,6 +72,7 @@ const PrevArrow = (props) => {
 
 export default function ResultsProduct() {
   const { t } = useTranslation();
+  const searchParams = useSearchParams();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -78,85 +80,112 @@ export default function ResultsProduct() {
   const [mounted, setMounted] = useState(false);
   const sliderRef = useRef(null);
 
+  const currentCategoryId =
+    searchParams?.get("category") || "689dc67ee9443d84b885e451";
+
   useEffect(() => {
     setMounted(true);
   }, []);
 
   useEffect(() => {
-    const fetchProducts = async () => {
+    const fetchCategoryProducts = async () => {
+      if (!currentCategoryId) {
+        setError("No category ID provided");
+        setLoading(false);
+        return;
+      }
+
       try {
         setLoading(true);
         setError(null);
 
         const response = await $api.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/products/get/popular`,
-          {
-            timeout: 10000,
-          }
+          `/products/get/query?category=${currentCategoryId}`
         );
 
-        if (response.data.success && response.data.data) {
-          const mappedProducts = response.data.data.map((item) => {
-            const variant = item.variants?.[0] || {};
+        if (response.status === 200 && response.data && response.data.results) {
+          const categoryProducts = response.data.results.map((product) => {
+            const bestDiscountVariant =
+              product.variants && product.variants.length > 0
+                ? product.variants.reduce(
+                    (best, current) =>
+                      (current.discount || 0) > (best.discount || 0)
+                        ? current
+                        : best,
+                    product.variants[0]
+                  )
+                : null;
 
             let imageUrl = "/placeholder.png";
-            if (item.mainImage) {
-              const cleanPath = item.mainImage.replace(/\\/g, "/");
-              imageUrl = `${process.env.NEXT_PUBLIC_API_URL}/${cleanPath}`;
+            if (product.mainImage) {
+              const cleanPath = product.mainImage.replace(/\\/g, "/");
+              imageUrl = `${
+                process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
+              }/${cleanPath}`;
             }
 
-            const getLocalizedName = () => {
+            const getProductName = () => {
               switch (i18next.language) {
                 case "ru":
-                  return item.name_ru || item.name;
+                  return product.name_ru || product.name;
                 case "en":
-                  return item.name_en || item.name;
+                  return product.name_en || product.name;
                 default:
-                  return item.name;
+                  return product.name;
               }
             };
 
-            const getLocalizedDescription = () => {
+            const getProductDescription = () => {
               switch (i18next.language) {
                 case "ru":
-                  return item.description_ru || item.description;
+                  return (
+                    product.shortDescription_ru || product.shortDescription
+                  );
                 case "en":
-                  return item.description_en || item.description;
+                  return (
+                    product.shortDescription_en || product.shortDescription
+                  );
                 default:
-                  return item.description;
+                  return product.shortDescription;
               }
             };
 
             return {
-              id: item._id,
-              name: getLocalizedName(),
-              name_ru: item.name_ru,
-              name_en: item.name_en,
-              description: getLocalizedDescription(),
-              price: variant.price || 0,
-              discount: variant.discount || 0,
-              discountedPrice: variant.discountedPrice || variant.price || 0,
+              ...product,
+              id: product._id,
+              name: getProductName(),
+              shortDescription: getProductDescription(),
               image: imageUrl,
-              variants: item.variants || [],
-              mainImage: item.mainImage,
-              reviews_count: item.reviews_count || 0,
+              mainVariant: bestDiscountVariant,
+              discountedVariants: product.variants
+                ? product.variants.filter(
+                    (variant) => (variant.discount || 0) > 0
+                  )
+                : [],
+              price: bestDiscountVariant?.price || 0,
+              discountedPrice:
+                bestDiscountVariant?.discountedPrice ||
+                bestDiscountVariant?.price ||
+                0,
+              discount: bestDiscountVariant?.discount || 0,
             };
           });
 
-          setProducts(mappedProducts);
+          setProducts(categoryProducts);
         } else {
-          throw new Error(t("bestsellers.data_format_error"));
+          console.log("No results found in response");
+          setProducts([]);
         }
       } catch (error) {
-        console.error("Mahsulotlarni yuklashda xatolik:", error);
-        setError(error.message || t("bestsellers.loading_error"));
+        console.error("Error fetching category products:", error);
+        setError(`Error loading products: ${error.message}`);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchProducts();
-  }, [i18next.language, t]);
+    fetchCategoryProducts();
+  }, [currentCategoryId, i18next.language]);
 
   const sliderSettings = {
     dots: false,
@@ -167,6 +196,7 @@ export default function ResultsProduct() {
     arrows: products.length > 6,
     nextArrow: <NextArrow />,
     prevArrow: <PrevArrow />,
+    variableHeight: true,
     responsive: [
       {
         breakpoint: 1024,
@@ -195,13 +225,30 @@ export default function ResultsProduct() {
     ],
   };
 
-  if (error) {
+  if (loading) {
     return (
       <section className="py-4">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-gray-800">Loading...</h2>
+          </div>
+          <div className="flex gap-4 overflow-x-auto">
+            {[...Array(6)].map((_, index) => (
+              <ProductCardSkeleton key={index} />
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section className="py-8">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-gray-800">
-              {mounted ? t("bestsellers.title") : ""}
+              {mounted ? t("catagories1.title") : ""}
             </h2>
           </div>
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
@@ -220,26 +267,21 @@ export default function ResultsProduct() {
     );
   }
 
+  // Return null (hide component) if products count is less than 6
+  if (products.length < 6) {
+    return null;
+  }
+
   return (
     <section className="py-4">
       <div className="max-w-7xl mx-auto px-4">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-gray-800">
-            {mounted ? t("bestsellers.title") : ""}
+            {mounted ? t("catagories1.title") : ""}
           </h2>
         </div>
 
-        {loading ? (
-          <div className="flex gap-4 overflow-x-auto">
-            {[...Array(6)].map((_, index) => (
-              <ProductCardSkeleton key={index} />
-            ))}
-          </div>
-        ) : products.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            {mounted ? t("bestsellers.no_products") : ""}
-          </div>
-        ) : products.length <= 6 ? (
+        {products.length <= 6 ? (
           <div className="flex gap-4 overflow-x-auto">
             {products.map((product) => (
               <div key={product.id} className="w-[200px] flex-shrink-0">
@@ -255,7 +297,7 @@ export default function ResultsProduct() {
               className="slider-transition"
             >
               {products.map((product) => (
-                <div key={product.id} className="px-2">
+                <div key={product._id} className="px-2">
                   <div className="w-[200px]">
                     <ProductCard product={product} />
                   </div>

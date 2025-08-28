@@ -50,8 +50,38 @@
     "error_message": "Ошибка при загрузке товаров",
     "retry_button": "Попробовать снова"
   },
-   "catagories": {
+  "catagories": {
     "title": "Канцелярские товары"
+  },
+  "catagories1": {
+    "title": "Телефоны"
+  },
+  "catagories2": {
+    "title": "Бытовая техника"
+  },
+  "catagories3": {
+    "title": "Одежда"
+  },
+  "catagories4": {
+    "title": "Спорт и отдых"
+  },
+  "catagories5": {
+    "title": "Хобби и творчество"
+  },
+  "catagories6": {
+    "title": "Ноутбуки и компьютер"
+  },
+  "catagories7": {
+    "title": "Здоровье"
+  },
+  "catagories8": {
+    "title": "Здоровье"
+  },
+  "catagories9": {
+    "title": "Бытовые вещества"
+  },
+  "catagories10": {
+    "title": "Обувь"
   },
   "services": {
     "title": "Сервис документов",
@@ -85,7 +115,7 @@
     "subtitle": "Будьте в курсе последних предложений и новостей",
     "placeholder": "Ваш email...",
     "button": "Подписаться",
-    "socail_media":"Свяжитесь с нами в социальных сетях"
+    "socail_media": "Свяжитесь с нами в социальных сетях"
   },
   "rights": "Все права защищены",
   "policies": {

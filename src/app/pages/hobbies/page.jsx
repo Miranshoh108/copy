@@ -70,7 +70,7 @@ const PrevArrow = (props) => {
   );
 };
 
-export default function CatagoriesProduct() {
+export default function HobbiesProduct() {
   const { t } = useTranslation();
   const searchParams = useSearchParams();
   const [products, setProducts] = useState([]);
@@ -81,7 +81,7 @@ export default function CatagoriesProduct() {
   const sliderRef = useRef(null);
 
   const currentCategoryId =
-    searchParams?.get("category") || "689dcf58e9443d84b885e584";
+    searchParams?.get("category") || "689dc9cbe9443d84b885e499";
 
   useEffect(() => {
     setMounted(true);
@@ -224,6 +224,7 @@ export default function CatagoriesProduct() {
       },
     ],
   };
+
   if (loading) {
     return (
       <section className="py-4">
@@ -247,7 +248,7 @@ export default function CatagoriesProduct() {
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-gray-800">
-              {mounted ? t("catagories.title") : ""}
+              {mounted ? t("catagories5.title") : ""}
             </h2>
           </div>
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
@@ -266,6 +267,7 @@ export default function CatagoriesProduct() {
     );
   }
 
+  // Return null (hide component) if products count is less than 6
   if (products.length < 6) {
     return null;
   }
@@ -275,7 +277,7 @@ export default function CatagoriesProduct() {
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-gray-800">
-            {mounted ? t("catagories.title") : ""}
+            {mounted ? t("catagories5.title") : ""}
           </h2>
         </div>
 

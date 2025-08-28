@@ -97,7 +97,6 @@ export default function Navbar() {
         params: searchParams,
       });
 
-
       let products = [];
 
       if (res.data && res.data.results && Array.isArray(res.data.results)) {
@@ -237,7 +236,6 @@ export default function Navbar() {
         const response = await $api.get(
           `/sub/types/get/by/category/${selectedCategory._id}`
         );
-
 
         if (response.data.status === 200 && response.data.data) {
           setSubCategories(response.data.data || []);
@@ -455,6 +453,7 @@ export default function Navbar() {
                 id="search"
                 ref={searchInputRef}
                 type="text"
+                autoComplete="off"
                 placeholder={mounted ? t("navbar.search_placeholder") : null}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -807,7 +806,7 @@ export default function Navbar() {
                           className="p-4 bg-white rounded-xl hover:border-green-400 transition-all duration-300 cursor-pointer group"
                         >
                           <a
-                            href={`/category/${selectedCategory._id}/subcategory/${subCategory._id}`}
+                            href={`?subType=${subCategory._id}`}
                             className="block"
                           >
                             <h3 className="font-medium text-gray-800 group-hover:text-green-600 transition-colors duration-300 leading-relaxed">
