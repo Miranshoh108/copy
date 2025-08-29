@@ -103,7 +103,7 @@ const Footer = () => {
                     {category.subCategories.slice(0, 4).map((subCategory) => (
                       <li key={subCategory._id}>
                         <Link
-                          href={`?subType=${subCategory._id}`}
+                          href={`/search?subType=${subCategory._id}`}
                           className="footer-link"
                         >
                           {getName(subCategory)}

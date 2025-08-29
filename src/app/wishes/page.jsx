@@ -15,12 +15,6 @@ export default function Wishes() {
   const token =
     typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
 
-  useEffect(() => {
-    if (token) {
-      syncLikesWithBackend(token);
-    }
-  }, [token]);
-
   return (
     <div>
       <Head>

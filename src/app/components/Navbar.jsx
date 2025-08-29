@@ -180,7 +180,7 @@ export default function Navbar() {
       setRecentSearches(updated);
       localStorage.setItem("recentSearches", JSON.stringify(updated));
 
-      router.push(`?name=${encodeURIComponent(searchTerm)}`);
+      router.push(`/search?name=${encodeURIComponent(searchTerm)}`);
       setSearchQuery("");
       setShowSearchDropdown(false);
     }
@@ -313,8 +313,11 @@ export default function Navbar() {
 
   const handleCategoryClick = (category) => {
     if (selectedCategory && selectedCategory._id === category._id) {
+      router.push(`/search?category=${category._id}`);
+      setIsOpen(false);
       return;
     }
+
     console.log("Category clicked:", category._id, category.name);
     setSelectedCategory(category);
     setSubCategories([]);
@@ -364,6 +367,30 @@ export default function Navbar() {
       : `/${category.category_img}`;
 
     return `${baseURL}${imagePath}`;
+  };
+
+  const highlightSearchTerm = (text, searchTerm) => {
+    if (!searchTerm || !text) return text;
+
+    const regex = new RegExp(`(${searchTerm})`, "gi");
+    const parts = text.split(regex);
+
+    return parts
+      .map((part, index) => {
+        if (regex.test(part)) {
+          return `<span style="color:#000; font-weight:bold;">${part}</span>`;
+        }
+        return part;
+      })
+      .join("");
+  };
+
+  const removeRecentSearch = (searchToRemove) => {
+    const updated = recentSearches.filter(
+      (search) => search !== searchToRemove
+    );
+    setRecentSearches(updated);
+    localStorage.setItem("recentSearches", JSON.stringify(updated));
   };
 
   return (
@@ -447,7 +474,7 @@ export default function Navbar() {
           <div className="relative w-1/3 max-[670px]:hidden">
             <form onSubmit={handleSearch} className="relative w-full">
               <label htmlFor="search" className="sr-only">
-                Mahsulotlarni izlash
+                {mounted ? t("navbar.search_placeholder") : null}
               </label>
               <input
                 id="search"
@@ -485,7 +512,15 @@ export default function Navbar() {
                         className="w-full cursor-pointer text-left px-3 py-2 hover:bg-gray-50 rounded-md flex items-center gap-3 transition-colors"
                       >
                         <Search size={16} className="text-gray-400" />
-                        <span className="text-gray-700">{product.name}</span>
+                        <span
+                          className="text-gray-700"
+                          dangerouslySetInnerHTML={{
+                            __html: highlightSearchTerm(
+                              product.name,
+                              searchQuery
+                            ),
+                          }}
+                        />
                       </button>
                     ))}
                   </div>
@@ -495,7 +530,7 @@ export default function Navbar() {
                   <div className="p-2 border-b border-gray-100">
                     <div className="flex items-center justify-between px-3 py-2">
                       <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-                        Oxirgi qidiruvlar
+                        {mounted ? t("navbar.recent_searches") : null}
                       </span>
                       <button
                         onClick={clearRecentSearches}
@@ -505,26 +540,43 @@ export default function Navbar() {
                       </button>
                     </div>
                     {recentSearches.map((search, index) => (
-                      <button
+                      <div
                         key={index}
-                        onClick={() => handleSearchSubmit(search)}
-                        className="w-full text-left px-3 py-2 hover:bg-gray-50 rounded-md flex items-center gap-3 transition-colors"
+                        className="group flex items-center justify-between px-3 py-2 hover:bg-gray-50 rounded-md transition-colors"
                       >
-                        <svg
-                          className="w-4 h-4 text-gray-400"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
+                        <button
+                          onClick={() => handleSearchSubmit(search)}
+                          className="flex items-center gap-3 flex-1 text-left"
                         >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                          <svg
+                            className="w-4 h-4 text-gray-400"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                            />
+                          </svg>
+                          <span className="text-gray-700">{search}</span>
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeRecentSearch(search);
+                          }}
+                          className="opacity-0 group-hover:opacity-100 transition-opacity ml-2 p-1 hover:bg-gray-200 rounded-full"
+                          title="Remove from recent searches"
+                        >
+                          <X
+                            size={14}
+                            className="text-gray-400 cursor-pointer hover:text-gray-600"
                           />
-                        </svg>
-                        <span className="text-gray-700">{search}</span>
-                      </button>
+                        </button>
+                      </div>
                     ))}
                   </div>
                 )}
@@ -553,7 +605,7 @@ export default function Navbar() {
                             d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
                           />
                         </svg>
-                        <span className="text-gray-700">{search}</span>
+                        <span className="text-gray-500">{search}</span>
                       </button>
                     ))}
                   </div>
@@ -649,12 +701,12 @@ export default function Navbar() {
         <div className="relative w-full mt-4 hidden max-[670px]:block max-w-[1240px] mx-auto">
           <form onSubmit={handleSearch} className="relative w-full">
             <label htmlFor="mobile-search" className="sr-only">
-              Mahsulotlarni izlash
+              {mounted ? t("navbar.search_placeholder") : null}
             </label>
             <input
               id="mobile-search"
               type="text"
-              placeholder="Mahsulotlarni izlash"
+              placeholder={mounted ? t("navbar.search_placeholder") : null}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="border border-gray-200 rounded-lg px-4 py-2 w-full outline-none transition-all bg-gray-50 pr-12 focus:ring-2 focus:ring-green-500 focus:border-transparent"
@@ -706,6 +758,13 @@ export default function Navbar() {
                               ? "bg-gradient-to-r from-green-50 to-green-100 text-green-700 shadow-sm border-l-4 border-green-500"
                               : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                           }`}
+                          title={
+                            isSelected
+                              ? `${getCategoryName(category)} products`
+                              : `View ${getCategoryName(
+                                  category
+                                )} subcategories`
+                          }
                         >
                           <div className="flex items-center justify-between">
                             <div className="flex items-center">
@@ -742,21 +801,25 @@ export default function Navbar() {
                                 {getCategoryName(category)}
                               </span>
                             </div>
-                            <svg
-                              className={`w-4 h-4 transition-transform duration-200 ${
-                                isSelected ? "text-green-500" : "text-gray-400"
-                              }`}
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M9 5l7 7-7 7"
-                              />
-                            </svg>
+                            <div className="flex items-center">
+                              <svg
+                                className={`w-4 h-4 transition-transform duration-200 ${
+                                  isSelected
+                                    ? "text-green-500 rotate-90"
+                                    : "text-gray-400"
+                                }`}
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M9 5l7 7-7 7"
+                                />
+                              </svg>
+                            </div>
                           </div>
                         </div>
                       );
@@ -806,7 +869,7 @@ export default function Navbar() {
                           className="p-4 bg-white rounded-xl hover:border-green-400 transition-all duration-300 cursor-pointer group"
                         >
                           <a
-                            href={`?subType=${subCategory._id}`}
+                            href={`/search?subType=${subCategory._id}`}
                             className="block"
                           >
                             <h3 className="font-medium text-gray-800 group-hover:text-green-600 transition-colors duration-300 leading-relaxed">

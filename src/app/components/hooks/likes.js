@@ -1,6 +1,5 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import axios from "axios";
 
 export const useHomeLikes = create(
   persist(
@@ -32,30 +31,9 @@ export const useHomeLikes = create(
       getLikesCount: () => {
         return get().likes.length;
       },
-
-      syncLikesWithBackend: async (token) => {
-        const { likes, clearLikes } = get();
-        if (!token || likes.length === 0) return;
-
-        try {
-          await axios.post(
-            "https://your-api.com/api/liked-products", 
-            { products: likes },
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
-          clearLikes();
-          console.log("Like’lar backendga yuborildi.");
-        } catch (error) {
-          console.error("Like’larni yuborishda xatolik:", error);
-        }
-      },
     }),
     {
-      name: "likes-storage",
+      name: "likes-storage", // localStorage key nomi
       getStorage: () =>
         typeof window !== "undefined" ? localStorage : undefined,
     }

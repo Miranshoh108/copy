@@ -266,7 +266,7 @@ export default function CatagoriesProduct() {
     );
   }
 
-  if (products.length < 6) {
+  if (products.length < 7) {
     return null;
   }
 

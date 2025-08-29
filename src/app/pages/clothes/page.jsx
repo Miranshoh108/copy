@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import "rc-slider/assets/index.css";
 import ProductCard from "../../components/ProductCard";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -70,7 +70,7 @@ const PrevArrow = (props) => {
   );
 };
 
-export default function ClothesProduct() {
+ function ClothesProductContent() {
   const { t } = useTranslation();
   const searchParams = useSearchParams();
   const [products, setProducts] = useState([]);
@@ -267,7 +267,7 @@ export default function ClothesProduct() {
     );
   }
 
-  if (products.length < 6) {
+  if (products.length < 7) {
     return null;
   }
 
@@ -307,5 +307,28 @@ export default function ClothesProduct() {
         )}
       </div>
     </section>
+  );
+}
+
+export default function ClothesProduct() {
+  return (
+    <Suspense
+      fallback={
+        <section className="py-4">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-gray-800">Loading...</h2>
+            </div>
+            <div className="flex gap-4 overflow-x-auto">
+              {[...Array(6)].map((_, index) => (
+                <ProductCardSkeleton key={index} />
+              ))}
+            </div>
+          </div>
+        </section>
+      }
+    >
+      <ClothesProductContent />
+    </Suspense>
   );
 }

@@ -126,7 +126,7 @@ export default function Checkout() {
 
     return images
       .filter(Boolean)
-      .filter((img, index, arr) => arr.indexOf(img) === index); 
+      .filter((img, index, arr) => arr.indexOf(img) === index);
   };
 
   const openProductModal = (product) => {

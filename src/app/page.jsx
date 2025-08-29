@@ -7,6 +7,11 @@ import HouseholdProduct from "./pages/household/page";
 import HobbiesProduct from "./pages/hobbies/page";
 import ClothesProduct from "./pages/clothes/page";
 import ResultsProduct from "./pages/results/page";
+import ComputerProduct from "./pages/computer/page";
+import GoodsProduct from "./pages/goods/page";
+import ShoesProduct from "./pages/shoes/page";
+import SubstancesProduct from "./pages/substances/page";
+import HealthProduct from "./pages/health/page";
 import DiscountedProducts from "./pages/discounted/page";
 import CatagoriesProduct from "./pages/catagoriesproduct/catagoriesproduct";
 import Navbar from "./components/Navbar";
@@ -112,6 +117,12 @@ export default function Home() {
       <HouseholdProduct />
       <HobbiesProduct />
       <ClothesProduct />
+      <HeroBanner />
+      <ComputerProduct />
+      <GoodsProduct />
+      <ShoesProduct />
+      <SubstancesProduct />
+      <HealthProduct />
       <Footer />
     </div>
   );

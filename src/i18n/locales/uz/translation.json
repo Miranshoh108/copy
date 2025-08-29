@@ -75,7 +75,7 @@
     "title": "Salomatlik"
   },
   "catagories8": {
-    "title": "Salomatlik"
+    "title": "Avtotovarlar"
   },
   "catagories9": {
     "title": "Maishiy moddalar"
@@ -145,5 +145,24 @@
     "loading": "Yuklanmoqda...",
     "notFound": "Kategoriyalar topilmadi",
     "more": "Yana"
+  },
+  "search_results": {
+    "no_products_found": "Bu mahsulot boyicha malumot topilmadi",
+    "fetch_error": "Mahsulotlarni yuklashda xatolik yuz berdi",
+    "category_results": "Kategoriya bo'yicha natijalar",
+    "search_results": "Qidiruv natijalari",
+    "results_for": "Qidiruv natijalari",
+    "showing_results": " {{total}} dan  {{start}}-{{end}} ta natija ko'rsatilmoqda",
+    "loading": "Yuklanmoqda...",
+    "error_title": "Xatolik yuz berdi",
+    "try_again": "Qaytadan urinish",
+    "no_results_title": "Natija topilmadi",
+    "no_results_message": "Qidiruv so'rovingiz bo'yicha hech qanday mahsulot topilmadi",
+    "search_tips": "Qidiruv maslahatlari",
+    "tip_1": "So'zlarni to'g'ri yozing",
+    "tip_2": "Boshqa so'zlar bilan urinib ko'ring",
+    "tip_3": "Umumiy so'zlardan foydalaning",
+    "previous": "Oldingi",
+    "next": "Keyingi"
   }
 }

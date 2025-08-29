@@ -70,7 +70,7 @@ const PrevArrow = (props) => {
   );
 };
 
-function HouseholdProductContent() {
+function ShoesProductContent() {
   const { t } = useTranslation();
   const searchParams = useSearchParams();
   const [products, setProducts] = useState([]);
@@ -81,7 +81,7 @@ function HouseholdProductContent() {
   const sliderRef = useRef(null);
 
   const currentCategoryId =
-    searchParams?.get("category") || "689dc7bce9443d84b885e45d";
+    searchParams?.get("category") || "689dcbdce9443d84b885e4bc";
 
   useEffect(() => {
     setMounted(true);
@@ -248,7 +248,7 @@ function HouseholdProductContent() {
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-gray-800">
-              {mounted ? t("catagories2.title") : ""}
+              {mounted ? t("catagories10.title") : ""}
             </h2>
           </div>
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
@@ -276,7 +276,7 @@ function HouseholdProductContent() {
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-gray-800">
-            {mounted ? t("catagories2.title") : ""}
+            {mounted ? t("catagories10.title") : ""}
           </h2>
         </div>
 
@@ -310,7 +310,7 @@ function HouseholdProductContent() {
   );
 }
 
-export default function HouseholdProduct() {
+export default function ShoesProduct() {
   return (
     <Suspense
       fallback={
@@ -328,7 +328,7 @@ export default function HouseholdProduct() {
         </section>
       }
     >
-      <HouseholdProductContent />
+      <ShoesProductContent />
     </Suspense>
   );
 }

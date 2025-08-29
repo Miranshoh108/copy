@@ -145,5 +145,24 @@
     "loading": "Loading...",
     "notFound": "Categories not found",
     "more": "More"
+  },
+  "search_results": {
+    "no_products_found": "No products found",
+    "fetch_error": "An error occurred while loading products",
+    "category_results": "Category results",
+    "search_results": "Search results",
+    "results_for": "Search results for",
+    "showing_results": "Showing  {{total}}  of {{start}}-{{end}} results",
+    "loading": "Loading...",
+    "error_title": "An error occurred",
+    "try_again": "Try again",
+    "no_results_title": "No results found",
+    "no_results_message": "No products found for your search query",
+    "search_tips": "Search tips",
+    "tip_1": "Check your spelling",
+    "tip_2": "Try different keywords",
+    "tip_3": "Use more general terms",
+    "previous": "Previous",
+    "next": "Next"
   }
 }

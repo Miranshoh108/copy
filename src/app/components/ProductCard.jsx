@@ -26,10 +26,9 @@ export default function ProductCard({ product }) {
   const [rating, setRating] = useState(null);
   const [loadingRating, setLoadingRating] = useState(false);
 
-  // Random reviews count ni faqat bir marta hosil qilish
   const randomReviewsCount = useMemo(() => {
     return Math.floor(Math.random() * 15) + 5;
-  }, [product.id]); // product.id dependency sifatida qo'shildi, har product uchun alohida random raqam
+  }, [product.id]); 
 
   useEffect(() => {
     setMounted(true);
