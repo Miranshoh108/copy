@@ -113,8 +113,7 @@ const Footer = () => {
                   </ul>
                 </div>
               ))}
-
-          <div className="sm:col-span-2 lg:col-span-1">
+          <div className=" lg:col-span-1">
             <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">
               {t("contact.title")}
             </h3>
@@ -194,7 +193,7 @@ const Footer = () => {
           </div>
         </div>
         <div className="mt-6 sm:mt-8 pt-6 border-t border-gray-200">
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-4 sm:space-y-0">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-4 sm:space-y-0 items-start">
             <div className="flex space-x-3 sm:space-x-4 justify-center sm:justify-start">
               <a
                 href="https://www.youtube.com/@bsmarketuz"
@@ -280,21 +279,21 @@ const Footer = () => {
         </div>
 
         <div className="mt-8 sm:mt-12 pt-6 sm:pt-8 border-t border-gray-200">
-          <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center space-y-4 lg:space-y-0">
-            <div>
+          <div className="flex items-center justify-between max-[820px]:flex-col max-[820px]:items-start max-[820px]:gap-4">
+            <div className="">
               <h4 className="text-base sm:text-lg font-semibold text-gray-900">
                 {t("newsletter.title")}
               </h4>
-              <p className="text-gray-600 text-sm">
+              <p className="text-gray-600 text-sm max-[820px]:mt-1">
                 {t("newsletter.subtitle")}
               </p>
             </div>
 
-            <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
+            <div className="flex items-center gap-2">
               <input
                 type="email"
                 placeholder={t("newsletter.placeholder")}
-                className="px-4 py-2 border border-gray-300 rounded-lg text-sm w-full sm:w-64"
+                className="px-4 py-2 border border-gray-300 rounded-lg text-sm w-64 sm:w-64 max-[440px]:w-40"
               />
               <button className="px-6 py-2 bg-[#249B73] text-white rounded-lg text-sm cursor-pointer">
                 {t("newsletter.button")}
@@ -305,7 +304,7 @@ const Footer = () => {
 
         <div className="mt-6 sm:mt-8 pt-6 border-t border-gray-200">
           <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center">
-            <div className="flex flex-col sm:flex-row sm:items-center">
+            <div className="flex flex-col sm:flex-row sm:items-center max-[420px]:mb-8">
               <div className="text-lg sm:text-xl font-bold">
                 <span className="text-gray-800">BOJXONA</span>
                 <span className="text-[#249B73] ml-1">SERVIS</span>
@@ -313,14 +312,14 @@ const Footer = () => {
               <p className="text-gray-600 text-sm ml-2">© 2025 {t("rights")}</p>
             </div>
 
-            <div className="flex flex-col sm:flex-row sm:space-x-6 text-sm">
-              <Link href="/privacy" className="footer-link">
+            <div className="flex sm:flex-row sm:space-x-6 text-sm mb-8 gap-4 mt-2 max-[430px]:gap-2 max-[420px]:hidden">
+              <Link href="/#" className="footer-link">
                 {t("policies.privacy")}
               </Link>
-              <Link href="/terms" className="footer-link">
+              <Link href="/#" className="footer-link">
                 {t("policies.terms")}
               </Link>
-              <Link href="/cookies" className="footer-link">
+              <Link href="/#" className="footer-link">
                 {t("policies.cookies")}
               </Link>
             </div>

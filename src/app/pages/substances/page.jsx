@@ -51,7 +51,7 @@ const NextArrow = (props) => {
   return (
     <div
       onClick={onClick}
-      className="absolute -right-10 max-[600px]:hidden top-1/2 transform -translate-y-1/2 z-10 cursor-pointer bg-white rounded-full shadow p-2 hover:bg-gray-200 transition"
+      className="absolute -right-10 max-[800px]:hidden top-1/2 transform -translate-y-1/2 z-10 cursor-pointer bg-white rounded-full shadow p-2 hover:bg-gray-200 transition max-[1330px]:right-0"
     >
       <ChevronRight />
     </div>
@@ -63,7 +63,7 @@ const PrevArrow = (props) => {
   return (
     <div
       onClick={onClick}
-      className="absolute max-[600px]:hidden -left-10 top-1/2 transform -translate-y-1/2 z-10 cursor-pointer bg-white rounded-full shadow p-2 hover:bg-gray-200 transition"
+      className="absolute -left-10 max-[800px]:hidden top-1/2 transform -translate-y-1/2 z-10 cursor-pointer bg-white rounded-full shadow p-2 hover:bg-gray-200 transition max-[1330px]:-left-5"
     >
       <ChevronLeft />
     </div>
@@ -199,6 +199,14 @@ function SubstancesProductContent() {
     variableHeight: true,
     responsive: [
       {
+        breakpoint: 1330,
+        settings: {
+          slidesToShow: Math.min(5, products.length),
+          infinite: products.length > 5,
+          arrows: products.length > 5,
+        },
+      },
+      {
         breakpoint: 1024,
         settings: {
           slidesToShow: Math.min(4, products.length),
@@ -228,7 +236,7 @@ function SubstancesProductContent() {
   if (loading) {
     return (
       <section className="py-4">
-        <div className="max-w-7xl mx-auto px-4">
+        <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-gray-800">Loading...</h2>
           </div>
@@ -245,7 +253,7 @@ function SubstancesProductContent() {
   if (error) {
     return (
       <section className="py-8">
-        <div className="max-w-7xl mx-auto px-4">
+        <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-gray-800">
               {mounted ? t("catagories9.title") : ""}
@@ -273,7 +281,7 @@ function SubstancesProductContent() {
 
   return (
     <section className="py-4">
-      <div className="max-w-7xl mx-auto px-4">
+      <div className="max-w-7xl mx-auto px-6">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-gray-800">
             {mounted ? t("catagories9.title") : ""}
@@ -315,7 +323,7 @@ export default function SubstancesProduct() {
     <Suspense
       fallback={
         <section className="py-4">
-          <div className="max-w-7xl mx-auto px-4">
+          <div className="max-w-7xl mx-auto px-6">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-gray-800">Loading...</h2>
             </div>

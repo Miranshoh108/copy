@@ -33,18 +33,18 @@ export default function HeroBanner() {
   };
 
   return (
-    <section className="text-center relative mt-10 mb-6">
+    <section className="text-center relative mt-10 mb-6 max-[720px]:hidden">
       <div className="relative max-w-[1240px] max-[750px]:max-w-[95%] max-[1400px]:max-w-[80%] mx-auto">
         <button
           onClick={() => sliderRef.current?.slickPrev()}
-          className="absolute top-[calc(50%)] -left-16 z-20 max-[750px]:hidden cursor-pointer -translate-y-1/2 bg-linear-to-r from-[#EED3DC] to-[#CDD6FD] text-black p-2 rounded-full shadow-lg hover:scale-110 transition"
+          className="absolute top-[calc(50%)] -left-16 z-20 max-[950px]:hidden cursor-pointer -translate-y-1/2 bg-linear-to-r from-[#EED3DC] to-[#CDD6FD] text-black p-2 rounded-full shadow-lg hover:scale-110 transition"
         >
           <ChevronLeft />
         </button>
 
         <button
           onClick={() => sliderRef.current?.slickNext()}
-          className="absolute top-[calc(50%)] -right-16 z-20 max-[750px]:hidden cursor-pointer -translate-y-1/2 bg-gradient-to-r from-[#3ed890] to-[#388ef0] text-white p-2 rounded-full shadow-lg hover:scale-110 transition"
+          className="absolute top-[calc(50%)] -right-16 z-20 max-[950px]:hidden cursor-pointer -translate-y-1/2 bg-gradient-to-r from-[#3ed890] to-[#388ef0] text-white p-2 rounded-full shadow-lg hover:scale-110 transition"
         >
           <ChevronRight />
         </button>

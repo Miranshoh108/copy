@@ -38,6 +38,7 @@
     "reviews": "ta sharh",
     "loading": "Yuklanmoqda...",
     "add_to_cart": "Savatga qo'shish",
+    "add_to_cart_too": "Savatga",
     "add_to_cart_tooltip": "Savatga qo'shish",
     "decrease_tooltip": "Kamaytirish",
     "increase_tooltip": "Qo'shish"

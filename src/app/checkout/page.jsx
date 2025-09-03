@@ -7,32 +7,35 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import Button from "../components/ui/button";
 import Image from "next/image";
-import { Eye, X, ChevronLeft, ChevronRight, Plus, Minus } from "lucide-react";
+import MapComponent from "../components/MapComponent";
+import { Eye, X, ChevronLeft, ChevronRight, MapPin } from "lucide-react";
 import $api from "../http/api";
 
 export default function Checkout() {
-  const {
-    cart,
-    getCheckedItems,
-    getTotalPrice,
-    clearCart,
-    updateQuantity,
-    removeCart,
-  } = useCartStore();
-  const { clearCheckedItems } = useCartStore();
+  const { getCheckedItems, getTotalPrice, clearCart } = useCartStore();
   const router = useRouter();
   const checkedItems = getCheckedItems();
   const total = getTotalPrice();
 
   const [userProfile, setUserProfile] = useState(null);
+  const [regions, setRegions] = useState([]);
+  const [selectedRegion, setSelectedRegion] = useState("");
+  const [pickupPoints, setPickupPoints] = useState([]);
+  const [allPickupPoints, setAllPickupPoints] = useState([]); // Barcha punktlar uchun
+  const [selectedPickupPoint, setSelectedPickupPoint] = useState(null);
+  const [loadingPickupPoints, setLoadingPickupPoints] = useState(false);
   const [formData, setFormData] = useState({
-    delivery: "pickup",
     payment: "card",
   });
   const [loading, setLoading] = useState(true);
+  const [regionsLoading, setRegionsLoading] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalImageIndex, setModalImageIndex] = useState(0);
+
+  // Pagination uchun state'lar
+  const [showAll, setShowAll] = useState(false);
+  const POINTS_PER_PAGE = 5;
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -53,14 +56,99 @@ export default function Checkout() {
   }, []);
 
   useEffect(() => {
+    const fetchRegions = async () => {
+      setRegionsLoading(true);
+      try {
+        const response = await $api.get("/emu/get/regions");
+        if (response.data?.json?.regionlist?.city) {
+          setRegions(response.data.json.regionlist.city);
+        }
+      } catch (error) {
+        console.error("❌ Viloyatlarni olishda xatolik:", error);
+      } finally {
+        setRegionsLoading(false);
+      }
+    };
+
+    fetchRegions();
+  }, []);
+
+  useEffect(() => {
     if (checkedItems.length === 0) {
       router.push("/cart");
     }
   }, [checkedItems.length, router]);
 
+  useEffect(() => {
+    const fetchPickupPoints = async () => {
+      if (!selectedRegion) {
+        setPickupPoints([]);
+        setAllPickupPoints([]);
+        setSelectedPickupPoint(null);
+        return;
+      }
+
+      setLoadingPickupPoints(true);
+      try {
+        const response = await $api.get("/emu/get/uzbekistan/pvz");
+
+        if (response.data?.data?.pvzlist?.pvz) {
+          const allPoints = response.data.data.pvzlist.pvz;
+
+          const selectedRegionData = regions.find(
+            (region) => region.code[0] === selectedRegion
+          );
+
+          if (selectedRegionData) {
+            // Agar "UZBEKISTAN" tanlangan bo'lsa, barcha punktlarni ko'rsat
+            if (selectedRegionData.name[0] === "UZBEKISTAN") {
+              setAllPickupPoints(allPoints);
+              setPickupPoints(allPoints); // Xarita uchun barcha punktlar
+              if (allPoints.length > 0) {
+                setSelectedPickupPoint(allPoints[0]);
+              }
+            } else {
+              // Boshqa viloyatlar uchun filtr qil
+              const filteredPoints = allPoints.filter(
+                (point) =>
+                  point.town[0].$.regioncode === selectedRegionData.code[0] ||
+                  point.town[0].$.regionname === selectedRegionData.name[0]
+              );
+
+              setAllPickupPoints(filteredPoints);
+              setPickupPoints(filteredPoints);
+              if (filteredPoints.length > 0) {
+                setSelectedPickupPoint(filteredPoints[0]);
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.error("❌ PVZ larni olishda xatolik:", error);
+        setPickupPoints([]);
+        setAllPickupPoints([]);
+        setSelectedPickupPoint(null);
+      } finally {
+        setLoadingPickupPoints(false);
+      }
+    };
+
+    fetchPickupPoints();
+  }, [selectedRegion, regions]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleRegionChange = (e) => {
+    setSelectedRegion(e.target.value);
+    setSelectedPickupPoint(null);
+    setShowAll(false); // Pagination reset
+  };
+
+  const handlePickupPointSelect = (point) => {
+    setSelectedPickupPoint(point);
   };
 
   const formatPrice = (price) => {
@@ -153,31 +241,32 @@ export default function Checkout() {
     }
   };
 
-  const handleQuantityChange = (item, type) => {
-    const productId = item.productId || item.id;
-    const variantId = item.variantId || item.variant?._id || null;
-
-    if (type === "increase") {
-      updateQuantity(productId, item.quantity + 1, variantId);
-    } else if (type === "decrease") {
-      if (item.quantity === 1) {
-        removeCart(productId, variantId);
-      } else {
-        updateQuantity(productId, item.quantity - 1, variantId);
-      }
-    }
-  };
-
   const handleSubmit = async () => {
     if (!userProfile) {
       console.error("❌ Foydalanuvchi ma'lumotlari topilmadi");
       return;
     }
 
+    if (!selectedRegion) {
+      alert("Iltimos, viloyatni tanlang!");
+      return;
+    }
+
+    if (!selectedPickupPoint) {
+      alert("Iltimos, topshirish punktini tanlang!");
+      return;
+    }
+
+    const selectedRegionData = regions.find(
+      (region) => region.code[0] === selectedRegion
+    );
+
     const payload = {
       name: `${userProfile.firstName} ${userProfile.lastName}`,
       phone: userProfile.phoneNumber,
-      delivery: formData.delivery,
+      region: selectedRegionData?.name[0] || "",
+      regionCode: selectedRegion,
+      pickupPoint: selectedPickupPoint,
       payment: formData.payment,
       items: checkedItems,
       totalPrice: total,
@@ -206,6 +295,33 @@ export default function Checkout() {
     } catch (error) {
       console.error("❌ Buyurtma yuborishda xatolik:", error);
     }
+  };
+
+  // Pagination logikasi
+  const getDisplayedPickupPoints = () => {
+    const selectedRegionData = regions.find(
+      (region) => region.code[0] === selectedRegion
+    );
+
+    // Agar Uzbekiston tanlangan bo'lsa
+    if (selectedRegionData?.name[0] === "UZBEKISTAN") {
+      return showAll
+        ? allPickupPoints
+        : allPickupPoints.slice(0, POINTS_PER_PAGE);
+    }
+
+    // Boshqa viloyatlar uchun hammasini ko'rsat
+    return allPickupPoints;
+  };
+
+  const shouldShowPagination = () => {
+    const selectedRegionData = regions.find(
+      (region) => region.code[0] === selectedRegion
+    );
+    return (
+      selectedRegionData?.name[0] === "UZBEKISTAN" &&
+      allPickupPoints.length > POINTS_PER_PAGE
+    );
   };
 
   if (loading) {
@@ -240,6 +356,7 @@ export default function Checkout() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2">
+            {/* Mahsulotlar ro'yxati */}
             <div className="bg-white rounded-lg shadow p-6 mb-6">
               <h2 className="text-xl font-semibold text-gray-700 mb-4">
                 Buyurtma mahsulotlari ({checkedItems.length} ta)
@@ -367,98 +484,130 @@ export default function Checkout() {
 
             <div className="bg-gray-50 rounded-lg p-6 mb-8">
               <h2 className="text-xl font-semibold text-gray-700 mb-4">
-                BS Market yetkazib berishi
+                BS Market topshirish punkti
               </h2>
 
               <div className="bg-white rounded-lg p-4 mb-6">
                 <h3 className="font-semibold text-gray-800 mb-4">
-                  Olish usuli
+                  Viloyatni tanlang
                 </h3>
 
-                <div className="flex gap-4 mb-4">
-                  <div className="flex-1">
-                    <label
-                      className={`flex items-center justify-center p-3 border-2 rounded-lg cursor-pointer hover:border-green-300 ${
-                        formData.delivery === "pickup"
-                          ? "border-green-500 bg-green-50"
-                          : "border-gray-200"
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="delivery"
-                        value="pickup"
-                        checked={formData.delivery === "pickup"}
-                        onChange={handleChange}
-                        className="sr-only"
-                      />
-                      <div
-                        className={`text-center ${
-                          formData.delivery === "pickup"
-                            ? "text-green-600"
-                            : "text-gray-600"
-                        }`}
-                      >
-                        <div className="font-medium">Topshirish punkti</div>
-                        <div className="text-sm">bepul</div>
-                      </div>
-                    </label>
-                  </div>
-
-                  <div className="flex-1">
-                    <label
-                      className={`flex items-center justify-center p-3 border-2 rounded-lg cursor-pointer hover:border-green-300 ${
-                        formData.delivery === "courier"
-                          ? "border-green-500 bg-green-50"
-                          : "border-gray-200"
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="delivery"
-                        value="courier"
-                        checked={formData.delivery === "courier"}
-                        onChange={handleChange}
-                        className="sr-only"
-                      />
-                      <div
-                        className={`text-center ${
-                          formData.delivery === "courier"
-                            ? "text-green-600"
-                            : "text-gray-600"
-                        }`}
-                      >
-                        <div className="font-medium">Kuryer</div>
-                        <div className="text-sm">50 000 so'm</div>
-                      </div>
-                    </label>
-                  </div>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <MapPin className="inline w-4 h-4 mr-1" />
+                    Viloyat
+                  </label>
+                  <select
+                    value={selectedRegion}
+                    onChange={handleRegionChange}
+                    className="w-full cursor-pointer p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
+                    disabled={regionsLoading}
+                  >
+                    <option value="" disabled>
+                      {regionsLoading ? "Yuklanmoqda..." : "Viloyatni tanlang"}
+                    </option>
+                    {regions.map((region) => (
+                      <option key={region.code[0]} value={region.code[0]}>
+                        {region.name[0]}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
-                <div className="bg-green-50 rounded-lg p-4 mb-4">
-                  <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 bg-green-100 rounded flex items-center justify-center">
-                      <span className="text-green-600 font-bold">🏪</span>
-                    </div>
-                    <div className="flex-1">
-                      <div className="font-medium text-gray-800">
-                        BS Market topshirish punkti
-                      </div>
-                      <div className="text-sm text-gray-600 mt-1">
-                        Toshkent sh., Chilonzor tumani 20 kvartal, 23 uy
-                      </div>
-                      <div className="text-sm text-gray-500 mt-1">
-                        Buyurtma 6 kun saqlanadi
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                {/* PVZ punktlari ro'yxati - faqat Uzbekiston uchun pagination */}
+                {selectedRegion && (
+                  <div className="mb-6">
+                    <h4 className="font-semibold text-gray-800 mb-3">
+                      Topshirish punktini tanlang
+                    </h4>
 
-                <button className="w-full py-3 border-2 cursor-pointer border-gray-300 rounded-lg text-gray-600 hover:border-gray-400 transition-colors">
-                  Boshqasini tanlash
-                </button>
+                    {loadingPickupPoints ? (
+                      <div className="text-center py-4">
+                        <span className="text-gray-600">
+                          PVZ larni yuklanmoqda...
+                        </span>
+                      </div>
+                    ) : allPickupPoints.length > 0 ? (
+                      <>
+                        <div className="space-y-3 mb-4">
+                          {getDisplayedPickupPoints().map((point) => (
+                            <div
+                              key={point.code[0]}
+                              onClick={() => handlePickupPointSelect(point)}
+                              className={`border rounded-lg p-4 cursor-pointer transition-all ${
+                                selectedPickupPoint?.code[0] === point.code[0]
+                                  ? "border-green-500 bg-green-50"
+                                  : "border-gray-200 hover:border-green-300"
+                              }`}
+                            >
+                              <div className="flex items-start gap-3">
+                                <div
+                                  className={`w-4 h-4 rounded-full border-2 mt-1 ${
+                                    selectedPickupPoint?.code[0] ===
+                                    point.code[0]
+                                      ? "border-green-500 bg-green-500"
+                                      : "border-gray-300"
+                                  }`}
+                                >
+                                  {selectedPickupPoint?.code[0] ===
+                                    point.code[0] && (
+                                    <div className="w-full h-full rounded-full bg-white scale-50"></div>
+                                  )}
+                                </div>
+                                <div className="flex-1">
+                                  <div className="font-medium text-green-600 mt-1">
+                                    {point.name[0]}
+                                  </div>
+                                  <div className="text-sm text-gray-600 mt-1">
+                                    {point.address[0]}
+                                  </div>
+                                  <div className="text-sm text-gray-600">
+                                    Tel: {point.phone[0]}
+                                  </div>
+                                  <div className="text-xs text-gray-500 mt-1">
+                                    {point.town[0].$.regionname}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Ko'proq ko'rish tugmasi - faqat Uzbekiston uchun */}
+                        {shouldShowPagination() && (
+                          <div className="text-center">
+                            <button
+                              onClick={() => setShowAll(!showAll)}
+                              className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors"
+                            >
+                              {showAll
+                                ? "Kamroq ko'rish"
+                                : `Ko'proq ko'rish (${
+                                    allPickupPoints.length - POINTS_PER_PAGE
+                                  } ta qolgan)`}
+                            </button>
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <div className="text-center py-4 text-gray-600">
+                        Bu viloyatda topshirish punktlari topilmadi
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* XARITA - har doim ko'rinadi */}
+                {selectedRegion && (
+                  <MapComponent
+                    pickupPoints={pickupPoints}
+                    selectedPickupPoint={selectedPickupPoint}
+                    onPointSelect={handlePickupPointSelect}
+                  />
+                )}
               </div>
 
+              {/* Oluvchi ma'lumotlari */}
               <div className="bg-white rounded-lg p-4 mb-4">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
@@ -484,6 +633,7 @@ export default function Checkout() {
               </div>
             </div>
 
+            {/* To'lov turi */}
             <div className="bg-white rounded-lg shadow p-6 mb-8">
               <h2 className="text-lg font-semibold text-gray-700 mb-4">
                 To'lov turi
@@ -519,6 +669,7 @@ export default function Checkout() {
             </div>
           </div>
 
+          {/* Buyurtma xulosasi */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-lg shadow-lg p-6 sticky top-4">
               <h3 className="text-lg font-semibold mb-4">Buyurtma xulosasi</h3>
@@ -527,12 +678,6 @@ export default function Checkout() {
                 <div className="flex justify-between text-gray-600">
                   <span>Tovarlar</span>
                   <span>{formatPrice(total)} so'm</span>
-                </div>
-                <div className="flex justify-between text-gray-600">
-                  <span>Yetkazib berish</span>
-                  <span className="text-green-600 font-medium">
-                    {formData.delivery === "courier" ? "50 000 so'm" : "bepul"}
-                  </span>
                 </div>
                 <div className="flex justify-between text-gray-600">
                   <span>Chegirmalar</span>
@@ -568,18 +713,18 @@ export default function Checkout() {
                 <hr />
                 <div className="flex justify-between text-xl font-bold">
                   <span>Jami</span>
-                  <span>
-                    {formatPrice(
-                      total + (formData.delivery === "courier" ? 50000 : 0)
-                    )}
-                    so'm
-                  </span>
+                  <span>{formatPrice(total)} so'm</span>
                 </div>
               </div>
 
               <Button
                 onClick={handleSubmit}
-                className="w-full bg-green-600 text-white cursor-pointer py-4 rounded-lg hover:bg-green-700 transition-colors font-medium text-lg"
+                disabled={!selectedRegion || !selectedPickupPoint}
+                className={`w-full py-4 rounded-lg font-medium text-lg transition-colors ${
+                  selectedRegion && selectedPickupPoint
+                    ? "bg-green-600 text-white cursor-pointer hover:bg-green-700"
+                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                }`}
               >
                 Buyurtmani rasmiylashtirish
               </Button>
@@ -600,7 +745,7 @@ export default function Checkout() {
         </div>
       </div>
 
-      {/* Modal oyna */}
+      {/* Modal */}
       {isModalOpen && selectedProduct && (
         <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center">
           <button
@@ -627,7 +772,6 @@ export default function Checkout() {
                   )}
 
                   <div className="relative max-w-[80vw] max-h-[80vh] w-full h-full flex flex-col items-center justify-center bg-white rounded-lg overflow-hidden">
-                    {/* Rasm */}
                     <div className="relative flex-1 w-full">
                       <Image
                         src={
@@ -640,7 +784,6 @@ export default function Checkout() {
                       />
                     </div>
 
-                    {/* Mahsulot ma'lumotlari */}
                     <div className="w-full p-6 bg-white border-t">
                       <h3 className="text-xl font-bold text-gray-800 mb-2">
                         {selectedProduct.name}

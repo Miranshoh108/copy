@@ -25,10 +25,12 @@ import { useNotificationsStore } from "../store/useNotificationsStore";
 import $api from "../http/api";
 import { useTranslation } from "react-i18next";
 import i18next from "../../i18n/i18n";
+
 export default function Navbar() {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [mobileSearchQuery, setMobileSearchQuery] = useState("");
   const [categories, setCategories] = useState([]);
   const [subCategories, setSubCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -41,16 +43,26 @@ export default function Navbar() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [open, setOpen] = useState(false);
 
+  // Desktop search states
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
   const [searchSuggestions, setSuggestions] = useState([]);
+
+  // Mobile search states
+  const [showMobileSearchDropdown, setShowMobileSearchDropdown] =
+    useState(false);
+  const [mobileSearchSuggestions, setMobileSuggestions] = useState([]);
+
   const [recentSearches, setRecentSearches] = useState([]);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
   const searchInputRef = useRef(null);
   const searchDropdownRef = useRef(null);
+  const mobileSearchInputRef = useRef(null);
+  const mobileSearchDropdownRef = useRef(null);
 
   const handleLanguageChange = (lang) => {
     const languageMap = {
@@ -80,9 +92,13 @@ export default function Navbar() {
     }
   }, []);
 
-  const fetchSearchSuggestions = async (query) => {
+  const fetchSearchSuggestions = async (query, isMobile = false) => {
     if (!query.trim()) {
-      setSuggestions([]);
+      if (isMobile) {
+        setMobileSuggestions([]);
+      } else {
+        setSuggestions([]);
+      }
       return;
     }
 
@@ -118,10 +134,18 @@ export default function Navbar() {
             : null,
       }));
 
-      setSuggestions(suggestions);
+      if (isMobile) {
+        setMobileSuggestions(suggestions);
+      } else {
+        setSuggestions(suggestions);
+      }
     } catch (err) {
       console.error("Search API error:", err);
-      setSuggestions([]);
+      if (isMobile) {
+        setMobileSuggestions([]);
+      } else {
+        setSuggestions([]);
+      }
     }
   };
 
@@ -147,22 +171,44 @@ export default function Navbar() {
     }
   };
 
+  // Desktop search effect
   useEffect(() => {
     const timer = setTimeout(() => {
-      fetchSearchSuggestions(searchQuery);
-    });
+      fetchSearchSuggestions(searchQuery, false);
+    }, 300);
 
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
+  // Mobile search effect
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchSearchSuggestions(mobileSearchQuery, true);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [mobileSearchQuery]);
+
   useEffect(() => {
     const handleClickOutside = (event) => {
+      // Desktop search dropdown
       if (
         searchDropdownRef.current &&
         !searchDropdownRef.current.contains(event.target) &&
+        searchInputRef.current &&
         !searchInputRef.current.contains(event.target)
       ) {
         setShowSearchDropdown(false);
+      }
+
+      // Mobile search dropdown
+      if (
+        mobileSearchDropdownRef.current &&
+        !mobileSearchDropdownRef.current.contains(event.target) &&
+        mobileSearchInputRef.current &&
+        !mobileSearchInputRef.current.contains(event.target)
+      ) {
+        setShowMobileSearchDropdown(false);
       }
     };
 
@@ -170,8 +216,8 @@ export default function Navbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleSearchSubmit = (query) => {
-    const searchTerm = query || searchQuery;
+  const handleSearchSubmit = (query, isMobile = false) => {
+    const searchTerm = query || (isMobile ? mobileSearchQuery : searchQuery);
     if (searchTerm.trim()) {
       const updated = [
         searchTerm,
@@ -181,14 +227,25 @@ export default function Navbar() {
       localStorage.setItem("recentSearches", JSON.stringify(updated));
 
       router.push(`/search?name=${encodeURIComponent(searchTerm)}`);
-      setSearchQuery("");
-      setShowSearchDropdown(false);
+
+      if (isMobile) {
+        setMobileSearchQuery("");
+        setShowMobileSearchDropdown(false);
+      } else {
+        setSearchQuery("");
+        setShowSearchDropdown(false);
+      }
     }
   };
 
   const handleSearch = (e) => {
     e.preventDefault();
-    handleSearchSubmit();
+    handleSearchSubmit(null, false);
+  };
+
+  const handleMobileSearch = (e) => {
+    e.preventDefault();
+    handleSearchSubmit(null, true);
   };
 
   const clearRecentSearches = () => {
@@ -301,9 +358,14 @@ export default function Navbar() {
   };
 
   const inputRef = useRef(null);
+  const mobileInputRef = useRef(null);
 
   const handleIconClick = () => {
     inputRef.current?.focus();
+  };
+
+  const handleMobileIconClick = () => {
+    mobileInputRef.current?.focus();
   };
 
   const notifications = useNotificationsStore((state) => state.notifications);
@@ -393,6 +455,139 @@ export default function Navbar() {
     localStorage.setItem("recentSearches", JSON.stringify(updated));
   };
 
+  // Search dropdown component for reusability
+  const SearchDropdown = ({
+    isVisible,
+    query,
+    suggestions,
+    isMobile = false,
+    dropdownRef,
+  }) => {
+    if (!isVisible) return null;
+
+    return (
+      <div
+        ref={dropdownRef}
+        className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-xl z-50 max-h-96 overflow-y-auto"
+      >
+        {query && suggestions.length > 0 && (
+          <div className="p-2">
+            <div className="text-xs font-medium text-gray-500 px-3 py-2 uppercase tracking-wide">
+              {mounted ? t("navbar.search_results") : null}
+            </div>
+            {suggestions.map((product) => (
+              <button
+                key={product._id}
+                onClick={() => handleSearchSubmit(product.name, isMobile)}
+                className="w-full cursor-pointer text-left px-3 py-2 hover:bg-gray-50 rounded-md flex items-center gap-3 transition-colors"
+              >
+                <Search size={16} className="text-gray-400" />
+                <span
+                  className="text-gray-700"
+                  dangerouslySetInnerHTML={{
+                    __html: highlightSearchTerm(product.name, query),
+                  }}
+                />
+              </button>
+            ))}
+          </div>
+        )}
+
+        {!query && recentSearches.length > 0 && (
+          <div className="p-2 border-b border-gray-100">
+            <div className="flex items-center justify-between px-3 py-2">
+              <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                {mounted ? t("navbar.recent_searches") : null}
+              </span>
+              <button
+                onClick={clearRecentSearches}
+                className="text-xs text-green-600 hover:text-green-700 cursor-pointer font-medium"
+              >
+                {mounted ? t("navbar.clear_searches") : null}
+              </button>
+            </div>
+            {recentSearches.map((search, index) => (
+              <div
+                key={index}
+                className="group flex items-center justify-between px-3 py-2 hover:bg-gray-50 rounded-md transition-colors"
+              >
+                <button
+                  onClick={() => handleSearchSubmit(search, isMobile)}
+                  className="flex items-center gap-3 flex-1 text-left"
+                >
+                  <svg
+                    className="w-4 h-4 text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  <span className="text-gray-700">{search}</span>
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    removeRecentSearch(search);
+                  }}
+                  className="opacity-0 group-hover:opacity-100 transition-opacity ml-2 p-1 hover:bg-gray-200 rounded-full"
+                  title="Remove from recent searches"
+                >
+                  <X
+                    size={14}
+                    className="text-gray-400 cursor-pointer hover:text-gray-600"
+                  />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {!query && (
+          <div className="p-2">
+            <div className="text-xs font-medium text-gray-500 px-3 py-2 uppercase tracking-wide">
+              {mounted ? t("navbar.popular_searches") : null}
+            </div>
+            {popularSearches.map((search, index) => (
+              <button
+                key={index}
+                onClick={() => handleSearchSubmit(search, isMobile)}
+                className="w-full text-left px-3 py-2 cursor-pointer hover:bg-gray-50 rounded-md flex items-center gap-3 transition-colors"
+              >
+                <svg
+                  className="w-4 h-4 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+                  />
+                </svg>
+                <span className="text-gray-500">{search}</span>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {query && suggestions.length === 0 && (
+          <div className="p-4 text-center text-gray-500">
+            <Search size={24} className="mx-auto mb-2 text-gray-300" />
+            <p className="text-sm">{mounted ? t("navbar.no_results") : null}</p>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <>
       <header className="sticky top-0 w-full mx-auto rounded-lg shadow-lg z-50 py-2 bg-white/95 backdrop-blur-sm max-[1260px]:px-4">
@@ -471,6 +666,7 @@ export default function Navbar() {
             </button>
           </div>
 
+          {/* Desktop Search */}
           <div className="relative w-1/3 max-[670px]:hidden">
             <form onSubmit={handleSearch} className="relative w-full">
               <label htmlFor="search" className="sr-only">
@@ -495,132 +691,13 @@ export default function Navbar() {
               </button>
             </form>
 
-            {showSearchDropdown && (
-              <div
-                ref={searchDropdownRef}
-                className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-xl z-50 max-h-96 overflow-y-auto"
-              >
-                {searchQuery && searchSuggestions.length > 0 && (
-                  <div className="p-2">
-                    <div className="text-xs font-medium text-gray-500 px-3 py-2 uppercase tracking-wide">
-                      {mounted ? t("navbar.search_results") : null}
-                    </div>
-                    {searchSuggestions.map((product) => (
-                      <button
-                        key={product._id}
-                        onClick={() => handleSearchSubmit(product.name)}
-                        className="w-full cursor-pointer text-left px-3 py-2 hover:bg-gray-50 rounded-md flex items-center gap-3 transition-colors"
-                      >
-                        <Search size={16} className="text-gray-400" />
-                        <span
-                          className="text-gray-700"
-                          dangerouslySetInnerHTML={{
-                            __html: highlightSearchTerm(
-                              product.name,
-                              searchQuery
-                            ),
-                          }}
-                        />
-                      </button>
-                    ))}
-                  </div>
-                )}
-
-                {!searchQuery && recentSearches.length > 0 && (
-                  <div className="p-2 border-b border-gray-100">
-                    <div className="flex items-center justify-between px-3 py-2">
-                      <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-                        {mounted ? t("navbar.recent_searches") : null}
-                      </span>
-                      <button
-                        onClick={clearRecentSearches}
-                        className="text-xs text-green-600 hover:text-green-700 cursor-pointer font-medium"
-                      >
-                        {mounted ? t("navbar.clear_searches") : null}
-                      </button>
-                    </div>
-                    {recentSearches.map((search, index) => (
-                      <div
-                        key={index}
-                        className="group flex items-center justify-between px-3 py-2 hover:bg-gray-50 rounded-md transition-colors"
-                      >
-                        <button
-                          onClick={() => handleSearchSubmit(search)}
-                          className="flex items-center gap-3 flex-1 text-left"
-                        >
-                          <svg
-                            className="w-4 h-4 text-gray-400"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                            />
-                          </svg>
-                          <span className="text-gray-700">{search}</span>
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            removeRecentSearch(search);
-                          }}
-                          className="opacity-0 group-hover:opacity-100 transition-opacity ml-2 p-1 hover:bg-gray-200 rounded-full"
-                          title="Remove from recent searches"
-                        >
-                          <X
-                            size={14}
-                            className="text-gray-400 cursor-pointer hover:text-gray-600"
-                          />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {!searchQuery && (
-                  <div className="p-2">
-                    <div className="text-xs font-medium text-gray-500 px-3 py-2 uppercase tracking-wide">
-                      {mounted ? t("navbar.recent_searches") : null}
-                    </div>
-                    {popularSearches.map((search, index) => (
-                      <button
-                        key={index}
-                        onClick={() => handleSearchSubmit(search)}
-                        className="w-full text-left px-3 py-2 cursor-pointer hover:bg-gray-50 rounded-md flex items-center gap-3 transition-colors"
-                      >
-                        <svg
-                          className="w-4 h-4 text-gray-400"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
-                          />
-                        </svg>
-                        <span className="text-gray-500">{search}</span>
-                      </button>
-                    ))}
-                  </div>
-                )}
-
-                {searchQuery && searchSuggestions.length === 0 && (
-                  <div className="p-4 text-center text-gray-500">
-                    <Search size={24} className="mx-auto mb-2 text-gray-300" />
-                    <p className="text-sm">
-                      {mounted ? t("navbar.no_results") : null}
-                    </p>
-                  </div>
-                )}
-              </div>
-            )}
+            <SearchDropdown
+              isVisible={showSearchDropdown}
+              query={searchQuery}
+              suggestions={searchSuggestions}
+              isMobile={false}
+              dropdownRef={searchDropdownRef}
+            />
           </div>
 
           <div className="hidden md:flex items-center gap-4">
@@ -698,27 +775,38 @@ export default function Navbar() {
           </div>
         </div>
 
+        {/* Mobile Search */}
         <div className="relative w-full mt-4 hidden max-[670px]:block max-w-[1240px] mx-auto">
-          <form onSubmit={handleSearch} className="relative w-full">
+          <form onSubmit={handleMobileSearch} className="relative w-full">
             <label htmlFor="mobile-search" className="sr-only">
               {mounted ? t("navbar.search_placeholder") : null}
             </label>
             <input
               id="mobile-search"
+              ref={mobileSearchInputRef}
               type="text"
+              autoComplete="off"
               placeholder={mounted ? t("navbar.search_placeholder") : null}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              value={mobileSearchQuery}
+              onChange={(e) => setMobileSearchQuery(e.target.value)}
+              onFocus={() => setShowMobileSearchDropdown(true)}
               className="border border-gray-200 rounded-lg px-4 py-2 w-full outline-none transition-all bg-gray-50 pr-12 focus:ring-2 focus:ring-green-500 focus:border-transparent"
             />
             <button
-              type="button"
-              onClick={handleIconClick}
+              type="submit"
               className="absolute inset-y-0 right-0 bg-[#249B73] cursor-pointer text-white px-4 rounded-r-lg transition-all hover:bg-[#249B73]"
             >
               <Search size={20} />
             </button>
           </form>
+
+          <SearchDropdown
+            isVisible={showMobileSearchDropdown}
+            query={mobileSearchQuery}
+            suggestions={mobileSearchSuggestions}
+            isMobile={true}
+            dropdownRef={mobileSearchDropdownRef}
+          />
         </div>
 
         {!isOpen && <CategoryList onMoreClick={toggleDropdown} />}
@@ -886,6 +974,7 @@ export default function Navbar() {
           </div>
         </div>
       </div>
+
       <div className="fixed bottom-0 left-0 w-full z-50 bg-white border-t border-gray-200 px-4 py-2 flex justify-between items-center md:hidden">
         <button
           onClick={() => router.push("/")}
@@ -894,31 +983,41 @@ export default function Navbar() {
           <HomeIcon size={20} className="text-[#249B73]" />
           <span className="text-xs">{mounted ? t("navbar.home") : null}</span>
         </button>
-        <button
-          onClick={() => setOpen(true)}
-          className="flex flex-col items-center text-gray-600"
-        >
-          <Bell size={20} className="text-[#249B73]" />
-          <span className="text-xs">
-            {mounted ? t("navbar.notifications") : null}
-          </span>
-        </button>
+
+
+
         <button
           onClick={() => router.push("/wishes")}
-          className="flex flex-col items-center text-gray-600"
+          className="flex flex-col items-center text-gray-600 relative"
         >
-          <Heart size={20} className="text-[#249B73]" />
+          <div className="relative">
+            <Heart size={20} className="text-[#249B73]" />
+            {likes.length > 0 && (
+              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center animate-pulse">
+                {likes.length > 9 ? "9+" : likes.length}
+              </span>
+            )}
+          </div>
           <span className="text-xs">
             {mounted ? t("navbar.wishlist") : null}
           </span>
         </button>
+
         <button
           onClick={() => router.push("/cart")}
-          className="flex flex-col items-center text-gray-600"
+          className="flex flex-col items-center text-gray-600 relative"
         >
-          <ShoppingCart size={20} className="text-[#249B73]" />
+          <div className="relative">
+            <ShoppingCart size={20} className="text-[#249B73]" />
+            {cart.length > 0 && (
+              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center animate-pulse">
+                {cart.length > 9 ? "9+" : cart.length}
+              </span>
+            )}
+          </div>
           <span className="text-xs">{mounted ? t("navbar.cart") : null}</span>
         </button>
+
         {isAuthenticated ? (
           <button
             onClick={() => router.push("/profile")}

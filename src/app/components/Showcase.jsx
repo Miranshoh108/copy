@@ -27,18 +27,18 @@ export default function Showcase() {
     centerPadding: "20px",
   };
   return (
-    <section className="text-center relative mt-10 mb-6">
-      <div className="relative max-w-[1240px] mx-auto">
+    <section className="text-center relative mt-10 mb-6 max-[720px]:hidden">
+      <div className="relative max-w-[1240px] max-[750px]:max-w-[95%] max-[1400px]:max-w-[80%] mx-auto">
         <button
           onClick={() => sliderRef.current?.slickPrev()}
-          className="absolute top-[calc(50%)] -left-16 z-20 cursor-pointer -translate-y-1/2 bg-linear-to-r from-[#EED3DC] to-[#CDD6FD] text-black p-2 rounded-full shadow-lg hover:scale-110 transition"
+          className="absolute top-[calc(50%)] -left-16 z-20 max-[950px]:hidden cursor-pointer -translate-y-1/2 bg-linear-to-r from-[#EED3DC] to-[#CDD6FD] text-black p-2 rounded-full shadow-lg hover:scale-110 transition"
         >
           <ChevronLeft />
         </button>
 
         <button
           onClick={() => sliderRef.current?.slickNext()}
-          className="absolute top-[calc(50%)] -right-16 z-20 cursor-pointer -translate-y-1/2 bg-gradient-to-r from-[#3ed890] to-[#388ef0] text-white p-2 rounded-full shadow-lg hover:scale-110 transition"
+          className="absolute top-[calc(50%)] -right-16 z-20 max-[950px]:hidden cursor-pointer -translate-y-1/2 bg-gradient-to-r from-[#3ed890] to-[#388ef0] text-white p-2 rounded-full shadow-lg hover:scale-110 transition"
         >
           <ChevronRight />
         </button>
@@ -96,7 +96,7 @@ export default function Showcase() {
         }
         .slick-dots li.slick-active button:before {
           opacity: 1;
-          color: #249B73;
+          color: #249b73;
         }
       `}</style>
     </section>

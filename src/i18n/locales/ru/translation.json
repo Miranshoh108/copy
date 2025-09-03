@@ -38,6 +38,7 @@
     "reviews": "отзывов",
     "loading": "Загрузка...",
     "add_to_cart": "В корзину",
+    "add_to_cart_too": "корзину",
     "add_to_cart_tooltip": "Добавить в корзину",
     "decrease_tooltip": "Уменьшить",
     "increase_tooltip": "Увеличить"

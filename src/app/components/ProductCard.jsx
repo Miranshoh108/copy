@@ -9,7 +9,7 @@ import useProductStore from "../store/productStore";
 import { useTranslation } from "react-i18next";
 import i18next from "../../i18n/i18n";
 import VariantSelectionModal from "./VariantSelectionModal";
-import $api from "../http/api";   
+import $api from "../http/api";
 
 export default function ProductCard({ product }) {
   const { t } = useTranslation();
@@ -25,10 +25,11 @@ export default function ProductCard({ product }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [rating, setRating] = useState(null);
   const [loadingRating, setLoadingRating] = useState(false);
+  const [isSmallScreen, setIsSmallScreen] = useState(false);
 
   const randomReviewsCount = useMemo(() => {
     return Math.floor(Math.random() * 15) + 5;
-  }, [product.id]); 
+  }, [product.id]);
 
   useEffect(() => {
     setMounted(true);
@@ -65,6 +66,19 @@ export default function ProductCard({ product }) {
       setLoadingRating(false);
     }
   };
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsSmallScreen(window.innerWidth <= 500);
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
 
   const checkAuthentication = () => {
     try {
@@ -432,7 +446,7 @@ export default function ProductCard({ product }) {
   return (
     <>
       <div
-        className="bg-white rounded-lg shadow-md flex flex-col w-[190px] relative cursor-pointer hover:shadow-lg transition-shadow h-full"
+        className="bg-white rounded-lg shadow-md flex flex-col w-[190px] max-[420px]:w-[180px] max-[400px]:w-[170px] max-[380px]:w-[160px] max-[361px]:w-[150px] relative cursor-pointer hover:shadow-lg transition-shadow h-full"
         onClick={handleProductClick}
       >
         {price && discountedPrice && price > discountedPrice && (
@@ -533,17 +547,20 @@ export default function ProductCard({ product }) {
             ) : currentQuantity === 0 ? (
               <button
                 onClick={(e) => handleAddToCart(e)}
-                className="w-full flex cursor-pointer items-center justify-center gap-2 border border-[#249B73] text-[#249B73] hover:bg-[#0d63f50f] rounded-lg py-2 transition-all duration-300"
+                className="w-[95%] flex cursor-pointer items-center justify-center gap-2 border border-[#249B73] text-[#249B73] hover:bg-[#0d63f50f] rounded-lg py-2 max-[500px]:py-[6px] transition-all duration-300"
                 title={mounted ? t("product_card.add_to_cart_tooltip") : ""}
               >
                 <ShoppingCart size={18} />
                 <span className="font-medium">
-                  {mounted ? t("product_card.add_to_cart") : ""}
-                  {!isAuthenticated && ""}
+                  {mounted
+                    ? isSmallScreen
+                      ? t("product_card.add_to_cart_too")
+                      : t("product_card.add_to_cart")
+                    : ""}
                 </span>
               </button>
             ) : (
-              <div className="w-full flex items-center justify-between border border-[#249B73] rounded-lg px-4 py-2 bg-white shadow-sm transition-all duration-300">
+              <div className="w-full flex items-center justify-between border border-[#249B73] rounded-lg px-4 py-2 bg-white shadow-sm transition-all duration-300 max-[400px]:px-2 max-[400px]:py-[2px]">
                 <button
                   onClick={handleDecrement}
                   className="text-xl text-[#f44336] cursor-pointer font-bold hover:scale-110 transition-transform duration-200"
@@ -552,7 +569,7 @@ export default function ProductCard({ product }) {
                   −
                 </button>
 
-                <span className="bg-[#249B73] text-white text-sm w-7 h-7 flex items-center justify-center rounded-full font-semibold shadow-md">
+                <span className="bg-[#249B73] text-white text-sm w-7 h-7 max-[400px]:w-5 max-[400px]:h-5 flex items-center justify-center rounded-full font-semibold shadow-md">
                   {currentQuantity}
                 </span>
 
