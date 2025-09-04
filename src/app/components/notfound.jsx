@@ -29,7 +29,7 @@ export default function NotFound() {
     setIsAnimating(true);
     setTimeout(() => {
       window.history.back();
-    }, );
+    });
   };
 
   const popularProducts = [
@@ -65,10 +65,10 @@ export default function NotFound() {
       <div className="relative z-10 container mx-auto px-4 py-16 flex flex-col items-center justify-center min-h-screen text-center">
         <div className="mb-8">
           <div className="flex items-center justify-center space-x-3 mb-4">
-            <div className="p-3 bg-gradient-to-r from-green-600 to-green-600 rounded-xl shadow-lg">
+            <div className="p-3 bg-gradient-to-r from-[#249B73]  to-[#249B73]  rounded-xl shadow-lg">
               <ShoppingBag className="w-8 h-8 text-white" />
             </div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-green-600 to-green-600 bg-clip-text text-transparent">
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-[#249B73]  to-[#249B73]  bg-clip-text text-transparent">
               BS Market
             </h1>
           </div>
@@ -103,7 +103,6 @@ export default function NotFound() {
             Kechirasiz, siz qidirayotgan sahifa mavjud emas yoki o'chirilgan
             bo'lishi mumkin. Biroq, bizda hali ham ajoyib mahsulotlar mavjud!
           </p>
-
         </div>
 
         <div className="flex flex-col sm:flex-row gap-4 mb-8">
@@ -119,14 +118,12 @@ export default function NotFound() {
 
           <button
             onClick={() => (window.location.href = "/")}
-            className="flex items-center px-8 py-4 bg-gradient-to-r from-green-600 to-green-600 text-white rounded-xl font-medium cursor-pointer transition-all duration-300 hover:from-green-700 hover:to-green-700 hover:scale-105 shadow-lg"
+            className="flex items-center px-8 py-4 bg-gradient-to-r from-[#249B73] to-[#249B73] text-white rounded-xl font-medium cursor-pointer transition-all duration-300 hover:from-[#249B73] hover:to-[#249B73] hover:scale-105 shadow-lg"
           >
             <Home className="w-5 h-5 mr-2" />
             Bosh sahifa
           </button>
         </div>
-
-       
 
         <div className="mt-12 text-sm text-gray-500">
           <p>© 2025 BS Market. Barcha huquqlar himoyalangan.</p>

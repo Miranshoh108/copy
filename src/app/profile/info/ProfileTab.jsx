@@ -6,12 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 
-const ProfileTab = ({
-  user,
-  isEditing,
-  setIsEditing,
-  updateUserProfile,
-}) => {
+const ProfileTab = ({ user, isEditing, setIsEditing, updateUserProfile }) => {
   const [formData, setFormData] = useState({
     firstName: user.firstName || "",
     lastName: user.lastName || "",
@@ -104,7 +99,7 @@ const ProfileTab = ({
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-green-100 text-green-600 rounded-lg flex items-center justify-center">
+              <div className="w-12 h-12 bg-green-100 text-[#249B73]  rounded-lg flex items-center justify-center">
                 <User size={24} />
               </div>
               <div>

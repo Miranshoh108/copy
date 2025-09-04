@@ -251,8 +251,8 @@ export default function Cart() {
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 space-y-4">
+          <div className="flex items-start gap-8 max-[800px]:flex-col">
+            <div className="space-y-4 w-2/3 max-[1130px]:w-[60%] max-[800px]:w-full">
               <div className="flex items-center justify-between mb-6">
                 <h1 className="text-2xl font-semibold text-gray-900">
                   Savatcha
@@ -291,13 +291,13 @@ export default function Cart() {
                     </span>
                   </label>
 
-                  <div className="flex items-center space-x-4 text-sm text-gray-500">
+                  <div className="flex items-center space-x-4 text-sm text-gray-500 max-[400px]:hidden">
                     {checkedCount > 0 && (
                       <span className="bg-green-100 text-[#249B73] px-3 py-1 rounded-full font-medium">
                         {checkedCount} ta tanlandi
                       </span>
                     )}
-                    <span className="text-gray-400">
+                    <span className="text-gray-400 max-[500px]:hidden">
                       {cart.length} ta mahsulot
                     </span>
                   </div>
@@ -329,7 +329,7 @@ export default function Cart() {
               </div>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-4 w-1/3 max-[1130px]:w-[40%] max-[800px]:w-full">
               <div className="bg-white rounded-lg p-6 shadow-sm border">
                 <h3 className="font-semibold text-gray-900 mb-4">Promokod</h3>
 
@@ -341,14 +341,14 @@ export default function Cart() {
                         placeholder="Promokodni kiriting"
                         value={promoCode}
                         onChange={(e) => setPromoCode(e.target.value)}
-                        className="flex-1 px-3 py-2 border outline-none border-gray-300 rounded-lg focus:ring-2 focus:ring-[#249B73] focus:border-[#249B73]"
+                        className="flex-1 px-3 py-2 max-[400px]:px-2 max-[400px]:w-[90%] max-[400px]:py-2 border outline-none border-gray-300 rounded-lg focus:ring-2 focus:ring-[#249B73] focus:border-[#249B73]"
                         onKeyPress={(e) =>
                           e.key === "Enter" && applyPromoCode()
                         }
                       />
                       <button
                         onClick={applyPromoCode}
-                        className="px-4 py-2 bg-[#249B73] cursor-pointer text-white rounded-lg hover:bg-[#249B73] transition-colors font-medium"
+                        className="px-4 py-2 max-[400px]:py-2 max-[400px]:px-2  bg-[#249B73] cursor-pointer text-white rounded-lg hover:bg-[#249B73] transition-colors font-medium"
                       >
                         Qo'llash
                       </button>
@@ -363,7 +363,7 @@ export default function Cart() {
                       <span className="font-medium text-green-800">
                         {appliedPromo.code}
                       </span>
-                      <p className="text-sm text-green-600">
+                      <p className="text-sm text-[#249B73] ">
                         {appliedPromo.description}
                       </p>
                     </div>
@@ -400,7 +400,7 @@ export default function Cart() {
                   </div>
 
                   {discount > 0 && (
-                    <div className="flex justify-between text-green-600">
+                    <div className="flex justify-between text-[#249B73] ">
                       <span>Chegirma:</span>
                       <span>-{discount.toLocaleString()} so'm</span>
                     </div>
@@ -408,7 +408,7 @@ export default function Cart() {
 
                   <div className="flex justify-between text-gray-600">
                     <span>Yetkazib berish:</span>
-                    <span className={delivery === 0 ? "text-green-600" : ""}>
+                    <span className={delivery === 0 ? "text-[#249B73] " : ""}>
                       {delivery === 0
                         ? "Bepul"
                         : `${delivery.toLocaleString()} so'm`}

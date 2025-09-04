@@ -98,7 +98,7 @@ export default function NotificationModal({ open, setOpen }) {
                         <Button
                           variant="link"
                           onClick={() => markAsRead(item.id)}
-                          className="text-green-600 hover:text-green-800 text-xs cursor-pointer"
+                          className="text-[#249B73]  hover:text-green-800 text-xs cursor-pointer"
                         >
                           O'qish
                         </Button>

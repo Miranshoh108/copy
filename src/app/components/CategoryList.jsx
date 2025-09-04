@@ -50,7 +50,7 @@ export default function CategoryList({ onMoreClick }) {
   const previewCategories = categories.slice(0, 8);
   if (!mounted) return null;
   return (
-    <div className="max-w-[1240px] w-full flex items-start justify-between pt-4 mx-auto">
+    <div className="max-w-[1240px] w-full flex items-start justify-between pt-4 mx-auto max-[670px]:pt-0">
       <div className="bg-white py-2 px-4 flex gap-10 items-center overflow-x-auto no-scrollbar max-[1100px]:hidden">
         {loading ? (
           <div className="flex items-center gap-2">

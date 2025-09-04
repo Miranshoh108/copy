@@ -495,7 +495,7 @@ export default function ProductDetail() {
     } else {
       return {
         text: t("product.available"),
-        color: "text-green-600",
+        color: "text-[#249B73] ",
         bg: "bg-green-100",
       };
     }
@@ -696,7 +696,7 @@ export default function ProductDetail() {
                   )}
               </div>
               {discount > 0 && (
-                <p className="text-green-600 font-medium">
+                <p className="text-[#249B73]  font-medium">
                   {t("product.with_discount", { discount })}
                 </p>
               )}

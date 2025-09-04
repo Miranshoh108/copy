@@ -11,6 +11,13 @@ body {
   color: #333;
 }
 
+@media (max-width: 640px) {
+  .slick-track {
+    display: flex !important;
+    flex-wrap: wrap !important;
+  }
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;

@@ -81,7 +81,7 @@ export default function CartProduct({ product }) {
             type="checkbox"
             checked={product.checked}
             onChange={handleToggleChecked}
-            className="w-5 h-5 mt-5 text-green-600 cursor-pointer border-2 border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:ring-offset-1"
+            className="w-5 h-5 mt-5 max-[500px]:mt-0 text-[#249B73]  cursor-pointer border-2 border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:ring-offset-1"
           />
         </div>
 
@@ -103,7 +103,7 @@ export default function CartProduct({ product }) {
           </h3>
 
           {product.variant && (
-            <div className="text-xs text-gray-500 mb-2">
+            <div className="text-xs text-gray-500 mb-2 max-[500px]:hidden">
               {variantData.color && <span>Rang: {variantData.color}</span>}
               {variantData.color && variantData.unit && <span> • </span>}
               {variantData.unit && <span>Birlik: {variantData.unit}</span>}
@@ -117,7 +117,7 @@ export default function CartProduct({ product }) {
             <p className="text-xs text-gray-500 mb-2">{product.attributes}</p>
           )}
 
-          <div className="flex items-center justify-between max-[480px]:flex-col max-[480px]:text-start">
+          <div className="flex items-center justify-between max-[480px]:flex-col max-[480px]:items-start max-[480px]:gap-2">
             <div className="flex flex-col">
               <span className="text-lg font-semibold text-gray-900">
                 {formatPrice(variantData.price)} so&apos;m
@@ -193,7 +193,7 @@ export default function CartProduct({ product }) {
 
               <button
                 onClick={handleRemove}
-                className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg cursor-pointer  transition-colors"
+                className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg cursor-pointer  transition-colors max-[500px]:hidden"
                 title="Mahsulotni o'chirish"
               >
                 <svg

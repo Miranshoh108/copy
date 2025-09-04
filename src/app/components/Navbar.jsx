@@ -501,7 +501,7 @@ export default function Navbar() {
               </span>
               <button
                 onClick={clearRecentSearches}
-                className="text-xs text-green-600 hover:text-green-700 cursor-pointer font-medium"
+                className="text-xs text-[#249B73] hover:text-[#249B73]cursor-pointer font-medium"
               >
                 {mounted ? t("navbar.clear_searches") : null}
               </button>
@@ -595,9 +595,10 @@ export default function Navbar() {
           <a
             href="https://www.google.com/maps/place/Yunusabad"
             rel="noopener noreferrer"
-            className="flex items-center gap-2 hover:underline"
+            className="flex items-center gap-2 hover:underline 
+             text-base max-[500px]:text-sm max-[500px]:gap-0.5"
           >
-            <MapPin className="text-[#249B73]" />
+            <MapPin className="text-[#249B73] max-[500px]:w-4 max-[500px]:h-4" />
             <>{mounted ? t("navbar.location") : null}</>
           </a>
 
@@ -618,7 +619,7 @@ export default function Navbar() {
                   : "ENG"
               }
               onChange={(e) => handleLanguageChange(e.target.value)}
-              className="border border-gray-200 rounded-lg cursor-pointer px-2 py-1 bg-gray-50 text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="border border-gray-200 rounded-lg cursor-pointer px-2 py-1 max-[500px]:px-[2px] max-[500px]:py-[1px] bg-gray-50 text-gray-700 focus:outline-none focus:ring-2 focus:ring-green-500"
             >
               <option value="UZ">UZ</option>
               <option value="RU">RU</option>
@@ -627,10 +628,10 @@ export default function Navbar() {
           </div>
         </div>
 
-        <div className="max-w-[1240px] w-full flex items-start justify-between pt-4 mx-auto">
+        <div className="max-w-[1240px] w-full flex items-start justify-between pt-4 mx-auto max-[670px]:pt-0">
           <button
             onClick={() => router.push("/")}
-            className="cursor-pointer text-2xl leading-6 font-bold flex flex-col hover:opacity-80 transition-opacity"
+            className="cursor-pointer text-2xl leading-6 font-bold flex flex-col hover:opacity-80 transition-opacity max-[670px]:hidden"
           >
             <span className="text-gray-800">BOJXONA</span>
             <span className="text-[#249B73] text-xs text-center tracking-[16px]">
@@ -638,18 +639,11 @@ export default function Navbar() {
             </span>
           </button>
 
-          <div className="hidden max-[670px]:block">
-            <button className="bg-gradient-to-r text-[12px] from-[#249B73] to-[#249B73] text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-md cursor-pointer transition-all duration-200 hover:shadow-lg transform hover:scale-105 font-semibold">
-              <Download size={18} />
-              {mounted ? t("navbar.download") : null}
-            </button>
-          </div>
-
           <div className="relative max-[670px]:hidden">
             <button
               onClick={toggleDropdown}
               disabled={loading}
-              className={`catalog-btn bg-gradient-to-r from-[#249B73] to-[#249B73] w-[150px] text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-md cursor-pointer transition-all duration-200 hover:shadow-lg transform hover:scale-105 ${
+              className={`catalog-btn bg-gradient-to-r from-[#249B73] max-[1050px]:hidden to-[#249B73] w-[150px] text-white px-4 py-3 rounded-lg flex items-center gap-2 shadow-md cursor-pointer transition-all duration-200 hover:shadow-lg transform hover:scale-105 ${
                 isOpen ? "bg-gradient-to-r from-[#249B73] to-[#249B73]" : ""
               } ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
             >
@@ -843,7 +837,7 @@ export default function Navbar() {
                           onClick={() => handleCategoryClick(category)}
                           className={`py-3 px-4 rounded-lg cursor-pointer transition-all duration-200 text-sm font-medium relative group ${
                             isSelected
-                              ? "bg-gradient-to-r from-green-50 to-green-100 text-green-700 shadow-sm border-l-4 border-green-500"
+                              ? "bg-gradient-to-r from-green-50 to-green-100 text-[#249B73] shadow-sm border-l-4 border-green-500"
                               : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                           }`}
                           title={
@@ -960,7 +954,7 @@ export default function Navbar() {
                             href={`/search?subType=${subCategory._id}`}
                             className="block"
                           >
-                            <h3 className="font-medium text-gray-800 group-hover:text-green-600 transition-colors duration-300 leading-relaxed">
+                            <h3 className="font-medium text-gray-800 group-hover:text-[#249B73]  transition-colors duration-300 leading-relaxed">
                               {getSubCategoryName(subCategory)}
                             </h3>
                           </a>
@@ -983,8 +977,6 @@ export default function Navbar() {
           <HomeIcon size={20} className="text-[#249B73]" />
           <span className="text-xs">{mounted ? t("navbar.home") : null}</span>
         </button>
-
-
 
         <button
           onClick={() => router.push("/wishes")}

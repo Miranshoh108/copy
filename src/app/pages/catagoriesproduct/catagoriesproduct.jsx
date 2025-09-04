@@ -12,34 +12,75 @@ import { useTranslation } from "react-i18next";
 import i18next from "@/i18n/i18n";
 import { useSearchParams } from "next/navigation";
 
+function useSkeletonCount() {
+  const [skeletonCount, setSkeletonCount] = useState(null);
+
+  useEffect(() => {
+    const updateSkeletonCount = () => {
+      const width = window.innerWidth;
+      if (width <= 640) {
+        setSkeletonCount(2);
+      } else if (width <= 768) {
+        setSkeletonCount(3);
+      } else if (width <= 1024) {
+        setSkeletonCount(4);
+      } else if (width <= 1330) {
+        setSkeletonCount(5);
+      } else {
+        setSkeletonCount(6);
+      }
+    };
+
+    updateSkeletonCount();
+
+    window.addEventListener("resize", updateSkeletonCount);
+
+    return () => window.removeEventListener("resize", updateSkeletonCount);
+  }, []);
+
+  return skeletonCount;
+}
+
 const Slider = dynamic(() => import("react-slick"), {
   ssr: false,
-  loading: () => (
-    <div className="flex gap-4">
-      <ProductCardSkeleton />
-      <ProductCardSkeleton />
-      <ProductCardSkeleton />
-      <ProductCardSkeleton />
-      <ProductCardSkeleton />
-      <ProductCardSkeleton />
-    </div>
-  ),
+  loading: () => <SkeletonLoader />,
 });
+
+function SkeletonLoader() {
+  const skeletonCount = useSkeletonCount();
+
+  return (
+    <div className="flex gap-4 overflow-hidden">
+      {[...Array(skeletonCount)].map((_, index) => (
+        <ProductCardSkeleton key={index} />
+      ))}
+    </div>
+  );
+}
 
 function ProductCardSkeleton() {
   return (
-    <div className="bg-white rounded-lg shadow-md p-4 flex flex-col w-[200px] h-full">
+    <div className="bg-white rounded-lg shadow-md flex flex-col w-[190px] max-[420px]:w-[180px] max-[400px]:w-[170px] max-[380px]:w-[160px] max-[361px]:w-[150px] relative h-full">
       <div className="flex-grow">
-        <Skeleton className="w-full h-36 mb-3 rounded-md" />
-        <Skeleton className="h-6 w-3/4 mb-2" />
-        <Skeleton className="h-5 w-full mb-1" />
-        <Skeleton className="h-4 w-5/6" />
+        <Skeleton className="w-full h-[210px] mb-2 rounded-t-lg" />
+
+        <div className="min-h-[45px] flex flex-col justify-center px-2 mt-[2px]">
+          <Skeleton className="h-4 w-1/2 mb-1" />
+          <Skeleton className="h-5 w-3/4" />
+        </div>
+
+        <div className="px-2">
+          <Skeleton className="h-5 w-full mb-2" />
+        </div>
+
+        <div className="px-2">
+          <Skeleton className="h-4 w-2/3 mb-1" />
+        </div>
       </div>
-      <div className="mt-3">
-        <Skeleton className="h-4 w-1/2 mb-3" />
-        <div className="flex items-center justify-between gap-2">
-          <Skeleton className="h-10 flex-grow" />
-          <Skeleton className="h-10 w-10" />
+
+      <div className="p-2 mt-auto">
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-10 w-full rounded-lg" />
         </div>
       </div>
     </div>
@@ -79,7 +120,7 @@ export default function CatagoriesProduct() {
   const [sliderWidth, setSliderWidth] = useState(6);
   const [mounted, setMounted] = useState(false);
   const sliderRef = useRef(null);
-
+  const skeletonCount = useSkeletonCount();
   const currentCategoryId =
     searchParams?.get("category") || "689dcf58e9443d84b885e584";
 
@@ -235,10 +276,7 @@ export default function CatagoriesProduct() {
   if (loading) {
     return (
       <section className="py-4">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-800">Loading...</h2>
-          </div>
+        <div className="max-w-7xl mx-auto px-6 max-[500px]:px-1">
           <div className="flex gap-4 overflow-x-auto">
             {[...Array(6)].map((_, index) => (
               <ProductCardSkeleton key={index} />
@@ -252,9 +290,9 @@ export default function CatagoriesProduct() {
   if (error) {
     return (
       <section className="py-8">
-        <div className="max-w-7xl mx-auto px-6">
+        <div className="max-w-7xl mx-auto px-6 max-[500px]:px-1">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-800">
+            <h2 className="text-2xl font-bold text-gray-800 max-[500px]:font-medium max-[500px]:text-xl max-[500px]:px-2">
               {mounted ? t("catagories.title") : ""}
             </h2>
           </div>
@@ -280,9 +318,9 @@ export default function CatagoriesProduct() {
 
   return (
     <section className="py-4">
-      <div className="max-w-7xl mx-auto px-6">
+      <div className="max-w-7xl mx-auto px-6 max-[500px]:px-1">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-800">
+          <h2 className="text-2xl font-bold text-gray-800 max-[500px]:font-medium max-[500px]:text-xl max-[500px]:px-2">
             {mounted ? t("catagories.title") : ""}
           </h2>
         </div>

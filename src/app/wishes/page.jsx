@@ -11,7 +11,7 @@ import Button from "../components/ui/button";
 import DiscountedProducts from "../pages/discounted/page";
 
 export default function Wishes() {
-  const { likes, syncLikesWithBackend } = useHomeLikes();
+  const { likes } = useHomeLikes();
   const token =
     typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
 
@@ -42,11 +42,11 @@ export default function Wishes() {
             </Button>
           </div>
         ) : (
-          <div className="max-w-7xl mx-auto px-4">
+          <div className="max-w-7xl mx-auto px-4 max-[500px]:px-2">
             <h2 className="text-2xl font-bold text-center mb-6 text-gray-800">
               Xit savdo
             </h2>
-            <div className="grid grid-cols-7 sm:grid-cols-4 md:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
               {likes.map((product, index) => (
                 <ProductCard key={index} product={product} />
               ))}

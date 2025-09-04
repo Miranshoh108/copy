@@ -12,7 +12,7 @@ export default function SearchResults() {
   const searchParams = useSearchParams();
   const searchQuery = searchParams.get("name") || "";
   const subType = searchParams.get("subType") || "";
-  const category = searchParams.get("category") || ""; // category parametrini qo'shdik
+  const category = searchParams.get("category") || "";
 
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -246,10 +246,10 @@ export default function SearchResults() {
   }
 
   return (
-    <div className="max-w-[1240px] mx-auto px-4 py-6">
-      <div className="mb-6">
+    <div className="max-w-7xl mx-auto px-6 py-4 max-[500px]:px-1">
+      <div className="mb-6 px-2 max-[500px]:px-2">
         {totalProducts > 0 && (
-          <p className="text-gray-600">
+          <p className="text-gray-600 text-sm max-[500px]:text-xs">
             {mounted
               ? t("search_results.showing_results", {
                   start: (currentPage - 1) * PRODUCTS_PER_PAGE + 1,
@@ -268,7 +268,7 @@ export default function SearchResults() {
         <div className="flex items-center justify-center py-12">
           <div className="flex items-center gap-3">
             <Loader2 className="animate-spin text-[#249B73]" size={24} />
-            <span className="text-gray-600">
+            <span className="text-gray-600 max-[500px]:text-sm">
               {mounted ? t("search_results.loading") : "Yuklanmoqda..."}
             </span>
           </div>
@@ -277,9 +277,12 @@ export default function SearchResults() {
 
       {error && !loading && (
         <div className="text-center py-12">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md mx-auto">
-            <Search className="mx-auto text-red-400 mb-4" size={48} />
-            <p className="text-red-500 text-sm">{error}</p>
+          <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md mx-auto max-[500px]:p-4 max-[500px]:mx-2">
+            <Search
+              className="mx-auto text-red-400 mb-4 max-[500px]:mb-2"
+              size={48}
+            />
+            <p className="text-red-500 text-sm max-[500px]:text-xs">{error}</p>
           </div>
         </div>
       )}
@@ -289,19 +292,22 @@ export default function SearchResults() {
         products.length === 0 &&
         (searchQuery || subType || category) && (
           <div className="text-center py-12">
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 max-w-md mx-auto">
-              <Search className="mx-auto text-gray-400 mb-4" size={48} />
-              <h3 className="text-lg font-medium text-gray-800 mb-2">
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 max-w-md mx-auto max-[500px]:p-4 max-[500px]:mx-2">
+              <Search
+                className="mx-auto text-gray-400 mb-4 max-[500px]:mb-2"
+                size={48}
+              />
+              <h3 className="text-lg font-medium text-gray-800 mb-2 max-[500px]:text-base max-[500px]:font-normal">
                 {mounted
                   ? t("search_results.no_results_title")
                   : "Natija topilmadi"}
               </h3>
-              <p className="text-gray-600 text-sm mb-4">
+              <p className="text-gray-600 text-sm mb-4 max-[500px]:text-xs max-[500px]:mb-2">
                 {mounted
                   ? t("search_results.no_results_message")
                   : "Qidiruv so'rovingiz bo'yicha hech qanday mahsulot topilmadi"}
               </p>
-              <div className="text-xs text-gray-500">
+              <div className="text-xs text-gray-500 max-[500px]:text-[10px]">
                 <p>
                   {mounted
                     ? t("search_results.search_tips")
@@ -335,49 +341,60 @@ export default function SearchResults() {
 
       {!loading && products.length > 0 && (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 mb-8">
+          {/* Products Grid - Responsive */}
+          <div className="grid grid-cols-6 gap-4 mb-8 max-[1330px]:grid-cols-5 max-[1024px]:grid-cols-4 max-[768px]:grid-cols-3 max-[640px]:grid-cols-2 max-[500px]:gap-2">
             {products.map((product) => (
               <div key={product.id} className="flex justify-center">
-                <ProductCard product={product} />
+                <div className="w-[190px] max-[420px]:w-[180px] max-[400px]:w-[170px] max-[380px]:w-[160px] max-[361px]:w-[150px] max-[500px]:w-full">
+                  <ProductCard product={product} />
+                </div>
               </div>
             ))}
           </div>
 
+          {/* Pagination - Responsive */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2 mt-8">
+            <div className="flex items-center justify-center gap-2 mt-8 px-2 max-[500px]:gap-1">
               <button
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage === 1}
-                className={`flex items-center gap-2 px-4 cursor-pointer py-2 rounded-lg transition-all ${
+                className={`flex items-center gap-2 px-4 cursor-pointer py-2 rounded-lg transition-all max-[500px]:px-2 max-[500px]:py-1 max-[500px]:text-sm ${
                   currentPage === 1
                     ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                     : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
                 }`}
               >
-                <ChevronLeft size={16} />
-                {mounted ? t("search_results.previous") : "Oldingi"}
+                <ChevronLeft size={16} className="max-[500px]:hidden" />
+                <span className="max-[500px]:hidden">
+                  {mounted ? t("search_results.previous") : "Oldingi"}
+                </span>
+                <span className="min-[501px]:hidden">‹</span>
               </button>
 
-              {getPaginationRange().map((pageNum) => (
-                <button
-                  key={pageNum}
-                  onClick={() => handlePageChange(pageNum)}
-                  className={`px-4 py-2 rounded-lg cursor-pointer transition-all ${
-                    currentPage === pageNum
-                      ? "bg-[#249B73] text-white shadow-md"
-                      : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
-                  }`}
-                >
-                  {pageNum}
-                </button>
-              ))}
+              <div className="flex gap-2 max-[500px]:gap-1 overflow-x-auto max-[500px]:max-w-[200px]">
+                {getPaginationRange().map((pageNum) => (
+                  <button
+                    key={pageNum}
+                    onClick={() => handlePageChange(pageNum)}
+                    className={`px-4 py-2 rounded-lg cursor-pointer transition-all flex-shrink-0 max-[500px]:px-2 max-[500px]:py-1 max-[500px]:text-sm ${
+                      currentPage === pageNum
+                        ? "bg-[#249B73] text-white shadow-md"
+                        : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
+                    }`}
+                  >
+                    {pageNum}
+                  </button>
+                ))}
+              </div>
 
               {totalPages > 5 && currentPage < totalPages - 2 && (
                 <>
-                  <span className="px-2 text-gray-400">...</span>
+                  <span className="px-2 text-gray-400 max-[500px]:hidden">
+                    ...
+                  </span>
                   <button
                     onClick={() => handlePageChange(totalPages)}
-                    className="px-4 py-2 rounded-lg cursor-pointer bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 transition-all"
+                    className="px-4 py-2 rounded-lg cursor-pointer bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 transition-all max-[500px]:px-2 max-[500px]:py-1 max-[500px]:text-sm max-[500px]:hidden"
                   >
                     {totalPages}
                   </button>
@@ -387,14 +404,17 @@ export default function SearchResults() {
               <button
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
-                className={`flex items-center gap-2 px-4 py-2 cursor-pointer rounded-lg transition-all ${
+                className={`flex items-center gap-2 px-4 py-2 cursor-pointer rounded-lg transition-all max-[500px]:px-2 max-[500px]:py-1 max-[500px]:text-sm ${
                   currentPage === totalPages
                     ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                     : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
                 }`}
               >
-                {mounted ? t("search_results.next") : "Keyingi"}
-                <ChevronRight size={16} />
+                <span className="max-[500px]:hidden">
+                  {mounted ? t("search_results.next") : "Keyingi"}
+                </span>
+                <span className="min-[501px]:hidden">›</span>
+                <ChevronRight size={16} className="max-[500px]:hidden" />
               </button>
             </div>
           )}

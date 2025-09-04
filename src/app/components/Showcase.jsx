@@ -8,11 +8,11 @@ import { useRef } from "react";
 const Slider = dynamic(() => import("react-slick"), { ssr: false });
 export default function Showcase() {
   const images = [
-    "/images/showcase.jpg",
-    "/images/bacgraund.jpg",
-    "/images/showcase.jpg",
-    "/images/bacgraund.jpg",
-    "/images/showcase.jpg",
+    "/images/showcasebanner.png",
+    "/images/showcase.png",
+    "/images/bsmarket.png",
+    "/images/market.png",
+    "/images/bacgraund.png",
   ];
   const sliderRef = useRef(null);
   const settings = {

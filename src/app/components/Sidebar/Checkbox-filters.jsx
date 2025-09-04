@@ -42,7 +42,7 @@ export default function CheckboxFilters() {
           <Switch
             checked={inStock}
             onCheckedChange={setInStock}
-            className="data-[state=checked]:bg-green-600 rounded-full transition-colors"
+            className="data-[state=checked]:bg-[#249B73]  rounded-full transition-colors"
           />
         </div>
 
@@ -53,7 +53,7 @@ export default function CheckboxFilters() {
           <Switch
             checked={newProducts}
             onCheckedChange={setNewProducts}
-            className="data-[state=checked]:bg-green-600 rounded-full transition-colors"
+            className="data-[state=checked]:bg-[#249B73]  rounded-full transition-colors"
           />
         </div>
 
@@ -64,7 +64,7 @@ export default function CheckboxFilters() {
           <Switch
             checked={discounted}
             onCheckedChange={setDiscounted}
-            className="data-[state=checked]:bg-green-600 rounded-full transition-colors"
+            className="data-[state=checked]:bg-[#249B73]  rounded-full transition-colors"
           />
         </div>
       </div>
@@ -80,7 +80,7 @@ export default function CheckboxFilters() {
               id={filter.id}
               checked={checked.includes(filter.id)}
               onCheckedChange={() => toggleFilter(filter.id)}
-              className="h-5 w-5 rounded border-gray-300 text-green-600 focus:ring-green-500"
+              className="h-5 w-5 rounded border-gray-300 text-[#249B73]  focus:ring-green-500"
             />
             <filter.icon className="h-5 w-5 text-gray-500" />
             <label

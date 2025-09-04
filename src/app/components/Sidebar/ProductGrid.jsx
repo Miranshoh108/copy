@@ -156,7 +156,7 @@ export default function ProductGrid() {
             <p className="text-xs text-gray-400 mt-1">
               {laptop.orders} ta buyurtma
             </p>
-            <p className="text-lg font-bold text-green-600 mt-2">
+            <p className="text-lg font-bold text-[#249B73]  mt-2">
               {laptop.price.toLocaleString()} so‘m
             </p>
 
@@ -164,7 +164,7 @@ export default function ProductGrid() {
             <div className="mt-4 flex gap-2">
               <Link href={`/product`}>
                 <Button
-                  className="flex-1 bg-green-600 hover:bg-green-700 text-white text-sm font-medium"
+                  className="flex-1 bg-[#249B73] hover:bg-[#249B73] text-white text-sm font-medium"
                   aria-label={`Sotib olish ${laptop.name}`}
                 >
                   Sotib olish

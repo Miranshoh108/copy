@@ -53,7 +53,7 @@ const Orders = () => {
   const getStatusColor = (status) => {
     switch (status) {
       case "delivered":
-        return "text-green-600 bg-green-100";
+        return "text-[#249B73]  bg-green-100";
       case "shipping":
         return "text-blue-600 bg-blue-100";
       case "processing":
@@ -308,49 +308,56 @@ const Orders = () => {
           {orders.length === 0 ? (
             <p className="text-gray-500">Buyurtmalar mavjud emas.</p>
           ) : (
-            orders.map((order) => (
-              <div
-                key={order.id}
-                className="flex items-center justify-between p-4 border border-gray-100 rounded-lg hover:border-green-200 transition-colors"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
-                    <Truck size={20} className="text-gray-600" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-gray-900">
-                      Buyurtma #{order.id}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      {order.date} • {order.items} ta mahsulot
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-4">
-                  <button
-                    onClick={() => handleViewOrder(order)}
-                    className="flex items-center gap-2 text-blue-600 hover:text-blue-800 px-3 py-1 rounded-lg hover:bg-blue-50"
+            <div className="overflow-x-auto">
+              <div className="min-w-[600px] space-y-4">
+                {orders.map((order) => (
+                  <div
+                    key={order.id}
+                    className="flex items-center justify-between p-4 border border-gray-100 rounded-lg hover:border-green-200 transition-colors"
                   >
-                    <Eye size={16} />
-                    Ko'rish
-                  </button>
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                        <Truck size={20} className="text-gray-600" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-gray-900">
+                          Buyurtma #{order.id}
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          {order.date} • {order.items} ta mahsulot
+                        </p>
+                      </div>
+                    </div>
 
-                  <Select value={order.status} disabled>
-                    <SelectTrigger
-                      className={`w-[120px] ${getStatusColor(
-                        order.status
-                      )} cursor-default border-0`}
-                    >
-                      <SelectValue>{getStatusText(order.status)}</SelectValue>
-                    </SelectTrigger>
-                  </Select>
+                    <div className="flex items-center gap-4">
+                      <button
+                        onClick={() => handleViewOrder(order)}
+                        className="flex items-center gap-2 text-blue-600 hover:text-blue-800 px-3 py-1 rounded-lg hover:bg-blue-50"
+                      >
+                        <Eye size={16} />
+                        Ko'rish
+                      </button>
 
-                  <p className="font-semibold text-gray-900 min-w-[100px] text-right">
-                    {order.total} so'm
-                  </p>
-                </div>
+                      <Select value={order.status} disabled>
+                        <SelectTrigger
+                          className={`w-[120px] ${getStatusColor(
+                            order.status
+                          )} cursor-default border-0`}
+                        >
+                          <SelectValue>
+                            {getStatusText(order.status)}
+                          </SelectValue>
+                        </SelectTrigger>
+                      </Select>
+
+                      <p className="font-semibold text-gray-900 min-w-[100px] text-right">
+                        {order.total} so'm
+                      </p>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))
+            </div>
           )}
         </div>
       </CardContent>

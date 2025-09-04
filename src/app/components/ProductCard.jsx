@@ -443,6 +443,38 @@ export default function ProductCard({ product }) {
   const displayName = getLocalizedName();
   const currencyText = getCurrencyText();
 
+  const [touchStartX, setTouchStartX] = useState(null);
+  const [touchEndX, setTouchEndX] = useState(null);
+
+  const handleTouchStart = (e) => {
+    setTouchStartX(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e) => {
+    setTouchEndX(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStartX || !touchEndX) return;
+
+    const distance = touchStartX - touchEndX;
+
+    if (distance > 50) {
+      setCurrentImageIndex((prev) =>
+        prev === allImages.length - 1 ? 0 : prev + 1
+      );
+    }
+
+    if (distance < -50) {
+      setCurrentImageIndex((prev) =>
+        prev === 0 ? allImages.length - 1 : prev - 1
+      );
+    }
+
+    setTouchStartX(null);
+    setTouchEndX(null);
+  };
+
   return (
     <>
       <div
@@ -472,6 +504,9 @@ export default function ProductCard({ product }) {
           onMouseMove={handleMouseMove}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
         >
           <Image
             src={getCurrentImage()}
@@ -489,7 +524,7 @@ export default function ProductCard({ product }) {
                 <div
                   key={index}
                   className={`flex-1 h-0.5 rounded-full transition-all duration-200 ${
-                    index === currentImageIndex ? "bg-green-600" : "bg-white/1"
+                    index === currentImageIndex ? "bg-[#249B73] " : "bg-white/1"
                   }`}
                 />
               ))}
@@ -517,7 +552,16 @@ export default function ProductCard({ product }) {
         <div className="p-2">
           <div className="flex items-center gap-2 text-xs text-gray-700">
             <div className="flex items-center gap-1">
-              <span>⭐</span>
+              <span class="inline-block w-5 h-5 text-yellow-400">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 51 48"
+                  fill="currentColor"
+                >
+                  <path d="M25,1 L31,17 H48 L34,28 L39,45 L25,35 L11,45 L16,28 L2,17 H19z" />
+                </svg>
+              </span>
+
               {loadingRating ? (
                 <span>...</span>
               ) : (

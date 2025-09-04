@@ -11,11 +11,11 @@ const Slider = dynamic(() => import("react-slick"), { ssr: false });
 
 export default function HeroBanner() {
   const images = [
-    "/images/bacgraund.jpg",
-    "/images/showcase.jpg",
-    "/images/bacgraund.jpg",
-    "/images/showcase.jpg",
-    "/images/bacgraund.jpg",
+    "/images/market.png",
+    "/images/bsmarket.png",
+    "/images/showcase.png",
+    "/images/bacgraund.png",
+    "/images/showcasebanner.png",
   ];
 
   const sliderRef = useRef(null);
@@ -102,7 +102,7 @@ export default function HeroBanner() {
         }
         .slick-dots li.slick-active button:before {
           opacity: 1;
-          color: #249B73;
+          color: #249b73;
         }
       `}</style>
     </section>

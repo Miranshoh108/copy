@@ -590,8 +590,8 @@ function AuthPage() {
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-green-50 via-green-50 to-green-50 relative overflow-hidden">
       {/* Background decoration */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-green-400 to-green-600 rounded-full opacity-20 blur-3xl"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-tr from-green-400 to-green-600 rounded-full opacity-20 blur-3xl"></div>
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-green-400 to-[#249B73]  rounded-full opacity-20 blur-3xl"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-tr from-green-400 to-[#249B73]  rounded-full opacity-20 blur-3xl"></div>
       </div>
 
       {/* Notification */}
@@ -629,7 +629,7 @@ function AuthPage() {
                 onClick={() => handleTabChange(tab)}
                 className={`flex-1 py-3 px-4 text-sm cursor-pointer font-semibold rounded-xl transition-all duration-300 ${
                   activeTab === tab
-                    ? "bg-white text-green-600 shadow-lg transform scale-105"
+                    ? "bg-white text-[#249B73]  shadow-lg transform scale-105"
                     : "text-gray-600 hover:text-gray-800"
                 }`}
               >
@@ -645,7 +645,7 @@ function AuthPage() {
                 onClick={() => setLoginType("sms")}
                 className={`flex-1 py-2 px-3 text-sm cursor-pointer font-medium rounded-lg transition-all duration-300 ${
                   loginType === "sms"
-                    ? "bg-white text-green-600 shadow-sm"
+                    ? "bg-white text-[#249B73]  shadow-sm"
                     : "text-gray-600 hover:text-gray-800"
                 }`}
               >
@@ -655,7 +655,7 @@ function AuthPage() {
                 onClick={() => setLoginType("system")}
                 className={`flex-1 py-2 px-3 text-sm cursor-pointer font-medium rounded-lg transition-all duration-300 ${
                   loginType === "system"
-                    ? "bg-white text-green-600 shadow-sm"
+                    ? "bg-white text-[#249B73]  shadow-sm"
                     : "text-gray-600 hover:text-gray-800"
                 }`}
               >
@@ -736,7 +736,7 @@ function AuthPage() {
             <button
               onClick={handleFormSubmit}
               disabled={isLoading}
-              className="w-full bg-gradient-to-r from-green-600 cursor-pointer to-green-600 text-white py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+              className="w-full bg-gradient-to-r from-[#249B73]  cursor-pointer to-[#249B73]  text-white py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             >
               {isLoading ? (
                 <div className="flex items-center justify-center">
@@ -777,7 +777,7 @@ function AuthPage() {
                 {phoneNumber} raqamiga yuborilgan 6 xonali kodni kiriting
               </p>
               {tempRegistrationData && (
-                <p className="text-green-600 text-sm font-medium mt-2">
+                <p className="text-[#249B73]  text-sm font-medium mt-2">
                   {tempRegistrationData.firstName}
                   {tempRegistrationData.lastName}
                 </p>
@@ -806,7 +806,7 @@ function AuthPage() {
             <button
               onClick={handleSmsSubmit}
               disabled={isLoading || smsCode.some((d) => d === "")}
-              className="w-full cursor-pointer bg-gradient-to-r from-green-600 to-green-600 text-white py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+              className="w-full cursor-pointer bg-gradient-to-r from-[#249B73]  to-[#249B73]  text-white py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             >
               {isLoading ? (
                 <div className="flex items-center justify-center">

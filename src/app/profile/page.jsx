@@ -89,7 +89,7 @@ const Profile = () => {
       if (storedUser) {
         try {
           setUser(JSON.parse(storedUser));
-          setError(null); 
+          setError(null);
         } catch (parseError) {
           console.error("localStorage parse xatolik:", parseError);
         }
@@ -177,7 +177,7 @@ const Profile = () => {
 
       if (response.data.status === 200 || response.status === 200) {
         await fetchUserProfile();
-        setError(null); 
+        setError(null);
       }
     } catch (error) {
       console.error("Avatar yuklashda xatolik:", error);
@@ -219,7 +219,7 @@ const Profile = () => {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#249B73]  mx-auto mb-4"></div>
           <p className="text-gray-600">Profile ma'lumotlari yuklanmoqda...</p>
         </div>
       </div>
@@ -246,7 +246,7 @@ const Profile = () => {
           <p className="text-gray-600 mb-4">{error}</p>
           <button
             onClick={fetchUserProfile}
-            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+            className="px-4 py-2 bg-[#249B73]  text-white rounded-lg hover:bg-[#249B73]  transition-colors"
           >
             Qayta urinish
           </button>
@@ -304,7 +304,7 @@ const Profile = () => {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           <div className="lg:col-span-1">
             <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-              <div className="p-6 bg-gradient-to-r from-green-600 to-green-700 text-white">
+              <div className="p-6 bg-gradient-to-r from-[#249B73]  to-[#249B73]  text-white">
                 <div className="flex items-center gap-4">
                   <div className="relative">
                     <img
@@ -317,7 +317,7 @@ const Profile = () => {
                       }}
                     />
                     <button
-                      className="absolute cursor-pointer -bottom-1 -right-1 w-6 h-6 bg-white text-green-600 rounded-full flex items-center justify-center hover:scale-110 transition-transform"
+                      className="absolute cursor-pointer -bottom-1 -right-1 w-6 h-6 bg-white text-[#249B73]  rounded-full flex items-center justify-center hover:scale-110 transition-transform"
                       onClick={() => fileInputRef.current.click()}
                     >
                       <Camera size={12} />
@@ -371,7 +371,7 @@ const Profile = () => {
                     onClick={() => setActiveTab(item.id)}
                     className={`w-full cursor-pointer flex items-center justify-between p-3 rounded-lg text-left hover:bg-gray-50 transition-colors ${
                       activeTab === item.id
-                        ? "bg-green-50 text-green-700 border-r-2 border-green-600"
+                        ? "bg-green-50 text-[#249B73]  border-r-2 border-[#249B73] "
                         : "text-gray-700"
                     }`}
                   >
@@ -380,7 +380,7 @@ const Profile = () => {
                       <span className="text-sm font-medium">{item.label}</span>
                     </div>
                     {item.count > 0 && (
-                      <span className="bg-green-100 text-green-600 text-xs px-2 py-1 rounded-full">
+                      <span className="bg-green-100 text-[#249B73]  text-xs px-2 py-1 rounded-full">
                         {item.count}
                       </span>
                     )}
@@ -412,7 +412,6 @@ const Profile = () => {
             {activeTab === "orders" && <Orders />}
             {activeTab === "favorites" && <Favorites />}
             {activeTab === "notifications" && <Notifications />}
-           
           </div>
         </div>
       </div>

@@ -438,7 +438,7 @@ export default function Checkout() {
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-45">
                               <div className="flex items-center gap-2">
-                                <span className="text-lg font-bold text-green-600">
+                                <span className="text-lg font-bold text-[#249B73] ">
                                   {formatPrice(variantData.price)} so'm
                                 </span>
                                 {variantData.originalPrice &&
@@ -555,7 +555,7 @@ export default function Checkout() {
                                   )}
                                 </div>
                                 <div className="flex-1">
-                                  <div className="font-medium text-green-600 mt-1">
+                                  <div className="font-medium text-[#249B73]  mt-1">
                                     {point.name[0]}
                                   </div>
                                   <div className="text-sm text-gray-600 mt-1">
@@ -578,7 +578,7 @@ export default function Checkout() {
                           <div className="text-center">
                             <button
                               onClick={() => setShowAll(!showAll)}
-                              className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors"
+                              className="bg-[#249B73] text-white px-6 py-2 rounded-lg hover:bg-[#249B73] transition-colors"
                             >
                               {showAll
                                 ? "Kamroq ko'rish"
@@ -626,7 +626,7 @@ export default function Checkout() {
                         : "Telefon raqami yo'q"}
                     </div>
                   </div>
-                  <button className="text-green-600 cursor-pointer hover:text-green-700">
+                  <button className="text-[#249B73] cursor-pointer hover:text-[#249B73]">
                     →
                   </button>
                 </div>
@@ -647,10 +647,10 @@ export default function Checkout() {
                     value="card"
                     checked={formData.payment === "card"}
                     onChange={handleChange}
-                    className="w-4 h-4 text-green-600"
+                    className="w-4 h-4 text-[#249B73] "
                   />
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-6 bg-green-600 rounded flex items-center justify-center">
+                    <div className="w-8 h-6 bg-[#249B73]  rounded flex items-center justify-center">
                       <span className="text-white text-xs font-bold">💳</span>
                     </div>
                     <div>
@@ -661,7 +661,7 @@ export default function Checkout() {
                       </div>
                     </div>
                   </div>
-                  <div className="ml-auto bg-green-100 text-green-600 px-2 py-1 rounded text-xs font-medium">
+                  <div className="ml-auto bg-green-100 text-[#249B73] px-2 py-1 rounded text-xs font-medium">
                     30% gacha chegirma
                   </div>
                 </label>
@@ -707,7 +707,7 @@ export default function Checkout() {
                     so'm
                   </span>
                 </div>
-                <div className="text-sm text-green-600 cursor-pointer hover:underline">
+                <div className="text-sm text-[#249B73]  cursor-pointer hover:underline">
                   Batafsil
                 </div>
                 <hr />
@@ -722,7 +722,7 @@ export default function Checkout() {
                 disabled={!selectedRegion || !selectedPickupPoint}
                 className={`w-full py-4 rounded-lg font-medium text-lg transition-colors ${
                   selectedRegion && selectedPickupPoint
-                    ? "bg-green-600 text-white cursor-pointer hover:bg-green-700"
+                    ? "bg-[#249B73] text-white cursor-pointer hover:bg-[#249B73]"
                     : "bg-gray-300 text-gray-500 cursor-not-allowed"
                 }`}
               >
@@ -731,11 +731,11 @@ export default function Checkout() {
 
               <div className="text-sm text-gray-500 mt-3 text-center">
                 Buyurtmani joylashtirganda siz, shaxsga doir ma'lumotlar
-                <span className="text-green-600 underline cursor-pointer">
+                <span className="text-[#249B73] underline cursor-pointer">
                   Maxfiylik kelishuviga
                 </span>
                 muvofiq qayta ishlanishiga roziliik bildirasiz, hamda
-                <span className="text-green-600 underline cursor-pointer">
+                <span className="text-[#249B73] underline cursor-pointer">
                   Foydalanuvchi kelishuvini
                 </span>
                 qabul qilasiz.
@@ -791,7 +791,7 @@ export default function Checkout() {
 
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-2">
-                          <span className="text-2xl font-bold text-green-600">
+                          <span className="text-2xl font-bold text-[#249B73]">
                             {formatPrice(variantData.price)} so'm
                           </span>
                           {variantData.originalPrice &&

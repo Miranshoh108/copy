@@ -10,7 +10,7 @@ const Button = forwardRef(
       "inline-flex items-center justify-center font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500";
 
     const variants = {
-      default: "bg-green-600 text-white hover:bg-green-700 disabled:bg-green-300 disabled:cursor-not-allowed",
+      default: "bg-[#249B73] text-white hover:bg-[#249B73] disabled:bg-green-300 disabled:cursor-not-allowed",
       outline:
         "border border-gray-300 text-gray-700 bg-transparent hover:bg-gray-100 disabled:border-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed",
       ghost:
