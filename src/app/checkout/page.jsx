@@ -351,13 +351,13 @@ export default function Checkout() {
 
       <Navbar />
 
-      <div className="max-w-6xl mx-auto px-4 py-8">
+      <div className="max-w-6xl mx-auto px-4 py-8 max-[720px]:px-2">
         <h1 className="text-3xl font-bold mb-8 text-gray-800">Buyurtma</h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2">
             {/* Mahsulotlar ro'yxati */}
-            <div className="bg-white rounded-lg shadow p-6 mb-6">
+            <div className="bg-white rounded-lg shadow p-6 mb-6 max-[720px]:p-3">
               <h2 className="text-xl font-semibold text-gray-700 mb-4">
                 Buyurtma mahsulotlari ({checkedItems.length} ta)
               </h2>
@@ -372,7 +372,7 @@ export default function Checkout() {
                       key={`${item.id || item.productId}-${
                         item.variantId || item.variant?._id
                       }-${index}`}
-                      className="border rounded-lg p-4 hover:shadow-md transition-shadow"
+                      className="border rounded-lg p-4 hover:shadow-md transition-shadow max-[720px]:p-3"
                     >
                       <div className="flex gap-4">
                         <div className="relative">
@@ -436,8 +436,8 @@ export default function Checkout() {
                           )}
 
                           <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-45">
-                              <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-45 max-[760px]:gap-30 max-[680px]:flex-col max-[680px]:gap-2 max-[680px]:items-start">
+                              <div className="flex items-center gap-2 max-[430px]:flex-col max-[430px]:items-start">
                                 <span className="text-lg font-bold text-[#249B73] ">
                                   {formatPrice(variantData.price)} so'm
                                 </span>
@@ -482,7 +482,7 @@ export default function Checkout() {
               </div>
             </div>
 
-            <div className="bg-gray-50 rounded-lg p-6 mb-8">
+            <div className="bg-gray-50 rounded-lg p-6 mb-8 max-[720px]:p-2">
               <h2 className="text-xl font-semibold text-gray-700 mb-4">
                 BS Market topshirish punkti
               </h2>
@@ -655,14 +655,11 @@ export default function Checkout() {
                     </div>
                     <div>
                       <div className="font-medium">BS kartasi bilan</div>
-                      <div className="text-sm text-gray-600">
+                      <div className="text-sm text-gray-600 max-[500px]:hidden">
                         BS Bank ilovasida kartani rasmiylashtirishda va buyurtma
                         uchun tolash mumkin
                       </div>
                     </div>
-                  </div>
-                  <div className="ml-auto bg-green-100 text-[#249B73] px-2 py-1 rounded text-xs font-medium">
-                    30% gacha chegirma
                   </div>
                 </label>
               </div>

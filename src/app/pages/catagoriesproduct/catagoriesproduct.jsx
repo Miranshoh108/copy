@@ -1,12 +1,7 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
-import "rc-slider/assets/index.css";
+import { useState, useEffect } from "react";
 import ProductCard from "../../components/ProductCard";
 import { Skeleton } from "@/components/ui/skeleton";
-import "slick-carousel/slick/slick.css";
-import "slick-carousel/slick/slick-theme.css";
-import dynamic from "next/dynamic";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import $api from "@/app/http/api";
 import { useTranslation } from "react-i18next";
 import i18next from "@/i18n/i18n";
@@ -41,26 +36,31 @@ function useSkeletonCount() {
   return skeletonCount;
 }
 
-const Slider = dynamic(() => import("react-slick"), {
-  ssr: false,
-  loading: () => <SkeletonLoader />,
-});
+// Har bir breakpoint uchun to'liq qatorlar sonini hisoblash funksiyasi
+function getCompleteRowsCount(totalProducts) {
+  const width = window.innerWidth;
+  let itemsPerRow;
 
-function SkeletonLoader() {
-  const skeletonCount = useSkeletonCount();
+  if (width <= 640) {
+    itemsPerRow = 2;
+  } else if (width <= 768) {
+    itemsPerRow = 3;
+  } else if (width <= 1024) {
+    itemsPerRow = 4;
+  } else if (width <= 1330) {
+    itemsPerRow = 5;
+  } else {
+    itemsPerRow = 6;
+  }
 
-  return (
-    <div className="flex gap-4 overflow-hidden">
-      {[...Array(skeletonCount)].map((_, index) => (
-        <ProductCardSkeleton key={index} />
-      ))}
-    </div>
-  );
+  // To'liq qatorlar sonini hisoblash
+  const completeRows = Math.floor(totalProducts / itemsPerRow);
+  return completeRows * itemsPerRow;
 }
 
 function ProductCardSkeleton() {
   return (
-    <div className="bg-white rounded-lg shadow-md flex flex-col w-[190px] max-[420px]:w-[180px] max-[400px]:w-[170px] max-[380px]:w-[160px] max-[361px]:w-[150px] relative h-full">
+    <div className="bg-white rounded-lg shadow-md flex flex-col w-full relative h-full">
       <div className="flex-grow">
         <Skeleton className="w-full h-[210px] mb-2 rounded-t-lg" />
 
@@ -87,39 +87,14 @@ function ProductCardSkeleton() {
   );
 }
 
-const NextArrow = (props) => {
-  const { onClick } = props;
-  return (
-    <div
-      onClick={onClick}
-      className="absolute -right-10 max-[800px]:hidden top-1/2 transform -translate-y-1/2 z-10 cursor-pointer bg-white rounded-full shadow p-2 hover:bg-gray-200 transition max-[1330px]:right-0"
-    >
-      <ChevronRight />
-    </div>
-  );
-};
-
-const PrevArrow = (props) => {
-  const { onClick } = props;
-  return (
-    <div
-      onClick={onClick}
-      className="absolute -left-10 max-[800px]:hidden top-1/2 transform -translate-y-1/2 z-10 cursor-pointer bg-white rounded-full shadow p-2 hover:bg-gray-200 transition max-[1330px]:-left-5"
-    >
-      <ChevronLeft />
-    </div>
-  );
-};
-
 export default function CatagoriesProduct() {
   const { t } = useTranslation();
   const searchParams = useSearchParams();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [sliderWidth, setSliderWidth] = useState(6);
   const [mounted, setMounted] = useState(false);
-  const sliderRef = useRef(null);
+  const [displayProducts, setDisplayProducts] = useState([]);
   const skeletonCount = useSkeletonCount();
   const currentCategoryId =
     searchParams?.get("category") || "689dcf58e9443d84b885e584";
@@ -127,6 +102,27 @@ export default function CatagoriesProduct() {
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Ekran o'lchami o'zgarganda mahsulotlarni qayta hisoblash
+  useEffect(() => {
+    if (products.length > 0) {
+      const completeRowsCount = getCompleteRowsCount(products.length);
+      setDisplayProducts(products.slice(0, completeRowsCount));
+    }
+  }, [products]);
+
+  // Window resize event listener qo'shish
+  useEffect(() => {
+    const handleResize = () => {
+      if (products.length > 0) {
+        const completeRowsCount = getCompleteRowsCount(products.length);
+        setDisplayProducts(products.slice(0, completeRowsCount));
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [products]);
 
   useEffect(() => {
     const fetchCategoryProducts = async () => {
@@ -212,10 +208,19 @@ export default function CatagoriesProduct() {
             };
           });
 
-          setProducts(categoryProducts);
+          // 30 ta mahsulotgacha olamiz
+          const limitedProducts = categoryProducts.slice(0, 30);
+          setProducts(limitedProducts);
+
+          // To'liq qatorlar sonini hisoblash va ko'rsatish
+          const completeRowsCount = getCompleteRowsCount(
+            limitedProducts.length
+          );
+          setDisplayProducts(limitedProducts.slice(0, completeRowsCount));
         } else {
           console.log("No results found in response");
           setProducts([]);
+          setDisplayProducts([]);
         }
       } catch (error) {
         console.error("Error fetching category products:", error);
@@ -228,126 +233,26 @@ export default function CatagoriesProduct() {
     fetchCategoryProducts();
   }, [currentCategoryId, i18next.language]);
 
-  const sliderSettings = {
-    dots: false,
-    infinite: products.length > 6,
-    speed: 500,
-    slidesToShow: Math.min(sliderWidth, products.length, 6),
-    slidesToScroll: 1,
-    arrows: products.length > 6,
-    nextArrow: <NextArrow />,
-    prevArrow: <PrevArrow />,
-    variableHeight: true,
-    responsive: [
-      {
-        breakpoint: 1330,
-        settings: {
-          slidesToShow: Math.min(5, products.length),
-          infinite: products.length > 5,
-          arrows: products.length > 5,
-        },
-      },
-      {
-        breakpoint: 1024,
-        settings: {
-          slidesToShow: Math.min(4, products.length),
-          infinite: products.length > 4,
-          arrows: products.length > 4,
-        },
-      },
-      {
-        breakpoint: 768,
-        settings: {
-          slidesToShow: Math.min(3, products.length),
-          infinite: products.length > 3,
-          arrows: products.length > 3,
-        },
-      },
-      {
-        breakpoint: 640,
-        settings: {
-          slidesToShow: Math.min(2, products.length),
-          infinite: products.length > 2,
-          arrows: products.length > 2,
-        },
-      },
-    ],
-  };
-  if (loading) {
-    return (
-      <section className="py-4">
-        <div className="max-w-7xl mx-auto px-6 max-[500px]:px-1">
-          <div className="flex gap-4 overflow-x-auto">
-            {[...Array(6)].map((_, index) => (
-              <ProductCardSkeleton key={index} />
-            ))}
-          </div>
-        </div>
-      </section>
-    );
-  }
-
-  if (error) {
-    return (
-      <section className="py-8">
-        <div className="max-w-7xl mx-auto px-6 max-[500px]:px-1">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-800 max-[500px]:font-medium max-[500px]:text-xl max-[500px]:px-2">
-              {mounted ? t("catagories.title") : ""}
-            </h2>
-          </div>
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
-            <p className="text-red-600">
-              {mounted ? t("bestsellers.error_message") : ""}: {error}
-            </p>
-            <button
-              onClick={() => window.location.reload()}
-              className="mt-2 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 cursor-pointer"
-            >
-              {mounted ? t("bestsellers.retry_button") : ""}
-            </button>
-          </div>
-        </div>
-      </section>
-    );
-  }
-
-  if (products.length < 7) {
-    return null;
-  }
-
   return (
     <section className="py-4">
       <div className="max-w-7xl mx-auto px-6 max-[500px]:px-1">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-800 max-[500px]:font-medium max-[500px]:text-xl max-[500px]:px-2">
-            {mounted ? t("catagories.title") : ""}
-          </h2>
-        </div>
-
-        {products.length <= 6 ? (
-          <div className="flex gap-4 overflow-x-auto">
-            {products.map((product) => (
-              <div key={product.id} className="w-[200px] flex-shrink-0">
+        {loading ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+            {[...Array(30)].map((_, index) => (
+              <ProductCardSkeleton key={index} />
+            ))}
+          </div>
+        ) : displayProducts.length === 0 ? (
+          <div className="text-center py-8 text-gray-500">
+            {mounted ? t("catagories.no_products") : ""}
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+            {displayProducts.map((product) => (
+              <div key={product.id} className="w-full">
                 <ProductCard product={product} />
               </div>
             ))}
-          </div>
-        ) : (
-          <div className="relative">
-            <Slider
-              {...sliderSettings}
-              ref={sliderRef}
-              className="slider-transition"
-            >
-              {products.map((product) => (
-                <div key={product._id} className="px-2">
-                  <div className="w-[200px]">
-                    <ProductCard product={product} />
-                  </div>
-                </div>
-              ))}
-            </Slider>
           </div>
         )}
       </div>

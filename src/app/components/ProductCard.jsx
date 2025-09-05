@@ -552,7 +552,7 @@ export default function ProductCard({ product }) {
         <div className="p-2">
           <div className="flex items-center gap-2 text-xs text-gray-700">
             <div className="flex items-center gap-1">
-              <span class="inline-block w-5 h-5 text-yellow-400">
+              <span className="inline-block w-5 h-5 text-yellow-400">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 51 48"

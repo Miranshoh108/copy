@@ -1,3 +1,4 @@
+"use client";
 import Head from "next/head";
 import HeroBanner from "./components/Herobanner";
 import Footer from "./components/Footer";
@@ -16,8 +17,13 @@ import DiscountedProducts from "./pages/discounted/page";
 import CatagoriesProduct from "./pages/catagoriesproduct/catagoriesproduct";
 import Navbar from "./components/Navbar";
 import Showcase from "./components/Showcase";
-import { Suspense } from "react";
+import { Suspense, useState, useEffect, useCallback, useRef } from "react";
+
 export default function Home() {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const loadingRef = useRef(false); // Bir vaqtda faqat bitta loading bo'lishi uchun
+
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "WebSite",
@@ -31,6 +37,97 @@ export default function Home() {
       "query-input": "required name=search_term_string",
     },
   };
+
+  const componentGroups = [
+    [
+      <HeroBanner key="hero1" />,
+      <BestSellers key="bestsellers" />,
+      <DiscountedProducts key="discounted" />,
+      <ResultsProduct key="results" />,
+      <Suspense fallback={<div>Loading...</div>} key="categories">
+        <CatagoriesProduct />
+      </Suspense>,
+    ],
+    [
+      <Showcase key="showcase" />,
+      <SportProduct key="sport" />,
+      <HouseholdProduct key="household" />,
+      <HobbiesProduct key="hobbies" />,
+      <ClothesProduct key="clothes" />,
+    ],
+    [
+      <HeroBanner key="hero2" />,
+      <ComputerProduct key="computer" />,
+      <GoodsProduct key="goods" />,
+      <ShoesProduct key="shoes" />,
+      <SubstancesProduct key="substances" />,
+      <HealthProduct key="health" />,
+    ],
+  ];  
+
+  const loadMore = useCallback(() => {
+    if (loadingRef.current || currentPage >= componentGroups.length) {
+      return;
+    }
+
+    loadingRef.current = true;
+    setIsLoading(true);
+
+    // Timeout bilan yangi kontentni yuklash
+    setTimeout(() => {
+      setCurrentPage((prev) => prev + 1);
+      setIsLoading(false);
+      loadingRef.current = false;
+    }, 800);
+  }, [currentPage, componentGroups.length]);
+
+  const handleScroll = useCallback(() => {
+    // Agar loading yoki oxirgi sahifada bo'lsa, return qil
+    if (loadingRef.current || currentPage >= componentGroups.length) {
+      return;
+    }
+
+    const scrollTop = window.scrollY;
+    const windowHeight = window.innerHeight;
+    const documentHeight = document.documentElement.scrollHeight;
+
+    // Footer yaqinida bo'lganda trigger qil
+    const scrollPercentage = (scrollTop + windowHeight) / documentHeight;
+    const triggerPoint = 0.85; // 85% scroll qilganda
+
+    if (scrollPercentage >= triggerPoint) {
+      loadMore();
+    }
+  }, [currentPage, loadMore, componentGroups.length]);
+
+  useEffect(() => {
+    let ticking = false;
+
+    const scrollHandler = () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          handleScroll();
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    window.addEventListener("scroll", scrollHandler, { passive: true });
+    return () => window.removeEventListener("scroll", scrollHandler);
+  }, [handleScroll]);
+
+  const renderComponents = () => {
+    let components = [];
+
+    for (let i = 0; i < currentPage && i < componentGroups.length; i++) {
+      components = [...components, ...componentGroups[i]];
+    }
+
+    return components;
+  };
+
+  const hasMoreContent = currentPage < componentGroups.length;
 
   return (
     <div className="bg-[#ECF4FF]">
@@ -49,17 +146,13 @@ export default function Home() {
         <meta name="language" content="uz" />
         <meta name="revisit-after" content="1 days" />
 
-        {/* Viewport va responsive */}
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-        {/* Canonical URL */}
         <link rel="canonical" href="https://bsmarket.uz" />
 
-        {/* Favicon */}
         <link rel="icon" type="image/png" href="/images/Logo.png" />
         <link rel="apple-touch-icon" href="/images/Logo.png" />
 
-        {/* Open Graph Meta Tags (Facebook) */}
         <meta property="og:type" content="website" />
         <meta
           property="og:title"
@@ -105,25 +198,27 @@ export default function Home() {
       </Head>
 
       <Navbar />
-      <HeroBanner />
-      <BestSellers />
-      <DiscountedProducts />
-      <ResultsProduct />
-      <Suspense fallback={<div>Loading...</div>}>
-        <CatagoriesProduct />
-      </Suspense>
-      <Showcase />
-      <SportProduct />
-      <HouseholdProduct />
-      <HobbiesProduct />
-      <ClothesProduct />
-      <HeroBanner />
-      <ComputerProduct />
-      <GoodsProduct />
-      <ShoesProduct />
-      <SubstancesProduct />
-      <HealthProduct />
-      <Footer />
+
+      <div className="min-h-screen">
+        {renderComponents()}
+
+        {isLoading && hasMoreContent && (
+          <div className="flex justify-center py-8">
+            <div className="flex items-center space-x-2">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#249B73]"></div>
+              <span className="text-[#249B73] font-medium text-lg">
+                Yuklanmoqda...
+              </span>
+            </div>
+          </div>
+        )}
+
+     
+      </div>
+
+      <div data-footer>
+        <Footer />
+      </div>
     </div>
   );
 }

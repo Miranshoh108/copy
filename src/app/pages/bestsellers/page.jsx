@@ -6,7 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import dynamic from "next/dynamic";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Play, Pause } from "lucide-react";
 import $api from "@/app/http/api";
 import { useTranslation } from "react-i18next";
 import i18next from "@/i18n/i18n";
@@ -31,9 +31,7 @@ function useSkeletonCount() {
     };
 
     updateSkeletonCount();
-
     window.addEventListener("resize", updateSkeletonCount);
-
     return () => window.removeEventListener("resize", updateSkeletonCount);
   }, []);
 
@@ -115,8 +113,43 @@ export default function BestSellers() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [mounted, setMounted] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(true); // Auto scroll holati
   const sliderRef = useRef(null);
-  const skeletonCount = useSkeletonCount(); 
+  const autoScrollRef = useRef(null);
+  const skeletonCount = useSkeletonCount();
+
+  useEffect(() => {
+    if (isPlaying && sliderRef.current && products.length > skeletonCount) {
+      autoScrollRef.current = setInterval(() => {
+        sliderRef.current.slickNext();
+      }, 2500);
+    } else {
+      if (autoScrollRef.current) {
+        clearInterval(autoScrollRef.current);
+      }
+    }
+
+    return () => {
+      if (autoScrollRef.current) {
+        clearInterval(autoScrollRef.current);
+      }
+    };
+  }, [isPlaying, products.length, skeletonCount]);
+
+  // Mouse hover paytida auto scroll to'xtatish
+  const handleMouseEnter = () => {
+    if (autoScrollRef.current) {
+      clearInterval(autoScrollRef.current);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (isPlaying && products.length > skeletonCount) {
+      autoScrollRef.current = setInterval(() => {
+        sliderRef.current.slickNext();
+      }, 2500);
+    }
+  };
 
   useEffect(() => {
     setMounted(true);
@@ -202,6 +235,7 @@ export default function BestSellers() {
     dots: false,
     infinite: products.length > skeletonCount,
     speed: 500,
+    autoplay: false, // Manual auto scroll ishlatamiz
     slidesToShow: Math.min(skeletonCount, products.length),
     slidesToScroll: 1,
     arrows: products.length > skeletonCount,
@@ -296,7 +330,11 @@ export default function BestSellers() {
             ))}
           </div>
         ) : (
-          <div className="relative">
+          <div
+            className="relative"
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+          >
             <Slider
               {...sliderSettings}
               ref={sliderRef}

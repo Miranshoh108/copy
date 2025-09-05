@@ -119,10 +119,46 @@ function ResultsProductContent() {
   const [error, setError] = useState(null);
   const [sliderWidth, setSliderWidth] = useState(6);
   const [mounted, setMounted] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(true); // Auto scroll holati
   const sliderRef = useRef(null);
+  const autoScrollRef = useRef(null);
   const skeletonCount = useSkeletonCount();
   const currentCategoryId =
     searchParams?.get("category") || "689dc67ee9443d84b885e451";
+
+  // Auto scroll functionality
+  useEffect(() => {
+    if (isPlaying && sliderRef.current && products.length > skeletonCount) {
+      autoScrollRef.current = setInterval(() => {
+        sliderRef.current.slickNext();
+      }, 2500);
+    } else {
+      if (autoScrollRef.current) {
+        clearInterval(autoScrollRef.current);
+      }
+    }
+
+    return () => {
+      if (autoScrollRef.current) {
+        clearInterval(autoScrollRef.current);
+      }
+    };
+  }, [isPlaying, products.length, skeletonCount]);
+
+  // Mouse hover paytida auto scroll to'xtatish
+  const handleMouseEnter = () => {
+    if (autoScrollRef.current) {
+      clearInterval(autoScrollRef.current);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (isPlaying && products.length > skeletonCount) {
+      autoScrollRef.current = setInterval(() => {
+        sliderRef.current.slickNext();
+      }, 2500);
+    }
+  };
 
   useEffect(() => {
     setMounted(true);
@@ -232,6 +268,7 @@ function ResultsProductContent() {
     dots: false,
     infinite: products.length > 6,
     speed: 500,
+    autoplay: false, // Manual auto scroll ishlatamiz
     slidesToShow: Math.min(sliderWidth, products.length, 6),
     slidesToScroll: 1,
     arrows: products.length > 6,
@@ -336,7 +373,11 @@ function ResultsProductContent() {
             ))}
           </div>
         ) : (
-          <div className="relative">
+          <div
+            className="relative"
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+          >
             <Slider
               {...sliderSettings}
               ref={sliderRef}

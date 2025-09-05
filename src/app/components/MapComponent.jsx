@@ -10,16 +10,31 @@ const MapComponent = ({
   const [map, setMap] = useState(null);
 
   useEffect(() => {
-    if (typeof window !== "undefined" && !window.ymaps) {
+    // Agar script allaqachon yuklanmagan bo'lsa
+    if (
+      typeof window !== "undefined" &&
+      !window.ymaps &&
+      !window.yandexMapScriptLoading
+    ) {
+      // Global flag o'rnatamiz
+      window.yandexMapScriptLoading = true;
+
       const script = document.createElement("script");
       script.src = `https://api-maps.yandex.ru/2.1/?apikey=d9c9f59a-e3ce-4658-a596-34627ec53767&lang=uz_UZ`;
       script.onload = () => {
-        window.ymaps.ready(() => {
-          setMapLoaded(true);
-        });
+        window.yandexMapScriptLoading = false;
+        if (window.ymaps) {
+          window.ymaps.ready(() => {
+            setMapLoaded(true);
+          });
+        }
+      };
+      script.onerror = () => {
+        window.yandexMapScriptLoading = false;
       };
       document.head.appendChild(script);
-    } else if (window.ymaps) {
+    } else if (window.ymaps && !window.yandexMapScriptLoading) {
+      // Agar ymaps allaqachon mavjud bo'lsa
       window.ymaps.ready(() => {
         setMapLoaded(true);
       });
@@ -36,7 +51,10 @@ const MapComponent = ({
     const mapContainer = document.getElementById("yandex-map");
     if (!mapContainer || !window.ymaps) return;
 
-    mapContainer.innerHTML = "";
+    // Avvalgi xarita instanceni tozalash
+    if (map) {
+      map.destroy();
+    }
 
     // Map yaratish
     const newMap = new window.ymaps.Map("yandex-map", {
@@ -104,7 +122,6 @@ const MapComponent = ({
     });
 
     clusterer.add(placemarks);
-
     newMap.geoObjects.add(clusterer);
 
     if (pickupPoints.length > 1) {
@@ -135,6 +152,15 @@ const MapComponent = ({
       }
     });
   };
+
+  // Component unmount bo'lganda xaritani tozalash
+  useEffect(() => {
+    return () => {
+      if (map) {
+        map.destroy();
+      }
+    };
+  }, [map]);
 
   return (
     <div className="mb-6">

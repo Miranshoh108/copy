@@ -44,7 +44,7 @@
     "increase_tooltip": "Увеличить"
   },
   "bestsellers": {
-    "title": "Хит продаж",
+    "title": "Товары со скидкой",
     "no_products": "Товары пока недоступны",
     "data_format_error": "Ошибка в формате данных",
     "loading_error": "Произошла ошибка при загрузке данных",

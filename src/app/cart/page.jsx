@@ -440,12 +440,6 @@ export default function Cart() {
                     Buyurtma berish uchun kamida bitta mahsulot tanlang
                   </p>
                 )}
-
-                {!isAuthenticated && !authLoading && (
-                  <p className="text-sm text-orange-600 text-center mt-2">
-                    Buyurtma berish uchun tizimga kiring
-                  </p>
-                )}
               </div>
 
               <div className="bg-gradient-to-r from-green-50 to-green-50 rounded-lg p-4 border">
