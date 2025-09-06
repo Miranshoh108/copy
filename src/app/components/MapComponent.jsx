@@ -20,7 +20,7 @@ const MapComponent = ({
       window.yandexMapScriptLoading = true;
 
       const script = document.createElement("script");
-      script.src = `https://api-maps.yandex.ru/2.1/?apikey=d9c9f59a-e3ce-4658-a596-34627ec53767&lang=uz_UZ`;
+      script.src = `https://api-maps.yandex.ru/2.1/?apikey=34e24493-97db-455c-82a9-d2f9e245d389&lang=uz_UZ`;
       script.onload = () => {
         window.yandexMapScriptLoading = false;
         if (window.ymaps) {
@@ -34,7 +34,6 @@ const MapComponent = ({
       };
       document.head.appendChild(script);
     } else if (window.ymaps && !window.yandexMapScriptLoading) {
-      // Agar ymaps allaqachon mavjud bo'lsa
       window.ymaps.ready(() => {
         setMapLoaded(true);
       });

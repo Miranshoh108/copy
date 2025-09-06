@@ -13,9 +13,9 @@ export default function HeroBanner() {
   const images = [
     "/images/market.png",
     "/images/bsmarket.png",
-    "/images/showcase.png",
+    // "/images/showcase.png",
     "/images/bacgraund.png",
-    "/images/showcasebanner.png",
+    // "/images/showcasebanner.png",
   ];
 
   const sliderRef = useRef(null);

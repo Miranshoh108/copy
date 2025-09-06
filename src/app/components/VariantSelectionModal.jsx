@@ -14,7 +14,7 @@ const VariantSelectionModal = ({
   const [quantities, setQuantities] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [addMode, setAddMode] = useState("single"); 
+  const [addMode, setAddMode] = useState("single");
 
   useEffect(() => {
     setMounted(true);
@@ -138,7 +138,7 @@ const VariantSelectionModal = ({
         } else {
           console.log("Adding multiple variants to local storage");
           for (const cartData of cartRequests) {
-            await onAddToCart(cartData);  
+            await onAddToCart(cartData);
           }
         }
 
@@ -166,8 +166,6 @@ const VariantSelectionModal = ({
       }
 
       showNotification(errorMessage, "error");
-
-     
     } finally {
       setIsLoading(false);
     }
@@ -209,14 +207,14 @@ const VariantSelectionModal = ({
   const modalContent = (
     <>
       <div
-        className={`fixed inset-0 bg-black z-[9998] transition-opacity duration-300 ${
+        className={`fixed inset-0 bg-black z-[9998] transition-opacity duration-300 flex flex-col items-center justify-center ${
           isOpen ? "opacity-30" : "opacity-0"
         }`}
         onClick={handleBackdropClick}
       />
 
       <div
-        className={`fixed inset-x-0 bottom-20 z-[9999] flex justify-center items-center transition-transform duration-300 ease-out ${
+        className={`fixed inset-x-0 bottom-20 z-[9999] max-[700px]:px-4 overflow-y-auto flex justify-center items-center transition-transform duration-300 ease-out ${
           isOpen ? "translate-y-0" : "translate-y-full"
         }`}
       >
@@ -249,9 +247,7 @@ const VariantSelectionModal = ({
             </div>
 
             <div className="mb-3 text-xs text-gray-500">
-              {isAuthenticated
-                ? " Hisobingizga saqlanadi"
-                : ""}
+              {isAuthenticated ? " Hisobingizga saqlanadi" : ""}
             </div>
 
             <div className="flex gap-2 mb-2">

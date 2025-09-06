@@ -1,59 +1,18 @@
 import { useEffect, useState } from "react";
 import { Truck, Eye, Star, Trash2, Send } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { useOrderStore } from "@/app/store/orderStore"; 
 
 const Orders = () => {
-  const [orders, setOrders] = useState([
-    {
-      id: "12345",
-      date: "2024-08-25",
-      items: 3,
-      status: "delivered",
-      total: "125000",
-      products: [
-        { id: 1, name: "iPhone 15 Pro", price: "50000", quantity: 1 },
-        { id: 2, name: "AirPods Pro", price: "35000", quantity: 1 },
-        { id: 3, name: "iPhone qopqog'i", price: "40000", quantity: 1 },
-      ],
-    },
-    {
-      id: "12346",
-      date: "2024-08-26",
-      items: 2,
-      status: "shipping",
-      total: "89000",
-      products: [
-        { id: 4, name: "Samsung Galaxy S24", price: "45000", quantity: 1 },
-        { id: 5, name: "Zaryadlash kabeli", price: "44000", quantity: 1 },
-      ],
-    },
-    {
-      id: "12347",
-      date: "2024-08-27",
-      items: 1,
-      status: "processing",
-      total: "35000",
-      products: [
-        { id: 6, name: "Bluetooth quloqlik", price: "35000", quantity: 1 },
-      ],
-    },
-  ]);
-
-  const [reviews, setReviews] = useState([]);
+  const { orders, reviews, addReview, removeReview, getOrderReviews } =
+    useOrderStore();
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [newReview, setNewReview] = useState({ rating: 5, comment: "" });
 
   const getStatusColor = (status) => {
     switch (status) {
       case "delivered":
-        return "text-[#249B73]  bg-green-100";
+        return "text-[#249B73] bg-green-100";
       case "shipping":
         return "text-blue-600 bg-blue-100";
       case "processing":
@@ -76,6 +35,12 @@ const Orders = () => {
     }
   };
 
+  const formatPrice = (price) => {
+    if (!price) return "0";
+    const numericPrice = parseFloat(price.toString().replace(/[^\d.-]/g, ""));
+    return numericPrice.toLocaleString();
+  };
+
   const handleViewOrder = (order) => {
     setSelectedOrder(order);
   };
@@ -83,38 +48,63 @@ const Orders = () => {
   const handleCreateReview = async () => {
     if (!newReview.comment.trim()) return;
 
-    // API chaqiruvi simulatsiyasi
-    const reviewData = {
-      id: Date.now(),
-      orderId: selectedOrder.id,
-      rating: newReview.rating,
-      comment: newReview.comment,
-      date: new Date().toISOString().split("T")[0],
-      userId: "current-user", // Haqiqiy dasturda foydalanuvchi ID si bo'ladi
-    };
+    try {
+      // API chaqiruvi
+      const response = await fetch("/api/review/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          orderId: selectedOrder.id,
+          rating: newReview.rating,
+          comment: newReview.comment,
+        }),
+      });
 
-    // /review/create API ga so'rov yuborish simulatsiyasi
-    console.log("POST /review/create", reviewData);
+      if (response.ok) {
+        // Store ga qo'shish
+        addReview({
+          orderId: selectedOrder.id,
+          rating: newReview.rating,
+          comment: newReview.comment,
+        });
 
-    setReviews((prev) => [...prev, reviewData]);
-    setNewReview({ rating: 5, comment: "" });
+        setNewReview({ rating: 5, comment: "" });
+        console.log("Sharh muvaffaqiyatli qo'shildi!");
+      }
+    } catch (error) {
+      console.error("Sharh qo'shishda xatolik:", error);
+      // Xatolik bo'lsa ham local storage ga qo'shamiz
+      addReview({
+        orderId: selectedOrder.id,
+        rating: newReview.rating,
+        comment: newReview.comment,
+      });
 
-    // Muvaffaqiyatli xabar
-    alert("Sharh muvaffaqiyatli qo'shildi!");
+      setNewReview({ rating: 5, comment: "" });
+      console.log("Sharh qo'shildi!");
+    }
   };
 
   const handleDeleteReview = async (reviewId) => {
     if (!confirm("Ushbu sharhni o'chirmoqchimisiz?")) return;
 
-    // /review/delete/my/:id API ga so'rov yuborish simulatsiyasi
-    console.log(`DELETE /review/delete/my/${reviewId}`);
+    try {
+      const response = await fetch(`/api/review/delete/my/${reviewId}`, {
+        method: "DELETE",
+      });
 
-    setReviews((prev) => prev.filter((review) => review.id !== reviewId));
-    alert("Sharh o'chirildi!");
-  };
-
-  const getOrderReviews = (orderId) => {
-    return reviews.filter((review) => review.orderId === orderId);
+      if (response.ok) {
+        removeReview(reviewId);
+        console.log("Sharh o'chirildi!");
+      }
+    } catch (error) {
+      console.error("Sharhni o'chirishda xatolik:", error);
+      // Xatolik bo'lsa ham local dan o'chiramiz
+      removeReview(reviewId);
+      console.log("Sharh o'chirildi!");
+    }
   };
 
   const canReview = (order) => {
@@ -123,6 +113,7 @@ const Orders = () => {
     );
   };
 
+  // Buyurtma tafsilotlari
   if (selectedOrder) {
     const orderReviews = getOrderReviews(selectedOrder.id);
 
@@ -143,7 +134,7 @@ const Orders = () => {
           <div className="space-y-6">
             {/* Buyurtma ma'lumotlari */}
             <div className="bg-gray-50 p-4 rounded-lg">
-              <div className="grid grid-cols-2 gap-4 mb-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
                   <p className="text-sm text-gray-500">Sana</p>
                   <p className="font-medium">{selectedOrder.date}</p>
@@ -158,32 +149,98 @@ const Orders = () => {
                     {getStatusText(selectedOrder.status)}
                   </span>
                 </div>
+                {selectedOrder.customerInfo && (
+                  <>
+                    <div>
+                      <p className="text-sm text-gray-500">Oluvchi</p>
+                      <p className="font-medium">
+                        {selectedOrder.customerInfo.name}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        {selectedOrder.customerInfo.phone}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500">Yetkazish</p>
+                      <p className="font-medium">
+                        {selectedOrder.customerInfo.region}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        {selectedOrder.customerInfo.pickupPoint?.name?.[0]}
+                      </p>
+                    </div>
+                  </>
+                )}
               </div>
+
               <div>
                 <p className="text-sm text-gray-500 mb-2">Mahsulotlar</p>
-                <div className="space-y-2">
-                  {selectedOrder.products.map((product) => (
+                <div className="space-y-3">
+                  {selectedOrder.products.map((product, index) => (
                     <div
-                      key={product.id}
-                      className="flex justify-between items-center"
+                      key={`${product.id}-${index}`}
+                      className="flex justify-between items-center p-3 bg-white rounded border"
                     >
-                      <span>{product.name}</span>
-                      <span>
-                        {product.quantity} x {product.price} so'm
-                      </span>
+                      <div className="flex items-center gap-3">
+                        {product.image && (
+                          <img
+                            src={
+                              product.image.startsWith("http")
+                                ? product.image
+                                : `https://bsmarket.uz/api/${product.image}`
+                            }
+                            alt={product.name}
+                            className="w-12 h-12 object-cover rounded"
+                            onError={(e) => {
+                              e.currentTarget.src =
+                                "/images/placeholder-product.jpg";
+                            }}
+                          />
+                        )}
+                        <div>
+                          <p className="font-medium">{product.name}</p>
+                          {product.variant && (
+                            <p className="text-sm text-gray-600">
+                              {product.variant.color &&
+                                `Rang: ${product.variant.color}`}
+                              {product.variant.unit &&
+                                ` • O'lchov: ${product.variant.unit}`}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-medium">
+                          {product.quantity} x {formatPrice(product.price)} so'm
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          ={" "}
+                          {formatPrice(
+                            parseFloat(
+                              product.price
+                                .toString()
+                                .replace(/[^\d.-]/g, "") || 0
+                            ) * product.quantity
+                          )}{" "}
+                          so'm
+                        </p>
+                      </div>
                     </div>
                   ))}
                 </div>
-                <div className="border-t pt-2 mt-2">
-                  <div className="flex justify-between font-semibold">
+
+                <div className="border-t pt-3 mt-3">
+                  <div className="flex justify-between font-semibold text-lg">
                     <span>Jami:</span>
-                    <span>{selectedOrder.total} so'm</span>
+                    <span className="text-[#249B73]">
+                      {formatPrice(selectedOrder.total)} so'm
+                    </span>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Sharh qoldirish (faqat yetkazilgan buyurtmalar uchun) */}
+            {/* Sharh qoldirish */}
             {canReview(selectedOrder) && (
               <div className="border rounded-lg p-4">
                 <h3 className="font-semibold mb-4">Sharh qoldiring</h3>
@@ -203,7 +260,7 @@ const Orders = () => {
                             star <= newReview.rating
                               ? "text-yellow-500"
                               : "text-gray-300"
-                          } hover:text-yellow-500`}
+                          } hover:text-yellow-500 transition-colors`}
                         >
                           <Star
                             size={24}
@@ -227,7 +284,7 @@ const Orders = () => {
                           comment: e.target.value,
                         }))
                       }
-                      className="w-full p-3 border rounded-lg resize-none"
+                      className="w-full p-3 border rounded-lg resize-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
                       rows="4"
                       placeholder="Buyurtma haqida fikringizni yozing..."
                     />
@@ -235,7 +292,7 @@ const Orders = () => {
                   <button
                     onClick={handleCreateReview}
                     disabled={!newReview.comment.trim()}
-                    className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:bg-gray-400"
+                    className="flex items-center gap-2 bg-[#249B73] text-white px-4 py-2 rounded-lg hover:bg-[#1e8560] disabled:bg-gray-400 transition-colors"
                   >
                     <Send size={16} />
                     Sharh yuborish
@@ -280,7 +337,7 @@ const Orders = () => {
                         </div>
                         <button
                           onClick={() => handleDeleteReview(review.id)}
-                          className="text-red-600 hover:text-red-800 p-1"
+                          className="text-red-600 hover:text-red-800 p-1 transition-colors"
                           title="Sharhni o'chirish"
                         >
                           <Trash2 size={16} />
@@ -298,6 +355,7 @@ const Orders = () => {
     );
   }
 
+  // Buyurtmalar ro'yxati
   return (
     <Card>
       <CardHeader>
@@ -306,57 +364,62 @@ const Orders = () => {
       <CardContent>
         <div className="space-y-4">
           {orders.length === 0 ? (
-            <p className="text-gray-500">Buyurtmalar mavjud emas.</p>
+            <div className="text-center py-8">
+              <Truck size={48} className="mx-auto text-gray-400 mb-4" />
+              <p className="text-gray-500 text-lg">Buyurtmalar mavjud emas.</p>
+              <p className="text-gray-400 text-sm">
+                Birinchi buyurtmangizni bering!
+              </p>
+            </div>
           ) : (
-            <div className="overflow-x-auto">
-              <div className="min-w-[600px] space-y-4">
-                {orders.map((order) => (
-                  <div
-                    key={order.id}
-                    className="flex items-center justify-between p-4 border border-gray-100 rounded-lg hover:border-green-200 transition-colors"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
-                        <Truck size={20} className="text-gray-600" />
-                      </div>
-                      <div>
-                        <p className="font-medium text-gray-900">
-                          Buyurtma #{order.id}
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          {order.date} • {order.items} ta mahsulot
-                        </p>
-                      </div>
+            <div className="space-y-4">
+              {orders.map((order) => (
+                <div
+                  key={order.id}
+                  className="flex items-center justify-between p-4 border border-gray-100 rounded-lg hover:border-green-200 transition-colors hover:shadow-md"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                      <Truck size={20} className="text-gray-600" />
                     </div>
-
-                    <div className="flex items-center gap-4">
-                      <button
-                        onClick={() => handleViewOrder(order)}
-                        className="flex items-center gap-2 text-blue-600 hover:text-blue-800 px-3 py-1 rounded-lg hover:bg-blue-50"
-                      >
-                        <Eye size={16} />
-                        Ko'rish
-                      </button>
-
-                      <Select value={order.status} disabled>
-                        <SelectTrigger
-                          className={`w-[120px] ${getStatusColor(
-                            order.status
-                          )} cursor-default border-0`}
-                        >
-                          <SelectValue>
-                            {getStatusText(order.status)}
-                          </SelectValue>
-                        </SelectTrigger>
-                      </Select>
-
-                      <p className="font-semibold text-gray-900 min-w-[100px] text-right">
-                        {order.total} so'm
+                    <div>
+                      <p className="font-medium text-gray-900">
+                        Buyurtma #{order.id}
                       </p>
+                      <p className="text-sm text-gray-500">
+                        {order.date} • {order.items} ta mahsulot
+                      </p>
+                      {order.customerInfo && (
+                        <p className="text-xs text-gray-400">
+                          {order.customerInfo.region}
+                        </p>
+                      )}
                     </div>
                   </div>
-                ))}
-              </div>
+
+                  <div className="flex items-center gap-4">
+                    <button
+                      onClick={() => handleViewOrder(order)}
+                      className="flex items-center gap-2 text-blue-600 hover:text-blue-800 px-3 py-1 rounded-lg hover:bg-blue-50 transition-colors"
+                    >
+                      <Eye size={16} />
+                      Ko'rish
+                    </button>
+
+                    <span
+                      className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
+                        order.status
+                      )}`}
+                    >
+                      {getStatusText(order.status)}
+                    </span>
+
+                    <p className="font-semibold text-gray-900 min-w-[120px] text-right">
+                      {formatPrice(order.total)} so'm
+                    </p>
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </div>

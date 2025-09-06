@@ -131,7 +131,7 @@ function SportProductContent() {
     if (isPlaying && sliderRef.current && products.length > skeletonCount) {
       autoScrollRef.current = setInterval(() => {
         sliderRef.current.slickNext();
-      }, 2500);
+      }, 1500);
     } else {
       if (autoScrollRef.current) {
         clearInterval(autoScrollRef.current);
@@ -145,7 +145,6 @@ function SportProductContent() {
     };
   }, [isPlaying, products.length, skeletonCount]);
 
-  // Mouse hover paytida auto scroll to'xtatish
   const handleMouseEnter = () => {
     if (autoScrollRef.current) {
       clearInterval(autoScrollRef.current);
@@ -156,7 +155,7 @@ function SportProductContent() {
     if (isPlaying && products.length > skeletonCount) {
       autoScrollRef.current = setInterval(() => {
         sliderRef.current.slickNext();
-      }, 2500);
+      }, 1500);
     }
   };
 

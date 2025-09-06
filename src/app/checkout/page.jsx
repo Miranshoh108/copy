@@ -248,12 +248,12 @@ export default function Checkout() {
     }
 
     if (!selectedRegion) {
-      alert("Iltimos, viloyatni tanlang!");
+      console.log("Iltimos, viloyatni tanlang!");
       return;
     }
 
     if (!selectedPickupPoint) {
-      alert("Iltimos, topshirish punktini tanlang!");
+      console.log("Iltimos, topshirish punktini tanlang!");
       return;
     }
 
@@ -273,6 +273,8 @@ export default function Checkout() {
     };
 
     try {
+      setLoading(true);
+
       const res = await fetch(
         "https://68282b2f6b7628c529126575.mockapi.io/imtixon",
         {
@@ -287,13 +289,23 @@ export default function Checkout() {
       if (res.ok) {
         const data = await res.json();
         console.log("✅ Buyurtma muvaffaqiyatli yuborildi:", data);
+
+        const { addOrder } = useOrderStore.getState();
+        const newOrder = addOrder({
+          ...payload,
+          id: data.id,
+        });
+
         clearCart();
-        router.push("/");
+
+        router.push("/profile");
       } else {
-        console.error("❌ Serverdan muvaffaqiyatsiz javob:", res.status);
+        throw new Error(`Server xatoligi: ${res.status}`);
       }
     } catch (error) {
       console.error("❌ Buyurtma yuborishda xatolik:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -400,11 +412,9 @@ export default function Checkout() {
                             </div>
                           </div>
 
-                          {images.length > 1 && (
-                            <span className="absolute -top-2 -right-2 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
-                              {images.length}
-                            </span>
-                          )}
+                          <span className="absolute -top-2 -right-2 bg-green-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                            {item.quantity}
+                          </span>
                         </div>
 
                         <div className="flex-1">
@@ -514,7 +524,6 @@ export default function Checkout() {
                   </select>
                 </div>
 
-                {/* PVZ punktlari ro'yxati - faqat Uzbekiston uchun pagination */}
                 {selectedRegion && (
                   <div className="mb-6">
                     <h4 className="font-semibold text-gray-800 mb-3">
@@ -529,7 +538,7 @@ export default function Checkout() {
                       </div>
                     ) : allPickupPoints.length > 0 ? (
                       <>
-                        <div className="space-y-3 mb-4">
+                        <div className="space-y-3 mb-4 max-h-96 overflow-y-auto pr-2">
                           {getDisplayedPickupPoints().map((point) => (
                             <div
                               key={point.code[0]}
@@ -555,7 +564,7 @@ export default function Checkout() {
                                   )}
                                 </div>
                                 <div className="flex-1">
-                                  <div className="font-medium text-[#249B73]  mt-1">
+                                  <div className="font-medium text-[#249B73] mt-1">
                                     {point.name[0]}
                                   </div>
                                   <div className="text-sm text-gray-600 mt-1">
@@ -597,7 +606,6 @@ export default function Checkout() {
                   </div>
                 )}
 
-                {/* XARITA - har doim ko'rinadi */}
                 {selectedRegion && (
                   <MapComponent
                     pickupPoints={pickupPoints}
@@ -607,7 +615,6 @@ export default function Checkout() {
                 )}
               </div>
 
-              {/* Oluvchi ma'lumotlari */}
               <div className="bg-white rounded-lg p-4 mb-4">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
@@ -633,7 +640,6 @@ export default function Checkout() {
               </div>
             </div>
 
-            {/* To'lov turi */}
             <div className="bg-white rounded-lg shadow p-6 mb-8">
               <h2 className="text-lg font-semibold text-gray-700 mb-4">
                 To'lov turi
@@ -666,7 +672,6 @@ export default function Checkout() {
             </div>
           </div>
 
-          {/* Buyurtma xulosasi */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-lg shadow-lg p-6 sticky top-4">
               <h3 className="text-lg font-semibold mb-4">Buyurtma xulosasi</h3>

@@ -131,7 +131,7 @@ function ResultsProductContent() {
     if (isPlaying && sliderRef.current && products.length > skeletonCount) {
       autoScrollRef.current = setInterval(() => {
         sliderRef.current.slickNext();
-      }, 2500);
+      }, 1500);
     } else {
       if (autoScrollRef.current) {
         clearInterval(autoScrollRef.current);
@@ -156,7 +156,7 @@ function ResultsProductContent() {
     if (isPlaying && products.length > skeletonCount) {
       autoScrollRef.current = setInterval(() => {
         sliderRef.current.slickNext();
-      }, 2500);
+      }, 1500);
     }
   };
 

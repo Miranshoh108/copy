@@ -237,22 +237,29 @@ export default function CatagoriesProduct() {
     <section className="py-4">
       <div className="max-w-7xl mx-auto px-6 max-[500px]:px-1">
         {loading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-            {[...Array(30)].map((_, index) => (
-              <ProductCardSkeleton key={index} />
-            ))}
+          <div className="max-w-7xl mx-auto px-6 max-[500px]:px-1">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4  max-[500px]:gap-2">
+              {[...Array(30)].map((_, index) => (
+                <ProductCardSkeleton key={index} />
+              ))}
+            </div>
           </div>
         ) : displayProducts.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
             {mounted ? t("catagories.no_products") : ""}
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-            {displayProducts.map((product) => (
-              <div key={product.id} className="w-full">
-                <ProductCard product={product} />
-              </div>
-            ))}
+          <div className="max-w-7xl mx-auto px-6 max-[500px]:px-0">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4  max-[500px]:gap-2">
+              {displayProducts.map((product) => (
+                <div
+                  key={product.id}
+                  className="w-full flex items-center justify-center"
+                >
+                  <ProductCard product={product} />
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>

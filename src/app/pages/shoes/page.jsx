@@ -32,9 +32,7 @@ function useSkeletonCount() {
     };
 
     updateSkeletonCount();
-
     window.addEventListener("resize", updateSkeletonCount);
-
     return () => window.removeEventListener("resize", updateSkeletonCount);
   }, []);
 
@@ -43,7 +41,6 @@ function useSkeletonCount() {
 
 const Slider = dynamic(() => import("react-slick"), {
   ssr: false,
-  loading: () => <SkeletonLoader />,
 });
 
 function SkeletonLoader() {
@@ -117,12 +114,47 @@ function ShoesProductContent() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [sliderWidth, setSliderWidth] = useState(6);
   const [mounted, setMounted] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(true); // Auto scroll holati
   const sliderRef = useRef(null);
+  const autoScrollRef = useRef(null);
   const skeletonCount = useSkeletonCount();
   const currentCategoryId =
     searchParams?.get("category") || "689dcbdce9443d84b885e4bc";
+
+  // Auto scroll setup
+  useEffect(() => {
+    if (isPlaying && sliderRef.current && products.length > skeletonCount) {
+      autoScrollRef.current = setInterval(() => {
+        sliderRef.current.slickNext();
+      }, 1500);
+    } else {
+      if (autoScrollRef.current) {
+        clearInterval(autoScrollRef.current);
+      }
+    }
+
+    return () => {
+      if (autoScrollRef.current) {
+        clearInterval(autoScrollRef.current);
+      }
+    };
+  }, [isPlaying, products.length, skeletonCount]);
+
+  // Mouse hover paytida auto scroll to'xtatish
+  const handleMouseEnter = () => {
+    if (autoScrollRef.current) {
+      clearInterval(autoScrollRef.current);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (isPlaying && products.length > skeletonCount) {
+      autoScrollRef.current = setInterval(() => {
+        sliderRef.current.slickNext();
+      }, 1500);
+    }
+  };
 
   useEffect(() => {
     setMounted(true);
@@ -230,11 +262,12 @@ function ShoesProductContent() {
 
   const sliderSettings = {
     dots: false,
-    infinite: products.length > 6,
+    infinite: products.length > skeletonCount,
     speed: 500,
-    slidesToShow: Math.min(sliderWidth, products.length, 6),
+    autoplay: false, // Manual auto scroll ishlatamiz
+    slidesToShow: Math.min(skeletonCount, products.length),
     slidesToScroll: 1,
-    arrows: products.length > 6,
+    arrows: products.length > skeletonCount,
     nextArrow: <NextArrow />,
     prevArrow: <PrevArrow />,
     variableHeight: true,
@@ -292,11 +325,6 @@ function ShoesProductContent() {
     return (
       <section className="py-8">
         <div className="max-w-7xl mx-auto px-6 max-[500px]:px-1">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-800 max-[500px]:font-medium max-[500px]:text-xl max-[500px]:px-2">
-              {mounted ? t("catagories10.title") : ""}
-            </h2>
-          </div>
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
             <p className="text-red-600">
               {mounted ? t("bestsellers.error_message") : ""}: {error}
@@ -320,13 +348,7 @@ function ShoesProductContent() {
   return (
     <section className="py-4">
       <div className="max-w-7xl mx-auto px-6 max-[500px]:px-1">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-800 max-[500px]:font-medium max-[500px]:text-xl max-[500px]:px-2">
-            {mounted ? t("catagories10.title") : ""}
-          </h2>
-        </div>
-
-        {products.length <= 6 ? (
+        {products.length <= skeletonCount ? (
           <div className="flex gap-4 overflow-x-auto">
             {products.map((product) => (
               <div key={product.id} className="w-[200px] flex-shrink-0">
@@ -335,7 +357,11 @@ function ShoesProductContent() {
             ))}
           </div>
         ) : (
-          <div className="relative">
+          <div
+            className="relative"
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+          >
             <Slider
               {...sliderSettings}
               ref={sliderRef}

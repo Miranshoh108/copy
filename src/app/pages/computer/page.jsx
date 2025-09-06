@@ -6,7 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import dynamic from "next/dynamic";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Play, Pause } from "lucide-react";
 import $api from "@/app/http/api";
 import { useTranslation } from "react-i18next";
 import i18next from "@/i18n/i18n";
@@ -32,9 +32,7 @@ function useSkeletonCount() {
     };
 
     updateSkeletonCount();
-
     window.addEventListener("resize", updateSkeletonCount);
-
     return () => window.removeEventListener("resize", updateSkeletonCount);
   }, []);
 
@@ -119,10 +117,46 @@ function ComputerProductContent() {
   const [error, setError] = useState(null);
   const [sliderWidth, setSliderWidth] = useState(6);
   const [mounted, setMounted] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(true); // Auto scroll holati
   const sliderRef = useRef(null);
+  const autoScrollRef = useRef(null);
   const skeletonCount = useSkeletonCount();
   const currentCategoryId =
     searchParams?.get("category") || "689dc751e9443d84b885e458";
+
+  // Auto scroll funksiyasi
+  useEffect(() => {
+    if (isPlaying && sliderRef.current && products.length > skeletonCount) {
+      autoScrollRef.current = setInterval(() => {
+        sliderRef.current.slickNext();
+      }, 1500);
+    } else {
+      if (autoScrollRef.current) {
+        clearInterval(autoScrollRef.current);
+      }
+    }
+
+    return () => {
+      if (autoScrollRef.current) {
+        clearInterval(autoScrollRef.current);
+      }
+    };
+  }, [isPlaying, products.length, skeletonCount]);
+
+  // Mouse hover paytida auto scroll to'xtatish
+  const handleMouseEnter = () => {
+    if (autoScrollRef.current) {
+      clearInterval(autoScrollRef.current);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (isPlaying && products.length > skeletonCount) {
+      autoScrollRef.current = setInterval(() => {
+        sliderRef.current.slickNext();
+      }, 1500);
+    }
+  };
 
   useEffect(() => {
     setMounted(true);
@@ -230,11 +264,12 @@ function ComputerProductContent() {
 
   const sliderSettings = {
     dots: false,
-    infinite: products.length > 6,
+    infinite: products.length > skeletonCount,
     speed: 500,
+    autoplay: false, // Manual auto scroll ishlatamiz
     slidesToShow: Math.min(sliderWidth, products.length, 6),
     slidesToScroll: 1,
-    arrows: products.length > 6,
+    arrows: products.length > skeletonCount,
     nextArrow: <NextArrow />,
     prevArrow: <PrevArrow />,
     variableHeight: true,
@@ -326,7 +361,7 @@ function ComputerProductContent() {
           </h2>
         </div>
 
-        {products.length <= 6 ? (
+        {products.length <= skeletonCount ? (
           <div className="flex gap-4 overflow-x-auto">
             {products.map((product) => (
               <div key={product.id} className="w-[200px] flex-shrink-0">
@@ -335,7 +370,11 @@ function ComputerProductContent() {
             ))}
           </div>
         ) : (
-          <div className="relative">
+          <div
+            className="relative"
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+          >
             <Slider
               {...sliderSettings}
               ref={sliderRef}

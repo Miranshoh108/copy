@@ -42,18 +42,6 @@ const Slider = dynamic(() => import("react-slick"), {
   ssr: false,
 });
 
-function SkeletonLoader() {
-  const skeletonCount = useSkeletonCount();
-
-  return (
-    <div className="flex gap-4 overflow-hidden">
-      {[...Array(skeletonCount)].map((_, index) => (
-        <ProductCardSkeleton key={index} />
-      ))}
-    </div>
-  );
-}
-
 function ProductCardSkeleton() {
   return (
     <div className="bg-white rounded-lg shadow-md flex flex-col w-[190px] max-[420px]:w-[180px] max-[400px]:w-[170px] max-[380px]:w-[160px] max-[361px]:w-[150px] relative h-full">
@@ -113,7 +101,7 @@ export default function BestSellers() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [mounted, setMounted] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(true); // Auto scroll holati
+  const [isPlaying, setIsPlaying] = useState(true); 
   const sliderRef = useRef(null);
   const autoScrollRef = useRef(null);
   const skeletonCount = useSkeletonCount();
@@ -122,7 +110,7 @@ export default function BestSellers() {
     if (isPlaying && sliderRef.current && products.length > skeletonCount) {
       autoScrollRef.current = setInterval(() => {
         sliderRef.current.slickNext();
-      }, 2500);
+      }, 1500);
     } else {
       if (autoScrollRef.current) {
         clearInterval(autoScrollRef.current);
@@ -136,7 +124,6 @@ export default function BestSellers() {
     };
   }, [isPlaying, products.length, skeletonCount]);
 
-  // Mouse hover paytida auto scroll to'xtatish
   const handleMouseEnter = () => {
     if (autoScrollRef.current) {
       clearInterval(autoScrollRef.current);
@@ -147,7 +134,7 @@ export default function BestSellers() {
     if (isPlaying && products.length > skeletonCount) {
       autoScrollRef.current = setInterval(() => {
         sliderRef.current.slickNext();
-      }, 2500);
+      }, 1500);
     }
   };
 
@@ -164,7 +151,7 @@ export default function BestSellers() {
         const response = await $api.get(
           `${process.env.NEXT_PUBLIC_API_URL}/products/get/popular`,
           {
-            timeout: 10000,
+            timeout: 1000,
           }
         );
 
@@ -235,7 +222,7 @@ export default function BestSellers() {
     dots: false,
     infinite: products.length > skeletonCount,
     speed: 500,
-    autoplay: false, // Manual auto scroll ishlatamiz
+    autoplay: false,
     slidesToShow: Math.min(skeletonCount, products.length),
     slidesToScroll: 1,
     arrows: products.length > skeletonCount,

@@ -478,7 +478,7 @@ export default function ProductCard({ product }) {
   return (
     <>
       <div
-        className="bg-white rounded-lg shadow-md flex flex-col w-[190px] max-[420px]:w-[180px] max-[400px]:w-[170px] max-[380px]:w-[160px] max-[361px]:w-[150px] relative cursor-pointer hover:shadow-lg transition-shadow h-full"
+        className="bg-white rounded-lg shadow-md flex flex-col w-[195px] max-[380px]:w-[170px] max-[361px]:w-[170px] relative cursor-pointer hover:shadow-lg transition-shadow h-full"
         onClick={handleProductClick}
       >
         {price && discountedPrice && price > discountedPrice && (
@@ -591,7 +591,7 @@ export default function ProductCard({ product }) {
             ) : currentQuantity === 0 ? (
               <button
                 onClick={(e) => handleAddToCart(e)}
-                className="w-[95%] flex cursor-pointer items-center justify-center gap-2 border border-[#249B73] text-[#249B73] hover:bg-[#0d63f50f] rounded-lg py-2 max-[500px]:py-[6px] transition-all duration-300"
+                className="w-[100%] flex cursor-pointer items-center justify-center gap-1 border border-[#249B73] text-[#249B73] hover:bg-[#0d63f50f] rounded-lg py-2 max-[500px]:py-[6px] transition-all duration-300"
                 title={mounted ? t("product_card.add_to_cart_tooltip") : ""}
               >
                 <ShoppingCart size={18} />
