@@ -99,7 +99,6 @@ export default function DiscountedProducts() {
     setMounted(true);
   }, []);
 
-  // Ekran o'lchami o'zgarganda mahsulotlarni qayta hisoblash
   useEffect(() => {
     if (products.length > 0) {
       const completeRowsCount = getCompleteRowsCount(products.length);
@@ -107,7 +106,6 @@ export default function DiscountedProducts() {
     }
   }, [products]);
 
-  // Window resize event listener qo'shish
   useEffect(() => {
     const handleResize = () => {
       if (products.length > 0) {
@@ -189,11 +187,9 @@ export default function DiscountedProducts() {
             };
           });
 
-          // 30 ta mahsulotgacha olamiz
           const limitedProducts = discountedProducts.slice(0, 30);
           setProducts(limitedProducts);
 
-          // To'liq qatorlar sonini hisoblash va ko'rsatish
           const completeRowsCount = getCompleteRowsCount(
             limitedProducts.length
           );
@@ -214,11 +210,6 @@ export default function DiscountedProducts() {
     return (
       <section className="py-8">
         <div className="max-w-7xl mx-auto px-6 max-[500px]:px-1">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-800 max-[500px]:font-medium max-[500px]:text-xl max-[500px]:px-2">
-              {mounted ? t("discounted_products.title") : ""}
-            </h2>
-          </div>
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
             <p className="text-red-600">
               {mounted ? t("discounted_products.error_message") : ""}: {error}
@@ -251,10 +242,13 @@ export default function DiscountedProducts() {
             {mounted ? t("discounted_products.no_products") : ""}
           </div>
         ) : (
-          <div className="max-w-7xl mx-auto px-6 max-[500px]:px-0">
+          <div className="max-w-7xl mx-auto">
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 max-[500px]:gap-2">
               {displayProducts.map((product) => (
-                <div key={product.id} className="w-full flex items-center justify-center">
+                <div
+                  key={product.id}
+                  className="w-full flex items-center justify-center"
+                >
                   <ProductCard product={product} />
                 </div>
               ))}

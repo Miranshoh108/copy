@@ -309,20 +309,17 @@ export default function Checkout() {
     }
   };
 
-  // Pagination logikasi
   const getDisplayedPickupPoints = () => {
     const selectedRegionData = regions.find(
       (region) => region.code[0] === selectedRegion
     );
 
-    // Agar Uzbekiston tanlangan bo'lsa
     if (selectedRegionData?.name[0] === "UZBEKISTAN") {
       return showAll
         ? allPickupPoints
         : allPickupPoints.slice(0, POINTS_PER_PAGE);
     }
 
-    // Boshqa viloyatlar uchun hammasini ko'rsat
     return allPickupPoints;
   };
 

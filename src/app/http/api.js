@@ -13,12 +13,11 @@ const $api = axios.create({
   },
 });
 
-// Request interceptor => token qo‘shib yuboradi
 $api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("accessToken"); // tokenni olamiz
+    const token = localStorage.getItem("accessToken");
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`; // headerga qo‘shamiz
+      config.headers.Authorization = `Bearer ${token}`;
     }
 
     if (process.env.NODE_ENV === "development") {
@@ -31,7 +30,6 @@ $api.interceptors.request.use(
   }
 );
 
-// Response interceptor
 $api.interceptors.response.use(
   (response) => response,
   (error) => {

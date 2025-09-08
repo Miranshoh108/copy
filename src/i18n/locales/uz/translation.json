@@ -8,7 +8,7 @@
     "brand_service": "SERVIS",
     "download": "YUKLAB OLISH",
     "notifications": "Bildirishnoma",
-    "wishlist": "Tanlanganlar",
+    "wishlist": "Tanlangan",
     "cart": "Savat",
     "profile": "Profil",
     "login": "KIRISH",
@@ -20,7 +20,8 @@
     "no_categories": "Kategoriyalar topilmadi",
     "no_subcategories": "Bu kategoriyada hozircha mahsulotlar yo'q",
     "select_category": "Kategoriya tanlang",
-    "home": "Bosh sahifa"
+    "home": "Bosh sahifa",
+    "katalog":"Katalog"
   },
   "home": {
     "title": "BS Market - O'zbekistondagi Eng Yaxshi Onlayn Do'kon",
@@ -44,7 +45,7 @@
     "increase_tooltip": "Qo'shish"
   },
   "bestsellers": {
-    "title": "Chegirmali mahsulotlar",
+    "title": "Ommabop mahsulotlar",
     "no_products": "Hozircha mahsulotlar mavjud emas",
     "data_format_error": "Ma'lumotlar formatida xatolik",
     "loading_error": "Ma'lumotlarni yuklashda xatolik yuz berdi",

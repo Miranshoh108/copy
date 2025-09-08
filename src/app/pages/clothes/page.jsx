@@ -273,10 +273,13 @@ function ClothesProductContent() {
 
   return (
     <section className="py-4">
-      <div className="max-w-7xl mx-auto px-6 max-[500px]:px-0">
+      <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4  max-[500px]:gap-2">
           {displayProducts.map((product) => (
-            <div key={product.id} className="w-full flex items-center justify-center">
+            <div
+              key={product.id}
+              className="w-full flex items-center justify-center"
+            >
               <ProductCard product={product} />
             </div>
           ))}

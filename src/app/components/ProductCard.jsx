@@ -478,7 +478,7 @@ export default function ProductCard({ product }) {
   return (
     <>
       <div
-        className="bg-white rounded-lg shadow-md flex flex-col w-[195px] max-[380px]:w-[170px] max-[361px]:w-[170px] relative cursor-pointer hover:shadow-lg transition-shadow h-full"
+        className="bg-white rounded-lg shadow-md flex flex-col w-[195px] max-[400px]:w-[170px] relative cursor-pointer hover:shadow-lg transition-shadow h-full"
         onClick={handleProductClick}
       >
         {price && discountedPrice && price > discountedPrice && (

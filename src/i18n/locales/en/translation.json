@@ -43,7 +43,7 @@
     "increase_tooltip": "Increase"
   },
   "bestsellers": {
-    "title": "Discounted Products",
+    "title": "Popular Products",
     "no_products": "No products available at the moment",
     "data_format_error": "Data format error",
     "loading_error": "An error occurred while loading data",

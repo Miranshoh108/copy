@@ -16,6 +16,7 @@ import {
   Download,
   HomeIcon,
   Loader2,
+  NotebookPen,
 } from "lucide-react";
 import { useCartStore } from "./hooks/cart";
 import { useHomeLikes } from "./hooks/likes";
@@ -854,7 +855,7 @@ export default function Navbar() {
                                 <img
                                   src={imageUrl}
                                   alt={getCategoryName(category)}
-                                  className="w-6 h-6 mr-2 object-contain"
+                                  className="w-6 h-6 rounded-full mr-2 object-contain"
                                   onError={(e) => {
                                     console.error(
                                       "Image load error for category:",
@@ -975,7 +976,18 @@ export default function Navbar() {
           className="flex flex-col items-center text-gray-600"
         >
           <HomeIcon size={20} className="text-[#249B73]" />
-          <span className="text-xs">{mounted ? t("navbar.home") : null}</span>
+          <span className="text-xs max-[500px]:text-[10px]">
+            {mounted ? t("navbar.home") : null}
+          </span>
+        </button>
+        <button
+          onClick={() => router.push("/katalog")}
+          className="flex flex-col items-center text-gray-600"
+        >
+          <NotebookPen size={20} className="text-[#249B73]" />
+          <span className="text-xs max-[500px]:text-[10px]">
+            {mounted ? t("navbar.katalog") : null}
+          </span>
         </button>
 
         <button
@@ -990,7 +1002,7 @@ export default function Navbar() {
               </span>
             )}
           </div>
-          <span className="text-xs">
+          <span className="text-xs max-[500px]:text-[10px]">
             {mounted ? t("navbar.wishlist") : null}
           </span>
         </button>
@@ -1007,7 +1019,9 @@ export default function Navbar() {
               </span>
             )}
           </div>
-          <span className="text-xs">{mounted ? t("navbar.cart") : null}</span>
+          <span className="text-xs max-[500px]:text-[10px]">
+            {mounted ? t("navbar.cart") : null}
+          </span>
         </button>
 
         {isAuthenticated ? (
@@ -1016,7 +1030,7 @@ export default function Navbar() {
             className="flex flex-col items-center text-gray-600"
           >
             <User size={20} className="text-[#249B73]" />
-            <span className="text-xs">
+            <span className="text-xs max-[500px]:text-[10px]">
               {mounted ? t("navbar.profile") : null}
             </span>
           </button>
@@ -1026,7 +1040,7 @@ export default function Navbar() {
             className="flex flex-col items-center text-gray-600"
           >
             <User size={20} className="text-[#249B73]" />
-            <span className="text-xs">
+            <span className="text-xs max-[500px]:text-[10px]">
               {mounted ? t("navbar.login") : null}
             </span>
           </button>
