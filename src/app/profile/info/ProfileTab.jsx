@@ -12,6 +12,7 @@ const ProfileTab = ({ user, isEditing, setIsEditing, updateUserProfile }) => {
     lastName: user.lastName || "",
     email: user.email || "",
     phone: user.phone || "",
+    gender: user.gender || "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -58,6 +59,7 @@ const ProfileTab = ({ user, isEditing, setIsEditing, updateUserProfile }) => {
       lastName: user.lastName || "",
       email: user.email || "",
       phone: user.phone || "",
+      gender: user.gender || "",
     });
     setIsEditing(false);
     setError(null);
@@ -69,6 +71,7 @@ const ProfileTab = ({ user, isEditing, setIsEditing, updateUserProfile }) => {
       lastName: user.lastName || "",
       email: user.email || "",
       phone: user.phone || "",
+      gender: user.gender || "",
     });
     setIsEditing(true);
     setError(null);
@@ -251,25 +254,25 @@ const ProfileTab = ({ user, isEditing, setIsEditing, updateUserProfile }) => {
               >
                 Jins
               </Label>
-              <Input
-                value={getGenderDisplay(user.gender)}
-                disabled
-                className="w-full bg-gray-50"
-              />
-            </div>
-
-            <div>
-              <Label
-                htmlFor="age"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
-                Yosh
-              </Label>
-              <Input
-                value={user.age || "Belgilanmagan"}
-                disabled
-                className="w-full bg-gray-50"
-              />
+              {isEditing ? (
+                <select
+                  id="gender"
+                  name="gender"
+                  value={formData.gender}
+                  onChange={handleInputChange}
+                  className="w-full border rounded-md p-2"
+                >
+                  <option value="other">Boshqa</option>
+                  <option value="male">Erkak</option>
+                  <option value="female">Ayol</option>
+                </select>
+              ) : (
+                <Input
+                  value={getGenderDisplay(user.gender)}
+                  disabled
+                  className="w-full bg-gray-50"
+                />
+              )}
             </div>
 
             <div>

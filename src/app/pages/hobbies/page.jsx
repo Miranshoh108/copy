@@ -122,11 +122,13 @@ function HobbiesProductContent() {
   const currentCategoryId =
     searchParams?.get("category") || "689dc9cbe9443d84b885e499";
 
-  // Auto scroll setup
   useEffect(() => {
-    if (isPlaying && sliderRef.current && products.length > skeletonCount) {
+    if (isPlaying && products.length > skeletonCount) {
       autoScrollRef.current = setInterval(() => {
-        sliderRef.current.slickNext();
+        // sliderRef.current mavjudligini tekshiring
+        if (sliderRef.current && sliderRef.current.slickNext) {
+          sliderRef.current.slickNext();
+        }
       }, 1500);
     } else {
       if (autoScrollRef.current) {
@@ -141,7 +143,6 @@ function HobbiesProductContent() {
     };
   }, [isPlaying, products.length, skeletonCount]);
 
-  // Mouse hover paytida auto scroll to'xtatish
   const handleMouseEnter = () => {
     if (autoScrollRef.current) {
       clearInterval(autoScrollRef.current);
@@ -151,7 +152,9 @@ function HobbiesProductContent() {
   const handleMouseLeave = () => {
     if (isPlaying && products.length > skeletonCount) {
       autoScrollRef.current = setInterval(() => {
-        sliderRef.current.slickNext();
+        if (sliderRef.current && sliderRef.current.slickNext) {
+          sliderRef.current.slickNext();
+        }
       }, 1500);
     }
   };

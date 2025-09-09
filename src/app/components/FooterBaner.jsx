@@ -9,7 +9,7 @@ import $api from "../http/api";
 
 const Slider = dynamic(() => import("react-slick"), { ssr: false });
 
-export default function Showcase() {
+export default function FooterBanner() {
   const [banners, setBanners] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -21,7 +21,7 @@ export default function Showcase() {
       try {
         setLoading(true);
         const response = await $api.get(
-          "/banners/all?page=1&limit=10&position=mid_header"
+          "/banners/all?page=1&limit=10&position=footer_header"
         );
 
         if (response.data.success && response.data.data) {

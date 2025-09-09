@@ -10,13 +10,11 @@ const MapComponent = ({
   const [map, setMap] = useState(null);
 
   useEffect(() => {
-    // Agar script allaqachon yuklanmagan bo'lsa
     if (
       typeof window !== "undefined" &&
       !window.ymaps &&
       !window.yandexMapScriptLoading
     ) {
-      // Global flag o'rnatamiz
       window.yandexMapScriptLoading = true;
 
       const script = document.createElement("script");
@@ -50,12 +48,10 @@ const MapComponent = ({
     const mapContainer = document.getElementById("yandex-map");
     if (!mapContainer || !window.ymaps) return;
 
-    // Avvalgi xarita instanceni tozalash
     if (map) {
       map.destroy();
     }
 
-    // Map yaratish
     const newMap = new window.ymaps.Map("yandex-map", {
       center:
         pickupPoints.length > 0
@@ -68,7 +64,6 @@ const MapComponent = ({
       controls: ["zoomControl", "fullscreenControl", "geolocationControl"],
     });
 
-    // Clusterer yaratish
     const clusterer = new window.ymaps.Clusterer({
       preset: "islands#invertedDarkGreenClusterIcons",
       groupByCoordinates: false,
@@ -152,7 +147,6 @@ const MapComponent = ({
     });
   };
 
-  // Component unmount bo'lganda xaritani tozalash
   useEffect(() => {
     return () => {
       if (map) {

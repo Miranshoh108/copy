@@ -40,21 +40,17 @@ export default function HeroBanner() {
     fetchBanners();
   }, []);
 
-  // Rasm URL'ini to'g'ri formatga o'zgartirish funksiyasi
   const getImageUrl = (imageUrl) => {
     if (!imageUrl) return "/images/placeholder.png";
 
-    // Agar rasm URL'i "/" bilan boshlansa, base URL qo'shish
     if (imageUrl.startsWith("/")) {
       return `${process.env.NEXT_PUBLIC_API_URL}${imageUrl}`;
     }
 
-    // Agar to'liq URL bo'lsa, o'zgartirisiz qaytarish
     if (imageUrl.startsWith("http")) {
       return imageUrl;
     }
 
-    // Boshqa hollarda base URL qo'shish
     return `${process.env.NEXT_PUBLIC_API_URL}/${imageUrl}`;
   };
 
@@ -159,10 +155,9 @@ export default function HeroBanner() {
                     height={366}
                     priority={index === 0}
                     placeholder="blur"
-                    blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z/C/HgAGgwJ/lK3Q6wAAAABJRU5ErkJggg=="
+                    blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABklEQVR42mNkAAIAAAoAAv/lxKUAAAAASUVORK5CYII="
                     onError={(e) => {
                       console.error("Rasm yuklashda xato:", banner.image_url);
-                      // Xato bo'lsa placeholder rasm ko'rsatish
                       e.target.src = "/images/placeholder.png";
                     }}
                   />

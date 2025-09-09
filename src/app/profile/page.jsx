@@ -310,7 +310,7 @@ const Profile = () => {
                     <img
                       src={user.avatar}
                       alt={user.name}
-                      className="w-20 h-16 rounded-full border-3 border-white object-cover"
+                      className="w-20 h-20 rounded-full border-3 border-white object-cover"
                       onError={(e) => {
                         e.target.src =
                           "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face";

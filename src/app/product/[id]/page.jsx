@@ -1,13 +1,13 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import DiscountedProducts from "../../pages/discounted/page";
 import ProductDetail from "../../components/DetailCard/ProductDetail";
 import Footer from "../../components/Footer";
 import Navbar from "../../components/Navbar";
 import { notFound } from "next/navigation";
 import useProductStore from "@/app/store/productStore";
 import $api from "@/app/http/api";
+import BestSellers from "@/app/pages/bestsellers/page";
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -124,7 +124,7 @@ export default function ProductDetailPage() {
       <main className="bg-[#ECF4FF] flex items-center justify-center flex-1">
         <div className="w-full max-w-[1240px] py-6">
           <ProductDetail />
-          <DiscountedProducts />
+          <BestSellers />
         </div>
       </main>
       <Footer className="mt-auto" />

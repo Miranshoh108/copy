@@ -1,6 +1,7 @@
 "use client";
 import Head from "next/head";
 import HeroBanner from "./components/Herobanner";
+import MobilBanner from "./components/MobilBaner";
 import Footer from "./components/Footer";
 import BestSellers from "./pages/bestsellers/page";
 import SportProduct from "./pages/sport/page";
@@ -18,6 +19,9 @@ import CatagoriesProduct from "./pages/catagoriesproduct/catagoriesproduct";
 import Navbar from "./components/Navbar";
 import Showcase from "./components/Showcase";
 import { Suspense, useState, useEffect, useCallback, useRef } from "react";
+import FooterBanner from "./components/FooterBaner";
+import MobilShowcase from "./components/MobilShowcase";
+import MobilFooterBanner from "./components/FooterMobil";
 
 export default function Home() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -41,6 +45,7 @@ export default function Home() {
   const componentGroups = [
     [
       <HeroBanner key="hero1" />,
+      <MobilBanner key="mobil" />,
       <BestSellers key="bestsellers" />,
       <DiscountedProducts key="discounted" />,
       <ResultsProduct key="results" />,
@@ -50,20 +55,22 @@ export default function Home() {
     ],
     [
       <Showcase key="showcase" />,
+      <MobilShowcase key="mobilshowcase" />,
       <SportProduct key="sport" />,
       <HouseholdProduct key="household" />,
       <HobbiesProduct key="hobbies" />,
       <ClothesProduct key="clothes" />,
     ],
     [
-      <HeroBanner key="hero2" />,
+      <FooterBanner key="footerbaner" />,
+      <MobilFooterBanner key="mobilfooterbaner" />,
       <ComputerProduct key="computer" />,
       <GoodsProduct key="goods" />,
       <ShoesProduct key="shoes" />,
       <SubstancesProduct key="substances" />,
       <HealthProduct key="health" />,
     ],
-  ];  
+  ];
 
   const loadMore = useCallback(() => {
     if (loadingRef.current || currentPage >= componentGroups.length) {
@@ -212,8 +219,6 @@ export default function Home() {
             </div>
           </div>
         )}
-
-     
       </div>
 
       <div data-footer>

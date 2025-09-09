@@ -21,7 +21,7 @@ export default function Checkout() {
   const [regions, setRegions] = useState([]);
   const [selectedRegion, setSelectedRegion] = useState("");
   const [pickupPoints, setPickupPoints] = useState([]);
-  const [allPickupPoints, setAllPickupPoints] = useState([]); // Barcha punktlar uchun
+  const [allPickupPoints, setAllPickupPoints] = useState([]);
   const [selectedPickupPoint, setSelectedPickupPoint] = useState(null);
   const [loadingPickupPoints, setLoadingPickupPoints] = useState(false);
   const [formData, setFormData] = useState({
@@ -33,7 +33,6 @@ export default function Checkout() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalImageIndex, setModalImageIndex] = useState(0);
 
-  // Pagination uchun state'lar
   const [showAll, setShowAll] = useState(false);
   const POINTS_PER_PAGE = 5;
 
@@ -100,15 +99,13 @@ export default function Checkout() {
           );
 
           if (selectedRegionData) {
-            // Agar "UZBEKISTAN" tanlangan bo'lsa, barcha punktlarni ko'rsat
             if (selectedRegionData.name[0] === "UZBEKISTAN") {
               setAllPickupPoints(allPoints);
-              setPickupPoints(allPoints); // Xarita uchun barcha punktlar
+              setPickupPoints(allPoints);
               if (allPoints.length > 0) {
                 setSelectedPickupPoint(allPoints[0]);
               }
             } else {
-              // Boshqa viloyatlar uchun filtr qil
               const filteredPoints = allPoints.filter(
                 (point) =>
                   point.town[0].$.regioncode === selectedRegionData.code[0] ||
@@ -144,7 +141,7 @@ export default function Checkout() {
   const handleRegionChange = (e) => {
     setSelectedRegion(e.target.value);
     setSelectedPickupPoint(null);
-    setShowAll(false); // Pagination reset
+    setShowAll(false);
   };
 
   const handlePickupPointSelect = (point) => {
@@ -257,53 +254,58 @@ export default function Checkout() {
       return;
     }
 
-    const selectedRegionData = regions.find(
-      (region) => region.code[0] === selectedRegion
-    );
-
-    const payload = {
-      name: `${userProfile.firstName} ${userProfile.lastName}`,
-      phone: userProfile.phoneNumber,
-      region: selectedRegionData?.name[0] || "",
-      regionCode: selectedRegion,
-      pickupPoint: selectedPickupPoint,
-      payment: formData.payment,
-      items: checkedItems,
-      totalPrice: total,
-    };
-
     try {
       setLoading(true);
 
-      const res = await fetch(
-        "https://68282b2f6b7628c529126575.mockapi.io/imtixon",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
-        }
-      );
+      const orderPromises = checkedItems.map(async (item) => {
+        const variantData = getVariantData(item);
 
-      if (res.ok) {
-        const data = await res.json();
-        console.log("✅ Buyurtma muvaffaqiyatli yuborildi:", data);
+        const selectedRegionData = regions.find(
+          (region) => region.code[0] === selectedRegion
+        );
 
-        const { addOrder } = useOrderStore.getState();
-        const newOrder = addOrder({
-          ...payload,
-          id: data.id,
-        });
+        const locationName =
+          selectedPickupPoint?.town?.[0]?.$.regionname ||
+          selectedRegionData?.name?.[0] ||
+          "Tashkent";
 
-        clearCart();
+        const orderData = {
+          productId: item.productId || item.id,
+          variantId: item.variantId || item.variant?._id,
+          paid: formData.payment === "card",
+          paymentMethodOnline: true,
+          productQuantity: item.quantity,
+          location: locationName,
+        };
 
-        router.push("/profile");
-      } else {
-        throw new Error(`Server xatoligi: ${res.status}`);
-      }
+        console.log("Buyurtma ma'lumotlari yuborilmoqda:", orderData);
+
+        const response = await $api.post("/order/create", orderData);
+
+        return response.data;
+      });
+
+      const results = await Promise.all(orderPromises);
+
+      console.log("✅ Barcha buyurtmalar muvaffaqiyatli yaratildi:", results);
+
+      clearCart();
+
+      router.push("/profile?tab=orders");
     } catch (error) {
-      console.error("❌ Buyurtma yuborishda xatolik:", error);
+      console.error("❌ Buyurtma yaratishda xatolik:", error);
+
+      let errorMessage = "Buyurtma yaratishda xatolik yuz berdi";
+
+      if (error.response) {
+        errorMessage =
+          error.response.data?.message ||
+          `Server xatoligi: ${error.response.status}`;
+      } else if (error.request) {
+        errorMessage = "Server bilan aloqa o'rnatilmadi";
+      }
+
+      alert(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -365,7 +367,6 @@ export default function Checkout() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2">
-            {/* Mahsulotlar ro'yxati */}
             <div className="bg-white rounded-lg shadow p-6 mb-6 max-[720px]:p-3">
               <h2 className="text-xl font-semibold text-gray-700 mb-4">
                 Buyurtma mahsulotlari ({checkedItems.length} ta)
@@ -579,7 +580,6 @@ export default function Checkout() {
                           ))}
                         </div>
 
-                        {/* Ko'proq ko'rish tugmasi - faqat Uzbekiston uchun */}
                         {shouldShowPagination() && (
                           <div className="text-center">
                             <button
@@ -744,7 +744,6 @@ export default function Checkout() {
         </div>
       </div>
 
-      {/* Modal */}
       {isModalOpen && selectedProduct && (
         <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center">
           <button
