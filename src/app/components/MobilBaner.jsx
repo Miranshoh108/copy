@@ -155,7 +155,6 @@ export default function MobilBanner() {
       <style jsx global>{`
         .mobil-banner-slider .slick-list {
           overflow: hidden !important;
-          border-radius: 16px !important;
           height: 180px !important;
         }
       
@@ -165,7 +164,6 @@ export default function MobilBanner() {
         }
         .mobil-banner-slider .slick-slide > div {
           height: 180px !important;
-          border-radius: 16px !important;
           overflow: hidden !important;
         }
         .mobil-banner-slider .slick-dots {

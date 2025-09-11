@@ -43,7 +43,7 @@ export default function FooterBanner() {
   const getImageUrl = (imageUrl) => {
     if (!imageUrl) return "/images/placeholder.png";
 
-    if (imageUrl.startsWith("/")) {
+    if (imageUrl.startsWith("/homr")) {
       return `${process.env.NEXT_PUBLIC_API_URL}${imageUrl}`;
     }
 

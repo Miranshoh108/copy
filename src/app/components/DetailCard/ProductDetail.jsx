@@ -318,61 +318,49 @@ export default function ProductDetail() {
 
   const handleAddToCart = async (e) => {
     e.stopPropagation();
+
+    if (!isAuthenticated) {
+      showNotification("Savatga qo'shish uchun tizimga kiring", "warning");
+      router.push("/login");
+      return;
+    }
+
     setIsLoading(true);
 
     try {
       const productId = currentProduct.id || currentProduct._id;
       const variantId = currentVariant._id;
-      const localCartProduct = createLocalCartProduct(quantity);
 
-      if (isAuthenticated) {
-        const cartData = {
-          products: [
-            {
-              productId: productId,
-              variantId: variantId,
-              quantity: quantity,
-              price: displayDiscountedPrice || displayPrice,
-            },
-          ],
-        };
+      const cartData = {
+        products: [
+          {
+            productId: productId,
+            variantId: variantId,
+            quantity: quantity,
+            price: displayDiscountedPrice || displayPrice,
+          },
+        ],
+      };
 
-        const response = await $api.post("/cart/add/product", cartData);
+      const response = await $api.post("/cart/add/product", cartData);
 
-        if (response.data && response.data.status === 200) {
-          addCart(localCartProduct, variantId);
-          showNotification(
-            "Mahsulot muvaffaqiyatli savatga qo'shildi!",
-            "success"
-          );
-        } else {
-          throw new Error("API javobida xatolik");
-        }
-      } else {
+      if (response.data && response.data.status === 200) {
+        const localCartProduct = createLocalCartProduct(quantity);
         addCart(localCartProduct, variantId);
         showNotification(
-          "Mahsulot savatga qo'shildi! (Mahalliy saqlash)",
+          "Mahsulot muvaffaqiyatli savatga qo'shildi!",
           "success"
         );
+        setQuantity(1);
+      } else {
+        throw new Error("API javobida xatolik");
       }
-
-      setQuantity(1);
     } catch (error) {
       console.error("Error in handleAddToCart:", error);
-
-      if (isAuthenticated) {
-        showNotification(
-          "Savatga qo'shishda xatolik yuz berdi. Qaytadan urinib ko'ring.",
-          "error"
-        );
-        const localCartProduct = createLocalCartProduct(quantity);
-        addCart(localCartProduct, currentVariant._id);
-      } else {
-        showNotification(
-          "Xatolik yuz berdi. Qaytadan urinib ko'ring.",
-          "error"
-        );
-      }
+      showNotification(
+        "Savatga qo'shishda xatolik yuz berdi. Qaytadan urinib ko'ring.",
+        "error"
+      );
     } finally {
       setIsLoading(false);
     }
@@ -380,36 +368,51 @@ export default function ProductDetail() {
 
   const handleIncrement = async (e) => {
     e.stopPropagation();
+
+    if (!isAuthenticated) {
+      showNotification("Tizimga kirish talab etiladi", "warning");
+      router.push("/login");
+      return;
+    }
+
     const productId = currentProduct.id || currentProduct._id;
     const variantId = currentVariant._id;
     const newQty = currentQuantityInCart + 1;
 
-    updateQuantity(productId, newQty, variantId);
+    try {
+      const updateData = {
+        products: [
+          {
+            productId: productId,
+            variantId: variantId,
+            quantity: newQty,
+            price: displayDiscountedPrice || displayPrice,
+          },
+        ],
+      };
 
-    if (isAuthenticated) {
-      try {
-        const updateData = {
-          products: [
-            {
-              productId: productId,
-              variantId: variantId,
-              quantity: newQty,
-              price: displayDiscountedPrice || displayPrice,
-            },
-          ],
-        };
+      const response = await $api.post("/cart/add/product", updateData);
 
-        await $api.post("/cart/add/product", updateData);
-      } catch (error) {
-        console.error("Error updating cart via API:", error);
-        updateQuantity(productId, currentQuantityInCart, variantId);
-        showNotification("Miqdorni yangilashda xatolik yuz berdi.", "error");
+      if (response.data && response.data.status === 200) {
+        updateQuantity(productId, newQty, variantId);
+      } else {
+        throw new Error("API javobida xatolik");
       }
+    } catch (error) {
+      console.error("Error updating cart via API:", error);
+      showNotification("Miqdorni yangilashda xatolik yuz berdi.", "error");
     }
   };
 
   const handleDecrementDetail = async (e) => {
     e.stopPropagation();
+
+    if (!isAuthenticated) {
+      showNotification("Tizimga kirish talab etiladi", "warning");
+      router.push("/login");
+      return;
+    }
+
     const productId = currentProduct.id || currentProduct._id;
     const variantId = currentVariant._id;
 
@@ -419,52 +422,87 @@ export default function ProductDetail() {
     }
 
     const newQty = currentQuantityInCart - 1;
-    updateQuantity(productId, newQty, variantId);
 
-    if (isAuthenticated) {
-      try {
-        const updateData = {
-          products: [
-            {
-              productId: productId,
-              variantId: variantId,
-              quantity: newQty,
-              price: displayDiscountedPrice || displayPrice,
-            },
-          ],
-        };
+    try {
+      const updateData = {
+        products: [
+          {
+            productId: productId,
+            variantId: variantId,
+            quantity: newQty,
+            price: displayDiscountedPrice || displayPrice,
+          },
+        ],
+      };
 
-        await $api.post("/cart/add/product", updateData);
-      } catch (error) {
-        console.error("Error updating cart via API:", error);
-        updateQuantity(productId, currentQuantityInCart, variantId);
-        showNotification("Miqdorni yangilashda xatolik yuz berdi.", "error");
+      const response = await $api.post("/cart/add/product", updateData);
+
+      if (response.data && response.data.status === 200) {
+        updateQuantity(productId, newQty, variantId);
+      } else {
+        throw new Error("API javobida xatolik");
       }
+    } catch (error) {
+      console.error("Error updating cart via API:", error);
+      showNotification("Miqdorni yangilashda xatolik yuz berdi.", "error");
     }
   };
 
-  const handleBuyNow = () => {
-    const productId = currentProduct.id || currentProduct._id;
-    const productToBuy = {
-      id: productId,
-      productId: productId,
-      variantId: currentVariant._id,
-      name: currentProduct.name,
-      image: getCurrentImage(),
-      price: displayPrice,
-      discountedPrice: displayDiscountedPrice,
-      sale_price: displayDiscountedPrice || displayPrice,
-      quantity,
-      selectedVariant: currentVariant,
-      checked: true,
-      variant: {
-        color: currentVariant.color,
-        unit: currentVariant.unit,
-        stockQuantity: currentVariant.stockQuantity,
-      },
-    };
-    addCart(productToBuy);
-    router.push("/checkout");
+  const handleBuyNow = async () => {
+    if (!isAuthenticated) {
+      showNotification("Xarid qilish uchun tizimga kiring", "warning");
+      router.push("/login");
+      return;
+    }
+
+    try {
+      const productId = currentProduct.id || currentProduct._id;
+      const variantId = currentVariant._id;
+
+      const cartData = {
+        products: [
+          {
+            productId: productId,
+            variantId: variantId,
+            quantity: quantity,
+            price: displayDiscountedPrice || displayPrice,
+          },
+        ],
+      };
+
+      const response = await $api.post("/cart/add/product", cartData);
+
+      if (response.data && response.data.status === 200) {
+        const productToBuy = {
+          id: productId,
+          productId: productId,
+          variantId: currentVariant._id,
+          name: currentProduct.name,
+          image: getCurrentImage(),
+          price: displayPrice,
+          discountedPrice: displayDiscountedPrice,
+          sale_price: displayDiscountedPrice || displayPrice,
+          quantity,
+          selectedVariant: currentVariant,
+          checked: true,
+          variant: {
+            color: currentVariant.color,
+            unit: currentVariant.unit,
+            stockQuantity: currentVariant.stockQuantity,
+          },
+        };
+        addCart(productToBuy);
+        router.push("/checkout");
+      } else {
+        throw new Error("API javobida xatolik");
+      }
+    } catch (error) {
+      console.error("Error in handleBuyNow:", error);
+      showNotification(
+        "Xarid qilishda xatolik yuz berdi. Qaytadan urinib ko'ring.",
+        "error"
+      );
+    }
   };
 
   const handleShare = () => {
@@ -760,11 +798,16 @@ export default function ProductDetail() {
                 <button
                   onClick={handleAddToCart}
                   disabled={
-                    stockQuantity === 0 || saleStatus !== "active" || isLoading
+                    stockQuantity === 0 ||
+                    saleStatus !== "active" ||
+                    isLoading ||
+                    !isAuthenticated
                   }
                   className={clsx(
                     "flex-1 py-3 px-6 rounded-lg cursor-pointer font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2",
-                    stockQuantity === 0 || saleStatus !== "active"
+                    stockQuantity === 0 ||
+                      saleStatus !== "active" ||
+                      !isAuthenticated
                       ? "bg-gray-300 text-gray-500"
                       : "bg-white border-2 border-[#249B73] text-[#249B73] hover:bg-[#249B73] hover:text-white"
                   )}
@@ -774,21 +817,31 @@ export default function ProductDetail() {
                   ) : (
                     <>
                       <Plus size={18} />
-                      {t("product.add_to_cart")}
+                      {!isAuthenticated
+                        ? t("product.login_required")
+                        : t("product.add_to_cart")}
                     </>
                   )}
                 </button>
                 <button
                   onClick={handleBuyNow}
-                  disabled={stockQuantity === 0 || saleStatus !== "active"}
+                  disabled={
+                    stockQuantity === 0 ||
+                    saleStatus !== "active" ||
+                    !isAuthenticated
+                  }
                   className={clsx(
                     "flex-1 py-3 px-6 rounded-lg font-semibold cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed",
-                    stockQuantity === 0 || saleStatus !== "active"
+                    stockQuantity === 0 ||
+                      saleStatus !== "active" ||
+                      !isAuthenticated
                       ? "bg-gray-300 text-gray-500"
                       : "bg-[#249B73] text-white hover:bg-[#249B73]"
                   )}
                 >
-                  {t("product.buy_now")}
+                  {!isAuthenticated
+                    ? t("product.login_required")
+                    : t("product.buy_now")}
                 </button>
               </div>
             </div>

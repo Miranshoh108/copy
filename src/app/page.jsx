@@ -26,7 +26,7 @@ import MobilFooterBanner from "./components/FooterMobil";
 export default function Home() {
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
-  const loadingRef = useRef(false); // Bir vaqtda faqat bitta loading bo'lishi uchun
+  const loadingRef = useRef(false);
 
   const structuredData = {
     "@context": "https://schema.org",
@@ -80,7 +80,6 @@ export default function Home() {
     loadingRef.current = true;
     setIsLoading(true);
 
-    // Timeout bilan yangi kontentni yuklash
     setTimeout(() => {
       setCurrentPage((prev) => prev + 1);
       setIsLoading(false);
@@ -89,7 +88,6 @@ export default function Home() {
   }, [currentPage, componentGroups.length]);
 
   const handleScroll = useCallback(() => {
-    // Agar loading yoki oxirgi sahifada bo'lsa, return qil
     if (loadingRef.current || currentPage >= componentGroups.length) {
       return;
     }
@@ -98,9 +96,8 @@ export default function Home() {
     const windowHeight = window.innerHeight;
     const documentHeight = document.documentElement.scrollHeight;
 
-    // Footer yaqinida bo'lganda trigger qil
     const scrollPercentage = (scrollTop + windowHeight) / documentHeight;
-    const triggerPoint = 0.85; // 85% scroll qilganda
+    const triggerPoint = 0.85;
 
     if (scrollPercentage >= triggerPoint) {
       loadMore();

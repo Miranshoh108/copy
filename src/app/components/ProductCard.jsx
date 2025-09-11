@@ -197,137 +197,100 @@ export default function ProductCard({ product }) {
   const handleAddToCart = async (e) => {
     e.stopPropagation();
 
+    // Check authentication first
+    const authStatus = checkAuthentication();
+    if (!authStatus) {
+      showNotification("Savatga qo'shish uchun tizimga kiring", "warning");
+      router.push("/login");
+      return;
+    }
+
     if (variants && variants.length > 0) {
       setShowVariantModal(true);
       return;
     }
 
     setIsLoading(true);
-    const authStatus = checkAuthentication();
 
     try {
       const variantId = variants[0]?._id || null;
-      const localCartProduct = createLocalCartProduct(1, variantId);
+      const cartData = {
+        products: [
+          {
+            productId: id,
+            variantId: variantId,
+            quantity: 1,
+            price: discountedPrice || price,
+          },
+        ],
+      };
 
-      if (authStatus) {
-        console.log("Adding to cart via API for authenticated user");
+      const response = await $api.post("/cart/add/product", cartData);
 
-        const cartData = {
-          products: [
-            {
-              productId: id,
-              variantId: variantId,
-              quantity: 1,
-              price: discountedPrice || price,
-            },
-          ],
-        };
-
-        const response = await $api.post("/cart/add/product", cartData);
-
-        if (response.data && response.data.status === 200) {
-          addCart(localCartProduct, variantId);
-
-          showNotification(
-            "Mahsulot muvaffaqiyatli savatga qo'shildi!",
-            "success"
-          );
-        } else {
-          throw new Error("API javobida xatolik");
-        }
-      } else {
-        console.log("Adding to local cart for guest user");
+      if (response.data && response.data.status === 200) {
+        const localCartProduct = createLocalCartProduct(1, variantId);
         addCart(localCartProduct, variantId);
         showNotification(
-          "Mahsulot savatga qo'shildi! (Mahalliy saqlash)",
+          "Mahsulot muvaffaqiyatli savatga qo'shildi!",
           "success"
         );
+      } else {
+        throw new Error("API javobida xatolik");
       }
     } catch (error) {
       console.error("Error in handleAddToCart:", error);
-
-      if (authStatus) {
-        showNotification(
-          "Savatga qo'shishda xatolik yuz berdi. Qaytadan urinib ko'ring.",
-          "error"
-        );
-        const variantId = variants[0]?._id || null;
-        const localCartProduct = createLocalCartProduct(1, variantId);
-        addCart(localCartProduct, variantId);
-      } else {
-        showNotification(
-          "Xatolik yuz berdi. Qaytadan urinib ko'ring.",
-          "error"
-        );
-      }
+      showNotification(
+        "Savatga qo'shishda xatolik yuz berdi. Qaytadan urinib ko'ring.",
+        "error"
+      );
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleVariantAddToCart = async (variantData) => {
-    setIsLoading(true);
     const authStatus = checkAuthentication();
+    if (!authStatus) {
+      showNotification("Savatga qo'shish uchun tizimga kiring", "warning");
+      router.push("/login");
+      return;
+    }
+
+    setIsLoading(true);
 
     try {
-      const localCartProduct = createLocalCartProduct(
-        variantData.quantity,
-        variantData.variantId
-      );
+      const apiData = {
+        products: [
+          {
+            productId: variantData.productId,
+            variantId: variantData.variantId,
+            quantity: variantData.quantity,
+            price: variantData.price,
+          },
+        ],
+      };
 
-      if (authStatus) {
-        console.log("Adding variant to cart via API for authenticated user");
+      const response = await $api.post("/cart/add/product", apiData);
 
-        const apiData = {
-          products: [
-            {
-              productId: variantData.productId,
-              variantId: variantData.variantId,
-              quantity: variantData.quantity,
-              price: variantData.price,
-            },
-          ],
-        };
-
-        const response = await $api.post("/cart/add/product", apiData);
-
-        if (response.data && response.data.status === 200) {
-          addCart(localCartProduct, variantData.variantId);
-          showNotification(
-            "Variant muvaffaqiyatli savatga qo'shildi!",
-            "success"
-          );
-        } else {
-          throw new Error("API javobida xatolik");
-        }
-      } else {
-        console.log("Adding variant to local cart for guest user");
-        addCart(localCartProduct, variantData.variantId);
-        showNotification(
-          "Variant savatga qo'shildi! (Mahalliy saqlash)",
-          "success"
-        );
-      }
-    } catch (error) {
-      console.error("Error in handleVariantAddToCart:", error);
-
-      if (authStatus) {
-        showNotification(
-          "Serverda xatolik yuz berdi. Mahalliy saqlashga o'tkazildi.",
-          "error"
-        );
+      if (response.data && response.data.status === 200) {
         const localCartProduct = createLocalCartProduct(
           variantData.quantity,
           variantData.variantId
         );
         addCart(localCartProduct, variantData.variantId);
-      } else {
         showNotification(
-          "Xatolik yuz berdi. Qaytadan urinib ko'ring.",
-          "error"
+          "Variant muvaffaqiyatli savatga qo'shildi!",
+          "success"
         );
-        throw error;
+      } else {
+        throw new Error("API javobida xatolik");
       }
+    } catch (error) {
+      console.error("Error in handleVariantAddToCart:", error);
+      showNotification(
+        "Savatga qo'shishda xatolik yuz berdi. Qaytadan urinib ko'ring.",
+        "error"
+      );
     } finally {
       setIsLoading(false);
     }
@@ -375,38 +338,53 @@ export default function ProductCard({ product }) {
 
   const handleIncrement = async (e) => {
     e.stopPropagation();
-    const newQty = currentQuantity + 1;
+
     const authStatus = checkAuthentication();
+    if (!authStatus) {
+      showNotification("Tizimga kirish talab etiladi", "warning");
+      router.push("/login");
+      return;
+    }
 
+    const newQty = currentQuantity + 1;
     const variantId = cartItem?.variantId || variants[0]?._id || null;
-    updateQuantity(id, newQty, variantId);
 
-    if (authStatus) {
-      try {
-        const updateData = {
-          products: [
-            {
-              productId: id,
-              variantId: variantId,
-              quantity: newQty,
-              price: discountedPrice || price,
-            },
-          ],
-        };
+    try {
+      const updateData = {
+        products: [
+          {
+            productId: id,
+            variantId: variantId,
+            quantity: newQty,
+            price: discountedPrice || price,
+          },
+        ],
+      };
 
-        await $api.post("/cart/add/product", updateData);
+      const response = await $api.post("/cart/add/product", updateData);
+
+      if (response.data && response.data.status === 200) {
+        updateQuantity(id, newQty, variantId);
         console.log("Cart updated via API");
-      } catch (error) {
-        console.error("Error updating cart via API:", error);
-        updateQuantity(id, currentQuantity, variantId);
-        showNotification("Miqdorni yangilashda xatolik yuz berdi.", "error");
+      } else {
+        throw new Error("API javobida xatolik");
       }
+    } catch (error) {
+      console.error("Error updating cart via API:", error);
+      showNotification("Miqdorni yangilashda xatolik yuz berdi.", "error");
     }
   };
 
   const handleDecrement = async (e) => {
     e.stopPropagation();
+
     const authStatus = checkAuthentication();
+    if (!authStatus) {
+      showNotification("Tizimga kirish talab etiladi", "warning");
+      router.push("/login");
+      return;
+    }
+
     const variantId = cartItem?.variantId || variants[0]?._id || null;
 
     if (currentQuantity === 1) {
@@ -415,28 +393,30 @@ export default function ProductCard({ product }) {
     }
 
     const newQty = currentQuantity - 1;
-    updateQuantity(id, newQty, variantId);
 
-    if (authStatus) {
-      try {
-        const updateData = {
-          products: [
-            {
-              productId: id,
-              variantId: variantId,
-              quantity: newQty,
-              price: discountedPrice || price,
-            },
-          ],
-        };
+    try {
+      const updateData = {
+        products: [
+          {
+            productId: id,
+            variantId: variantId,
+            quantity: newQty,
+            price: discountedPrice || price,
+          },
+        ],
+      };
 
-        await $api.post("/cart/add/product", updateData);
+      const response = await $api.post("/cart/add/product", updateData);
+
+      if (response.data && response.data.status === 200) {
+        updateQuantity(id, newQty, variantId);
         console.log("Cart quantity decreased via API");
-      } catch (error) {
-        console.error("Error updating cart via API:", error);
-        updateQuantity(id, currentQuantity, variantId);
-        showNotification("Miqdorni yangilashda xatolik yuz berdi.", "error");
+      } else {
+        throw new Error("API javobida xatolik");
       }
+    } catch (error) {
+      console.error("Error updating cart via API:", error);
+      showNotification("Miqdorni yangilashda xatolik yuz berdi.", "error");
     }
   };
 
