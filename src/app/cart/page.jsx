@@ -151,26 +151,7 @@ export default function Cart() {
   const discount = calculateDiscount();
   const total = subtotal - discount;
 
-  const calculateDelivery = () => {
-    const hasKg = cart.some((item) => item.kg);
-
-    if (hasKg) {
-      const totalKg = cart
-        .filter((item) => item.kg)
-        .reduce((sum, item) => sum + item.kg, 0);
-      return totalKg * 15000;
-    }
-
-    if (subtotal > 0) {
-      const per100k = Math.ceil(subtotal / 100000);
-      return per100k * 10000;
-    }
-
-    return Math.floor(subtotal * 0.1);
-  };
-
-  const delivery = calculateDelivery();
-  const finalTotal = total + delivery;
+  const finalTotal = total;
 
   const retryAuth = () => {
     setAuthError("");
@@ -405,15 +386,6 @@ export default function Cart() {
                       <span>-{discount.toLocaleString()} so'm</span>
                     </div>
                   )}
-
-                  <div className="flex justify-between text-gray-600">
-                    <span>Yetkazib berish:</span>
-                    <span className={delivery === 0 ? "text-[#249B73] " : ""}>
-                      {delivery === 0
-                        ? "Bepul"
-                        : `${delivery.toLocaleString()} so'm`}
-                    </span>
-                  </div>
 
                   <hr className="my-4" />
 

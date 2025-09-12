@@ -1,13 +1,120 @@
 import { useEffect, useState } from "react";
-import { Truck, Eye, Star, Trash2, Send } from "lucide-react";
+import { Truck, Eye, Star, Trash2, Send, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useOrderStore } from "@/app/store/orderStore"; 
+import { useOrderStore } from "@/app/store/orderStore";
+import $api from "@/app/http/api";
 
 const Orders = () => {
-  const { orders, reviews, addReview, removeReview, getOrderReviews } =
-    useOrderStore();
+  const {addReview, removeReview, getOrderReviews } = useOrderStore();
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [newReview, setNewReview] = useState({ rating: 5, comment: "" });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [userId, setUserId] = useState(null);
+
+  const getUserProfile = async () => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      if (!token) {
+        throw new Error("Token mavjud emas");
+      }
+
+      $api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+      const response = await $api.get("/users/profile/me");
+
+      if (response.data.status === 200) {
+        const userProfileId = response.data.myProfile._id;
+        setUserId(userProfileId);
+        return userProfileId;
+      } else {
+        throw new Error("Profile ma'lumotlarini olishda xatolik");
+      }
+    } catch (error) {
+      console.error("User profile olishda xatolik:", error);
+      const fallbackUserId =
+        localStorage.getItem("userId") || "6833f4c9e24b22330eaff0f9";
+      setUserId(fallbackUserId);
+      return fallbackUserId;
+    }
+  };
+
+  const fetchOrders = async (page = 1) => {
+    try {
+      setLoading(true);
+
+      let currentUserId = userId;
+      if (!currentUserId) {
+        currentUserId = await getUserProfile();
+      }
+
+      const token = localStorage.getItem("accessToken");
+      if (token) {
+        $api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+      }
+
+      const response = await $api.get(
+        `/order/get/by/user/${currentUserId}?page=${page}&limit=10`
+      );
+
+      if (response.data.status === 200) {
+        const transformedOrders = response.data.data.map((order) => ({
+          id: order.order_code,
+          date: new Date(order.createdAt).toLocaleDateString("uz-UZ"),
+          status: mapApiStatusToLocal(order.status),
+          total: order.sellingPrice * order.productQuantity,
+          items: order.productQuantity,
+          products: [
+            {
+              id: order.productId,
+              name: "Mahsulot nomi", 
+              quantity: order.productQuantity,
+              price: order.sellingPrice,
+              image: "", 
+              variant: {
+                color: "",
+                unit: "",
+              },
+            },
+          ],
+          customerInfo: {
+            name: "Mijoz ismi", 
+            phone: "Telefon", 
+            region: order.location?.address || "Manzil ko'rsatilmagan",
+            pickupPoint: {
+              name: [`PVZ: ${order.receiverPvz}`],
+            },
+          },
+          paid: order.paid,
+          paymentMethodOnline: order.paymentMethodOnline,
+          canceled: order.canceled,
+          apiData: order, 
+        }));
+
+        setOrders(transformedOrders);
+        setTotalPages(response.data.pagination.totalPages);
+      }
+    } catch (err) {
+      setError(err.message || "Buyurtmalarni yuklashda xatolik yuz berdi");
+      console.error("Buyurtmalarni yuklashda xatolik:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const mapApiStatusToLocal = (apiStatus) => {
+    const statusMap = {
+      qabul_qilinmagan: "processing",
+      qabul_qilingan: "processing",
+      tayyorlanmoqda: "processing",
+      yolda: "shipping",
+      yetkazildi: "delivered",
+      bekor_qilingan: "cancelled",
+    };
+    return statusMap[apiStatus] || "processing";
+  };
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -17,6 +124,8 @@ const Orders = () => {
         return "text-blue-600 bg-blue-100";
       case "processing":
         return "text-orange-600 bg-orange-100";
+      case "cancelled":
+        return "text-red-600 bg-red-100";
       default:
         return "text-gray-600 bg-gray-100";
     }
@@ -30,6 +139,8 @@ const Orders = () => {
         return "Yo'lda";
       case "processing":
         return "Tayyorlanmoqda";
+      case "cancelled":
+        return "Bekor qilingan";
       default:
         return status;
     }
@@ -49,21 +160,18 @@ const Orders = () => {
     if (!newReview.comment.trim()) return;
 
     try {
-      // API chaqiruvi
-      const response = await fetch("/api/review/create", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          orderId: selectedOrder.id,
-          rating: newReview.rating,
-          comment: newReview.comment,
-        }),
+      const token = localStorage.getItem("accessToken");
+      if (token) {
+        $api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+      }
+
+      const response = await $api.post("/review/create", {
+        orderId: selectedOrder.id,
+        rating: newReview.rating,
+        comment: newReview.comment,
       });
 
-      if (response.ok) {
-        // Store ga qo'shish
+      if (response.data.status === 200 || response.status === 200) {
         addReview({
           orderId: selectedOrder.id,
           rating: newReview.rating,
@@ -75,7 +183,6 @@ const Orders = () => {
       }
     } catch (error) {
       console.error("Sharh qo'shishda xatolik:", error);
-      // Xatolik bo'lsa ham local storage ga qo'shamiz
       addReview({
         orderId: selectedOrder.id,
         rating: newReview.rating,
@@ -91,11 +198,14 @@ const Orders = () => {
     if (!confirm("Ushbu sharhni o'chirmoqchimisiz?")) return;
 
     try {
-      const response = await fetch(`/api/review/delete/my/${reviewId}`, {
-        method: "DELETE",
-      });
+      const token = localStorage.getItem("accessToken");
+      if (token) {
+        $api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+      }
 
-      if (response.ok) {
+      const response = await $api.delete(`/review/delete/my/${reviewId}`);
+
+      if (response.data.status === 200 || response.status === 200) {
         removeReview(reviewId);
         console.log("Sharh o'chirildi!");
       }
@@ -112,6 +222,83 @@ const Orders = () => {
     );
   };
 
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setCurrentPage(newPage);
+      fetchOrders(newPage);
+    }
+  };
+
+  useEffect(() => {
+    const initializeData = async () => {
+      try {
+        await getUserProfile();
+        await fetchOrders(currentPage);
+      } catch (error) {
+        console.error("Ma'lumotlarni yuklashda xatolik:", error);
+        setError(error.message);
+        setLoading(false);
+      }
+    };
+
+    initializeData();
+  }, []);
+
+  if (loading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Mening buyurtmalarim</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="animate-spin mr-2" size={24} />
+            <span>Buyurtmalar yuklanmoqda...</span>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Mening buyurtmalarim</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8">
+            <div className="text-red-600 mb-4">
+              <Truck size={48} className="mx-auto mb-2" />
+              <p className="text-lg font-medium">Xatolik yuz berdi</p>
+              <p className="text-sm">{error}</p>
+            </div>
+            <button
+              onClick={() => {
+                setError(null);
+                const initializeData = async () => {
+                  try {
+                    await getUserProfile();
+                    await fetchOrders(currentPage);
+                  } catch (error) {
+                    console.error("Ma'lumotlarni yuklashda xatolik:", error);
+                    setError(error.message);
+                    setLoading(false);
+                  }
+                };
+                initializeData();
+              }}
+              className="bg-[#249B73] text-white cursor-pointer px-4 py-2 rounded-lg hover:bg-[#1e8560] transition-colors"
+            >
+              Qayta urinish
+            </button>
+          </div>
+        </CardContent>
+        
+      </Card>
+    );
+  }
+
   if (selectedOrder) {
     const orderReviews = getOrderReviews(selectedOrder.id);
 
@@ -121,7 +308,7 @@ const Orders = () => {
           <div className="flex items-center gap-4">
             <button
               onClick={() => setSelectedOrder(null)}
-              className="text-blue-600 hover:text-blue-800"
+              className="text-green-600 cursor-pointer hover:text-green-800"
             >
               ← Orqaga
             </button>
@@ -146,17 +333,26 @@ const Orders = () => {
                     {getStatusText(selectedOrder.status)}
                   </span>
                 </div>
+                <div>
+                  <p className="text-sm text-gray-500">To'lov holati</p>
+                  <span
+                    className={`inline-flex px-2 py-1 rounded text-sm ${
+                      selectedOrder.paid
+                        ? "text-green-600 bg-green-100"
+                        : "text-orange-600 bg-orange-100"
+                    }`}
+                  >
+                    {selectedOrder.paid ? "To'langan" : "To'lanmagan"}
+                  </span>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">To'lov usuli</p>
+                  <p className="font-medium">
+                    {selectedOrder.paymentMethodOnline ? "Online" : "Naqd"}
+                  </p>
+                </div>
                 {selectedOrder.customerInfo && (
                   <>
-                    <div>
-                      <p className="text-sm text-gray-500">Oluvchi</p>
-                      <p className="font-medium">
-                        {selectedOrder.customerInfo.name}
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        {selectedOrder.customerInfo.phone}
-                      </p>
-                    </div>
                     <div>
                       <p className="text-sm text-gray-500">Yetkazish</p>
                       <p className="font-medium">
@@ -237,7 +433,6 @@ const Orders = () => {
               </div>
             </div>
 
-            {/* Sharh qoldirish */}
             {canReview(selectedOrder) && (
               <div className="border rounded-lg p-4">
                 <h3 className="font-semibold mb-4">Sharh qoldiring</h3>
@@ -257,7 +452,7 @@ const Orders = () => {
                             star <= newReview.rating
                               ? "text-yellow-500"
                               : "text-gray-300"
-                          } hover:text-yellow-500 transition-colors`}
+                          } hover:text-yellow-500 transition-colors cursor-pointer`}
                         >
                           <Star
                             size={24}
@@ -289,7 +484,7 @@ const Orders = () => {
                   <button
                     onClick={handleCreateReview}
                     disabled={!newReview.comment.trim()}
-                    className="flex items-center gap-2 bg-[#249B73] text-white px-4 py-2 rounded-lg hover:bg-[#1e8560] disabled:bg-gray-400 transition-colors"
+                    className="flex items-center cursor-pointer gap-2 bg-[#249B73] text-white px-4 py-2 rounded-lg hover:bg-[#1e8560] disabled:bg-gray-400 transition-colors"
                   >
                     <Send size={16} />
                     Sharh yuborish
@@ -298,7 +493,6 @@ const Orders = () => {
               </div>
             )}
 
-            {/* Mavjud sharhlar */}
             {orderReviews.length > 0 && (
               <div>
                 <h3 className="font-semibold mb-4">Sizning sharhingiz</h3>
@@ -334,7 +528,7 @@ const Orders = () => {
                         </div>
                         <button
                           onClick={() => handleDeleteReview(review.id)}
-                          className="text-red-600 hover:text-red-800 p-1 transition-colors"
+                          className="text-red-600 hover:text-red-800 cursor-pointer p-1 transition-colors"
                           title="Sharhni o'chirish"
                         >
                           <Trash2 size={16} />
@@ -352,11 +546,24 @@ const Orders = () => {
     );
   }
 
-  // Buyurtmalar ro'yxati
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Mening buyurtmalarim</CardTitle>
+        <div className="flex justify-between items-center">
+          <CardTitle>Mening buyurtmalarim</CardTitle>
+          <button
+            onClick={() => {
+              const refreshData = async () => {
+                await getUserProfile();
+                await fetchOrders(currentPage);
+              };
+              refreshData();
+            }}
+            className="text-sm bg-gray-100 hover:bg-gray-200 px-3 cursor-pointer py-1 rounded-lg transition-colors"
+          >
+            Yangilash
+          </button>
+        </div>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
@@ -369,55 +576,109 @@ const Orders = () => {
               </p>
             </div>
           ) : (
-            <div className="space-y-4">
-              {orders.map((order) => (
-                <div
-                  key={order.id}
-                  className="flex items-center justify-between p-4 border border-gray-100 rounded-lg hover:border-green-200 transition-colors hover:shadow-md"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
-                      <Truck size={20} className="text-gray-600" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-900">
-                        Buyurtma #{order.id}
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        {order.date} • {order.items} ta mahsulot
-                      </p>
-                      {order.customerInfo && (
-                        <p className="text-xs text-gray-400">
-                          {order.customerInfo.region}
+            <>
+              <div className="space-y-4">
+                {orders.map((order) => (
+                  <div
+                    key={order.id}
+                    className="flex items-center justify-between p-4 border border-gray-100 rounded-lg hover:border-green-200 transition-colors hover:shadow-md"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                        <Truck size={20} className="text-gray-600" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-gray-900">
+                          Buyurtma #{order.id}
                         </p>
-                      )}
+                        <p className="text-sm text-gray-500">
+                          {order.date} • {order.items} ta mahsulot
+                        </p>
+                        {order.customerInfo && (
+                          <p className="text-xs text-gray-400">
+                            {order.customerInfo.region}
+                          </p>
+                        )}
+                        <div className="flex gap-2 mt-1">
+                          <span
+                            className={`inline-flex px-2 py-0.5 rounded text-xs ${
+                              order.paid
+                                ? "text-green-600 bg-green-100"
+                                : "text-orange-600 bg-orange-100"
+                            }`}
+                          >
+                            {order.paid ? "To'langan" : "To'lanmagan"}
+                          </span>
+                          {order.canceled && (
+                            <span className="inline-flex px-2 py-0.5 rounded text-xs text-red-600 bg-red-100">
+                              Bekor qilingan
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-4">
+                      <button
+                        onClick={() => handleViewOrder(order)}
+                        className="flex items-center gap-2 text-green-600 hover:text-green-800 cursor-pointer px-3 py-1 rounded-lg hover:bg-blue-50 transition-colors"
+                      >
+                        <Eye size={16} />
+                        Ko'rish
+                      </button>
+
+                      <span
+                        className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
+                          order.status
+                        )}`}
+                      >
+                        {getStatusText(order.status)}
+                      </span>
+
+                      <p className="font-semibold text-gray-900 min-w-[120px] text-right">
+                        {formatPrice(order.total)} so'm
+                      </p>
                     </div>
                   </div>
+                ))}
+              </div>
 
-                  <div className="flex items-center gap-4">
-                    <button
-                      onClick={() => handleViewOrder(order)}
-                      className="flex items-center gap-2 text-blue-600 hover:text-blue-800 px-3 py-1 rounded-lg hover:bg-blue-50 transition-colors"
-                    >
-                      <Eye size={16} />
-                      Ko'rish
-                    </button>
+              {totalPages > 1 && (
+                <div className="flex justify-center gap-2 mt-6">
+                  <button
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="px-3 py-1 border rounded-lg cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
+                  >
+                    Oldingi
+                  </button>
 
-                    <span
-                      className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
-                        order.status
-                      )}`}
-                    >
-                      {getStatusText(order.status)}
-                    </span>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                    (page) => (
+                      <button
+                        key={page}
+                        onClick={() => handlePageChange(page)}
+                        className={`px-3 py-1 border rounded-lg cursor-pointer ${
+                          page === currentPage
+                            ? "bg-[#249B73] text-white border-[#249B73]"
+                            : "hover:bg-gray-100"
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    )
+                  )}
 
-                    <p className="font-semibold text-gray-900 min-w-[120px] text-right">
-                      {formatPrice(order.total)} so'm
-                    </p>
-                  </div>
+                  <button
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="px-3 py-1 border cursor-pointer rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
+                  >
+                    Keyingi
+                  </button>
                 </div>
-              ))}
-            </div>
+              )}
+            </>
           )}
         </div>
       </CardContent>

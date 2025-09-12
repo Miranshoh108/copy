@@ -629,7 +629,7 @@ export default function Navbar() {
           </div>
         </div>
 
-        <div className="max-w-[1240px] w-full flex items-start justify-between pt-4 mx-auto max-[670px]:pt-0">
+        <div className="max-w-[1240px] w-full flex items-start justify-between pt-3 mx-auto max-[670px]:pt-0">
           <button
             onClick={() => router.push("/")}
             className="cursor-pointer text-2xl leading-6 font-bold flex flex-col hover:opacity-80 transition-opacity max-[670px]:hidden"
