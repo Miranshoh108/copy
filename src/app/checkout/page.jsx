@@ -549,7 +549,7 @@ export default function Checkout() {
       <div>
         <Head>
           <title>Buyurtma berish</title>
-          <meta name="description" content="Checkout - Bojxona Servis" />
+          <meta name="description" content="Checkout - Baraka savdo" />
         </Head>
         <Navbar />
         <div className="max-w-4xl mx-auto px-4 py-8">
@@ -566,7 +566,7 @@ export default function Checkout() {
     <div>
       <Head>
         <title>Buyurtma</title>
-        <meta name="description" content="Checkout - Bojxona Servis" />
+        <meta name="description" content="Checkout - Baraka Savdo" />
       </Head>
 
       <Navbar />

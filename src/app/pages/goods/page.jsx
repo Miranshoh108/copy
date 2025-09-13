@@ -246,26 +246,6 @@ function GoodsProductContent() {
     );
   }
 
-  if (error) {
-    return (
-      <section className="py-8">
-        <div className="max-w-7xl mx-auto px-6 max-[500px]:px-1">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
-            <p className="text-red-600">
-              {mounted ? t("bestsellers.error_message") : ""}: {error}
-            </p>
-            <button
-              onClick={() => window.location.reload()}
-              className="mt-2 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 cursor-pointer"
-            >
-              {mounted ? t("bestsellers.retry_button") : ""}
-            </button>
-          </div>
-        </div>
-      </section>
-    );
-  }
-
   // Agar mahsulotlar kam bo'lsa, ko'rsatmaslik
   if (displayProducts.length === 0) {
     return null;

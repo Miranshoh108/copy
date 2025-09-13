@@ -161,7 +161,7 @@ export default function Cart() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Head>
-        <title>Bojxona Servis</title>
+        <title>Baraka Savdo</title>
         <meta name="description" content="Online shopping platform" />
       </Head>
 

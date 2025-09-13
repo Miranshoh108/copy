@@ -18,7 +18,7 @@ export default function Wishes() {
   return (
     <div>
       <Head>
-        <title>Bojxona Servis</title>
+        <title>Baraka Savdo</title>
         <meta name="description" content="Online shopping platform" />
       </Head>
       <Navbar />

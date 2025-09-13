@@ -634,9 +634,9 @@ export default function Navbar() {
             onClick={() => router.push("/")}
             className="cursor-pointer text-2xl leading-6 font-bold flex flex-col hover:opacity-80 transition-opacity max-[670px]:hidden"
           >
-            <span className="text-gray-800">BOJXONA</span>
+            <span className="text-gray-800 tracking-[7px]">BARAKA</span>
             <span className="text-[#249B73] text-xs text-center tracking-[16px]">
-              SERVIS
+              SAVDO
             </span>
           </button>
 

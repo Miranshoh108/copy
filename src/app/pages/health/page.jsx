@@ -232,25 +232,7 @@ function HealthProductContent() {
     fetchCategoryProducts();
   }, [currentCategoryId, i18next.language]);
 
-  if (error) {
-    return (
-      <section className="py-8">
-        <div className="max-w-7xl mx-auto px-6 max-[500px]:px-1">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
-            <p className="text-red-600">
-              {mounted ? t("bestsellers.error_message") : ""}: {error}
-            </p>
-            <button
-              onClick={() => window.location.reload()}
-              className="mt-2 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 cursor-pointer"
-            >
-              {mounted ? t("bestsellers.retry_button") : ""}
-            </button>
-          </div>
-        </div>
-      </section>
-    );
-  }
+ 
 
   return (
     <section className="py-4">
@@ -263,11 +245,7 @@ function HealthProductContent() {
               ))}
             </div>
           </div>
-        ) : displayProducts.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            {mounted ? t("health_products.no_products") : ""}
-          </div>
-        ) : (
+        ) : displayProducts.length === 0 ? ("") : (
           <div className="max-w-7xl mx-auto ">
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 max-[500px]:gap-2">
               {displayProducts.map((product) => (

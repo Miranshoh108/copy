@@ -324,31 +324,6 @@ function HobbiesProductContent() {
     );
   }
 
-  if (error) {
-    return (
-      <section className="py-8">
-        <div className="max-w-7xl mx-auto px-6 max-[500px]:px-1">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-800 max-[500px]:font-medium max-[500px]:text-xl max-[500px]:px-2">
-              {mounted ? t("catagories5.title") : ""}
-            </h2>
-          </div>
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
-            <p className="text-red-600">
-              {mounted ? t("bestsellers.error_message") : ""}: {error}
-            </p>
-            <button
-              onClick={() => window.location.reload()}
-              className="mt-2 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 cursor-pointer"
-            >
-              {mounted ? t("bestsellers.retry_button") : ""}
-            </button>
-          </div>
-        </div>
-      </section>
-    );
-  }
-
   if (products.length < 7) {
     return null;
   }

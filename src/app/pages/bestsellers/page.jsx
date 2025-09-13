@@ -264,30 +264,7 @@ export default function BestSellers() {
     ],
   };
 
-  if (error) {
-    return (
-      <section className="py-4">
-        <div className="max-w-7xl mx-auto px-6 max-[500px]:px-1">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-800 max-[500px]:font-medium max-[500px]:text-xl max-[500px]:px-2">
-              {mounted ? t("bestsellers.title") : ""}
-            </h2>
-          </div>
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
-            <p className="text-red-600">
-              {mounted ? t("bestsellers.error_message") : ""}: {error}
-            </p>
-            <button
-              onClick={() => window.location.reload()}
-              className="mt-2 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 cursor-pointer"
-            >
-              {mounted ? t("bestsellers.retry_button") : ""}
-            </button>
-          </div>
-        </div>
-      </section>
-    );
-  }
+
 
   return (
     <section className="py-4">
@@ -304,11 +281,7 @@ export default function BestSellers() {
               <ProductCardSkeleton key={index} />
             ))}
           </div>
-        ) : products.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            {mounted ? t("bestsellers.no_products") : ""}
-          </div>
-        ) : products.length <= skeletonCount ? (
+        ) : products.length === 0 ? ("") : products.length <= skeletonCount ? (
           <div className="flex gap-4 overflow-x-auto">
             {products.map((product) => (
               <div key={product.id} className="w-[200px] flex-shrink-0">

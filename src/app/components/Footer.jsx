@@ -306,8 +306,8 @@ const Footer = () => {
           <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center">
             <div className="flex flex-col sm:flex-row sm:items-center max-[420px]:mb-8">
               <div className="text-lg sm:text-xl font-bold">
-                <span className="text-gray-800">BOJXONA</span>
-                <span className="text-[#249B73] ml-1">SERVIS</span>
+                <span className="text-gray-800">BARAKA</span>
+                <span className="text-[#249B73] ml-1">SAVDO</span>
               </div>
               <p className="text-gray-600 text-sm ml-2">© 2025 {t("rights")}</p>
             </div>
