@@ -81,14 +81,12 @@ export default function Checkout() {
     fetchRegions();
   }, []);
 
-  // Savatda mahsulot yo'q bo'lsa cart sahifasiga o'tish
   useEffect(() => {
     if (checkedItems.length === 0) {
       router.push("/cart");
     }
   }, [checkedItems.length, router]);
 
-  // PVZ larni olish
   useEffect(() => {
     const fetchPickupPoints = async () => {
       if (!selectedRegion) {
@@ -489,7 +487,7 @@ export default function Checkout() {
         errorMessage = "Server bilan aloqa o'rnatilmadi";
       }
 
-      alert(errorMessage);
+      console.log(errorMessage);
     } finally {
       setLoading(false);
     }

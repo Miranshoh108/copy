@@ -1,11 +1,20 @@
 import { useEffect, useState } from "react";
-import { Truck, Eye, Star, Trash2, Send, Loader2 } from "lucide-react";
+import {
+  Truck,
+  Eye,
+  Star,
+  Trash2,
+  Send,
+  Loader2,
+  QrCode,
+  X,
+} from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useOrderStore } from "@/app/store/orderStore";
 import $api from "@/app/http/api";
 
 const Orders = () => {
-  const {addReview, removeReview, getOrderReviews } = useOrderStore();
+  const { addReview, removeReview, getOrderReviews } = useOrderStore();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -14,6 +23,7 @@ const Orders = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [userId, setUserId] = useState(null);
+  const [showQRCode, setShowQRCode] = useState(false);
 
   const getUserProfile = async () => {
     try {
@@ -69,10 +79,10 @@ const Orders = () => {
           products: [
             {
               id: order.productId,
-              name: "Mahsulot nomi", 
+              name: "Mahsulot nomi",
               quantity: order.productQuantity,
               price: order.sellingPrice,
-              image: "", 
+              image: "",
               variant: {
                 color: "",
                 unit: "",
@@ -80,8 +90,8 @@ const Orders = () => {
             },
           ],
           customerInfo: {
-            name: "Mijoz ismi", 
-            phone: "Telefon", 
+            name: "Mijoz ismi",
+            phone: "Telefon",
             region: order.location?.address || "Manzil ko'rsatilmagan",
             pickupPoint: {
               name: [`PVZ: ${order.receiverPvz}`],
@@ -90,7 +100,8 @@ const Orders = () => {
           paid: order.paid,
           paymentMethodOnline: order.paymentMethodOnline,
           canceled: order.canceled,
-          apiData: order, 
+          qrCode: order.scan_token,
+          apiData: order,
         }));
 
         setOrders(transformedOrders);
@@ -165,25 +176,34 @@ const Orders = () => {
         $api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
       }
 
+      const productId = selectedOrder.products[0]?.id;
+
       const response = await $api.post("/review/create", {
         orderId: selectedOrder.id,
+        productId,
         rating: newReview.rating,
         comment: newReview.comment,
       });
 
-      if (response.data.status === 200 || response.status === 200) {
-        addReview({
-          orderId: selectedOrder.id,
-          rating: newReview.rating,
-          comment: newReview.comment,
-        });
+      console.log("Review API javobi:", response.data);
 
-        setNewReview({ rating: 5, comment: "" });
-        console.log("Sharh muvaffaqiyatli qo'shildi!");
-      }
+      const reviewData = response.data?.data || response.data;
+
+      addReview({
+        id: reviewData._id || reviewData.id || Date.now(), // fallback qo‘ydim
+        orderId: selectedOrder.id,
+        rating: newReview.rating,
+        comment: newReview.comment,
+        date: new Date().toLocaleDateString("uz-UZ"),
+      });
+
+      setNewReview({ rating: 5, comment: "" });
+      console.log("Sharh muvaffaqiyatli qo'shildi!");
     } catch (error) {
       console.error("Sharh qo'shishda xatolik:", error);
+      // fallback: agar backend id qaytarmasa ham sharh qo‘shilsin
       addReview({
+        id: Date.now(),
         orderId: selectedOrder.id,
         rating: newReview.rating,
         comment: newReview.comment,
@@ -195,8 +215,6 @@ const Orders = () => {
   };
 
   const handleDeleteReview = async (reviewId) => {
-    if (!confirm("Ushbu sharhni o'chirmoqchimisiz?")) return;
-
     try {
       const token = localStorage.getItem("accessToken");
       if (token) {
@@ -217,6 +235,7 @@ const Orders = () => {
   };
 
   const canReview = (order) => {
+    // return true;
     return (
       order.status === "delivered" && getOrderReviews(order.id).length === 0
     );
@@ -227,6 +246,14 @@ const Orders = () => {
       setCurrentPage(newPage);
       fetchOrders(newPage);
     }
+  };
+
+  const handleShowQRCode = () => {
+    setShowQRCode(true);
+  };
+
+  const handleCloseQRCode = () => {
+    setShowQRCode(false);
   };
 
   useEffect(() => {
@@ -294,7 +321,6 @@ const Orders = () => {
             </button>
           </div>
         </CardContent>
-        
       </Card>
     );
   }
@@ -313,6 +339,15 @@ const Orders = () => {
               ← Orqaga
             </button>
             <CardTitle>Buyurtma #{selectedOrder.id}</CardTitle>
+            {selectedOrder.qrCode && (
+              <button
+                onClick={handleShowQRCode}
+                className="flex items-center gap-2 bg-[#249B73] text-white px-3 py-1 rounded-lg  cursor-pointer transition-colors"
+              >
+                <QrCode size={16} />
+                QR Kod
+              </button>
+            )}
           </div>
         </CardHeader>
         <CardContent>
@@ -357,9 +392,6 @@ const Orders = () => {
                       <p className="text-sm text-gray-500">Yetkazish</p>
                       <p className="font-medium">
                         {selectedOrder.customerInfo.region}
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        {selectedOrder.customerInfo.pickupPoint?.name?.[0]}
                       </p>
                     </div>
                   </>
@@ -476,7 +508,7 @@ const Orders = () => {
                           comment: e.target.value,
                         }))
                       }
-                      className="w-full p-3 border rounded-lg resize-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                      className="w-full p-3 outline-none border rounded-lg resize-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
                       rows="4"
                       placeholder="Buyurtma haqida fikringizni yozing..."
                     />
@@ -527,7 +559,9 @@ const Orders = () => {
                           </span>
                         </div>
                         <button
-                          onClick={() => handleDeleteReview(review.id)}
+                          onClick={() =>
+                            handleDeleteReview(review._id || review.id)
+                          }
                           className="text-red-600 hover:text-red-800 cursor-pointer p-1 transition-colors"
                           title="Sharhni o'chirish"
                         >
@@ -542,6 +576,70 @@ const Orders = () => {
             )}
           </div>
         </CardContent>
+
+        {showQRCode && selectedOrder.qrCode && (
+          <div className="fixed inset-0  bg-opacity-50 flex items-center justify-center z-[150] backdrop-blur-lg p-4">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full relative">
+              <button
+                onClick={handleCloseQRCode}
+                className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 cursor-pointer"
+              >
+                <X size={24} />
+              </button>
+
+              <div className="text-center">
+                <h3 className="text-lg font-semibold mb-4">
+                  Buyurtma QR Kodi #{selectedOrder.id}
+                </h3>
+
+                <div className="bg-gray-50 p-4 rounded-lg mb-4">
+                  <img
+                    src={selectedOrder.qrCode}
+                    alt="QR Code"
+                    className="mx-auto max-w-full h-auto"
+                    style={{ maxWidth: "300px", maxHeight: "300px" }}
+                  />
+                </div>
+
+                <p className="text-sm text-gray-600 mb-4">
+                  Ushbu QR kodni kuryer yoki pickup punktida ko'rsating
+                </p>
+
+                <div className="flex gap-2 justify-center">
+                  <button
+                    onClick={handleCloseQRCode}
+                    className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 cursor-pointer transition-colors"
+                  >
+                    Yopish
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      // QR kodni yangi oynada ochish
+                      const newWindow = window.open("", "_blank");
+                      newWindow.document.write(`
+                        <html>
+                          <head><title>QR Code - Buyurtma #${selectedOrder.id}</title></head>
+                          <body style="display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background-color: #f5f5f5;">
+                            <div style="text-align: center; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                              <h2>Buyurtma #${selectedOrder.id}</h2>
+                              <img src="${selectedOrder.qrCode}" alt="QR Code" style="max-width: 100%; height: auto;" />
+                              <p style="margin-top: 10px; color: #666;">QR kodni kuryer yoki pickup punktida ko'rsating</p>
+                            </div>
+                          </body>
+                        </html>
+                      `);
+                      newWindow.document.close();
+                    }}
+                    className="px-4 py-2 bg-[#249B73] text-white rounded-lg hover:bg-[#1e8560] cursor-pointer transition-colors"
+                  >
+                    Chop etish
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </Card>
     );
   }

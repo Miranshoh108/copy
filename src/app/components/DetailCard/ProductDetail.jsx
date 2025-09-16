@@ -491,7 +491,6 @@ export default function ProductDetail() {
             stockQuantity: currentVariant.stockQuantity,
           },
         };
-        addCart(productToBuy);
         router.push("/checkout");
       } else {
         throw new Error("API javobida xatolik");
@@ -564,14 +563,14 @@ export default function ProductDetail() {
         <div className="flex flex-col lg:flex-row gap-6 ">
           <div className="w-full lg:w-[60%] flex flex-col gap-6">
             <div className="relative">
-              <div className="flex justify-center w-full max-w-full h-[600px] lg:max-w-[100%] aspect-square bg-white rounded-xl relative overflow-hidden shadow-md">
-                <div className="relative w-full h-[600px] flex items-center justify-center p-4">
+              <div className="flex justify-center w-full max-w-full h-[600px] max-[500px]:w-[350px] max-[500px]:h-[340px] lg:max-w-[100%] aspect-square bg-white rounded-xl relative overflow-hidden shadow-md">
+                <div className="relative w-full h-[600px] flex items-center justify-center p-4 max-[500px]:h-[340px]">
                   <Image
                     src={images[activeIndex] || "/images/placeholder.png"}
                     alt="Product image"
                     fill
                     className={clsx(
-                      "object-cover transition-transform duration-500 ease-in-out",
+                      "object-cover transition-transform duration-500 ease-in-out max-[500px]:object-contain",
                       animate &&
                         direction === "right" &&
                         "animate-slide-in-right",
@@ -628,11 +627,11 @@ export default function ProductDetail() {
               <div className="flex items-center text-center relative group px-4">
                 <button
                   onClick={handleThumbPrev}
-                  className="absolute -left-6 p-2 z-10  bg-white rounded-full shadow-md cursor-pointer opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-gray-50"
+                  className="absolute left-0 sm:left-2 md:-left-6 p-2 z-10 max-[500px]:hidden bg-white rounded-full shadow-md cursor-pointer opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-gray-50"
                 >
                   <ChevronLeft size={20} />
                 </button>
-                <div className="flex gap-10 w-[500px] overflow-x-auto scrollbar-hide">
+                <div className="flex gap-10 w-[500px] overflow-x-auto scrollbar-hide max-[500px]:gap-4">
                   {images
                     .slice(thumbStartIndex, thumbStartIndex + THUMB_PER_PAGE)
                     .map((img, index) => {
@@ -662,7 +661,7 @@ export default function ProductDetail() {
                 </div>
                 <button
                   onClick={handleThumbNext}
-                  className="absolute right-18 p-2 z-10 bg-white rounded-full shadow-md cursor-pointer opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-gray-50"
+                  className="absolute right-0 sm:right-2 md:-right-6 p-2 z-10 max-[500px]:hidden bg-white rounded-full shadow-md cursor-pointer opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-gray-50"
                 >
                   <ChevronRight size={20} />
                 </button>
@@ -911,7 +910,7 @@ export default function ProductDetail() {
             {images.length > 1 && (
               <button
                 onClick={handleModalPrev}
-                className="absolute left-4 p-3 cursor-pointer text-white hover:text-gray-300 transition-colors z-10 bg-black/50 rounded-full"
+                className="absolute left-4 p-3 max-[500px]:p-1 cursor-pointer text-white hover:text-gray-300 transition-colors z-10 bg-black/50 rounded-full"
               >
                 <ChevronLeft size={32} />
               </button>
@@ -938,7 +937,7 @@ export default function ProductDetail() {
             {images.length > 1 && (
               <button
                 onClick={handleModalNext}
-                className="absolute right-4 cursor-pointer p-3 text-white hover:text-gray-300 transition-colors z-10 bg-black/50 rounded-full"
+                className="absolute right-4 cursor-pointer p-3 max-[500px]:p-1 text-white hover:text-gray-300 transition-colors z-10 bg-black/50 rounded-full"
               >
                 <ChevronRight size={32} />
               </button>

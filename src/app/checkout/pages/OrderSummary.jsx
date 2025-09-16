@@ -79,21 +79,6 @@ export default function OrderSummary({
             </div>
           )}
 
-          {deliveryInfo && !loadingDelivery && (
-            <div className="text-sm text-gray-500">
-              <div className="flex justify-between">
-                <span>Yetkazib berish vaqti:</span>
-                <span>
-                  {deliveryInfo.minDays}-{deliveryInfo.maxDays} kun
-                </span>
-              </div>
-              <div className="flex justify-between mt-1">
-                <span>Og'irligi:</span>
-                <span>{deliveryInfo.weight || 1} kg</span>
-              </div>
-            </div>
-          )}
-
           <hr className="border-gray-200" />
 
           <div className="flex justify-between text-xl font-bold text-gray-800">
@@ -112,7 +97,7 @@ export default function OrderSummary({
             isSubmitting ||
             loadingDelivery
           }
-          className={`w-full py-4 rounded-lg font-medium text-lg transition-all duration-200 ${
+          className={`w-full py-4 cursor-pointer rounded-lg font-medium text-lg transition-all duration-200 ${
             selectedRegion &&
             selectedPickupPoint &&
             !isSubmitting &&
@@ -138,18 +123,6 @@ export default function OrderSummary({
             {!selectedPickupPoint && "Topshirish punktini tanlang"}
           </div>
         )}
-
-        <div className="text-sm text-gray-500 mt-4 text-center leading-relaxed">
-          Buyurtmani joylashtirganda siz, shaxsga doir ma'lumotlar{" "}
-          <button className="text-[#249B73] underline hover:text-[#1e8660] transition-colors">
-            Maxfiylik kelishuviga
-          </button>{" "}
-          muvofiq qayta ishlanishiga rozilik bildirasiz, hamda{" "}
-          <button className="text-[#249B73] underline hover:text-[#1e8660] transition-colors">
-            Foydalanuvchi kelishuvini
-          </button>{" "}
-          qabul qilasiz.
-        </div>
       </div>
     </div>
   );

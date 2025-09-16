@@ -5,7 +5,7 @@ import $api from "../http/api";
 
 function AuthPage() {
   const [activeTab, setActiveTab] = useState("login");
-  const [loginType, setLoginType] = useState("sms"); // "sms" or "system"
+  const [loginType, setLoginType] = useState("sms");
   const [phoneNumber, setPhoneNumber] = useState("+998");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -17,7 +17,7 @@ function AuthPage() {
   const [currentUser, setCurrentUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [tempRegistrationData, setTempRegistrationData] = useState(null);
-  const [smsStep, setSmsStep] = useState(""); // "login" or "register"
+  const [smsStep, setSmsStep] = useState("");
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   const inputRefs = useRef([]);
@@ -25,7 +25,6 @@ function AuthPage() {
   const authCheckDoneRef = useRef(false);
   const interceptorsSetupRef = useRef(false);
 
-  // Single auth check on mount
   useEffect(() => {
     if (!authCheckDoneRef.current) {
       checkAuthStatus();
@@ -51,7 +50,7 @@ function AuthPage() {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
-        _skipAuthRetry: true, // Prevent interceptor retry during initial check
+        _skipAuthRetry: true,
       });
 
       if (data?.success && data?.data) {
@@ -59,7 +58,6 @@ function AuthPage() {
         localStorage.setItem("user", JSON.stringify(user));
         setCurrentUser(user);
         setIsAuthenticated(true);
-        // Redirect to home page if already authenticated
         router.push("/");
       } else {
         handleLogout();
@@ -67,7 +65,6 @@ function AuthPage() {
     } catch (error) {
       console.error("Token verification error:", error);
 
-      // Only try refresh if we have a refresh token and it's a 401 error
       const refreshToken =
         typeof window !== "undefined"
           ? localStorage.getItem("refreshToken")
@@ -77,7 +74,6 @@ function AuthPage() {
         try {
           await handleTokenRefresh();
 
-          // Retry checking auth after refresh
           const newAccessToken = localStorage.getItem("accessToken");
           const retryResponse = await $api.get("/users/profile/me", {
             headers: {
@@ -222,13 +218,6 @@ function AuthPage() {
     } catch (error) {
       console.error("Failed to fetch fresh user profile:", error);
     }
-
-    showNotification(
-      "success",
-      `Tizimga muvaffaqiyatli kirdingiz, ${
-        user.firstName || user.lastName || "Foydalanuvchi"
-      }!`
-    );
   };
 
   const handleSystemLogin = async () => {

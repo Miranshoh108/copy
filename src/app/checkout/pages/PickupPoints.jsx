@@ -173,20 +173,8 @@ export default function PickupPoints({
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">
-                    Yetkazib berish muddati:
-                  </span>
-                  <span>
-                    {deliveryInfo.minDays}-{deliveryInfo.maxDays} kun
-                  </span>
-                </div>
-                <div className="flex justify-between">
                   <span className="text-gray-600">Umumiy og'irligi:</span>
                   <span>{deliveryInfo.weight} kg</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Xizmat turi:</span>
-                  <span>{deliveryInfo.service}</span>
                 </div>
               </div>
             ) : null}
