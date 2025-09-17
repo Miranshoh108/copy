@@ -240,7 +240,6 @@ export default function SearchResults() {
     return mounted ? t("search_results.search_results") : "Qidiruv natijalari";
   };
 
-  // Agar hech qanday parametr bo'lmasa, null qaytarish
   if (!searchQuery && !subType && !category) {
     return null;
   }

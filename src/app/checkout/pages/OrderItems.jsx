@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { Eye } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function OrderItems({
   checkedItems,
@@ -8,10 +9,12 @@ export default function OrderItems({
   getVariantData,
   getProductImages,
 }) {
+  const { t } = useTranslation();
+
   return (
     <div className="bg-white rounded-lg shadow p-6 mb-6 max-[720px]:p-3">
       <h2 className="text-xl font-semibold text-gray-700 mb-4">
-        Buyurtma mahsulotlari ({checkedItems.length} ta)
+        {t("order_items.title", { count: checkedItems.length })}
       </h2>
 
       <div className="space-y-4 h-[500px] overflow-y-auto">
@@ -63,19 +66,25 @@ export default function OrderItems({
                     <div className="text-sm text-gray-600 mb-2 space-y-1">
                       {variantData.color && (
                         <p>
-                          <span className="font-medium">Rang:</span>
+                          <span className="font-medium">
+                            {t("order_items.color")}:
+                          </span>{" "}
                           {variantData.color}
                         </p>
                       )}
                       {variantData.unit && (
                         <p>
-                          <span className="font-medium">O'lchov:</span>
+                          <span className="font-medium">
+                            {t("order_items.unit")}:
+                          </span>{" "}
                           {variantData.unit}
                         </p>
                       )}
                       {variantData.stockQuantity && (
                         <p>
-                          <span className="font-medium">Omborda:</span>
+                          <span className="font-medium">
+                            {t("order_items.stock")}:
+                          </span>{" "}
                           {variantData.stockQuantity}
                         </p>
                       )}
@@ -86,28 +95,29 @@ export default function OrderItems({
                     <div className="flex items-center gap-45 max-[760px]:gap-30 max-[680px]:flex-col max-[680px]:gap-2 max-[680px]:items-start">
                       <div className="flex items-center gap-2 max-[430px]:flex-col max-[430px]:items-start">
                         <span className="text-lg font-bold text-[#249B73] ">
-                          {formatPrice(variantData.price)} so'm
+                          {formatPrice(variantData.price)}{" "}
+                          {t("order_items.currency")}
                         </span>
                         {variantData.originalPrice &&
                           variantData.originalPrice !== variantData.price && (
                             <span className="text-sm text-gray-400 line-through">
-                              {formatPrice(variantData.originalPrice)}
-                              so'm
+                              {formatPrice(variantData.originalPrice)}{" "}
+                              {t("order_items.currency")}
                             </span>
                           )}
                       </div>
 
                       {item.quantity > 1 && (
                         <span className="text-sm text-gray-600">
-                          Jami:
+                          {t("order_items.total")}:{" "}
                           {formatPrice(
                             parseFloat(
                               variantData.price
                                 ?.toString()
                                 .replace(/[^\d.-]/g, "") || 0
                             ) * item.quantity
-                          )}
-                          so'm
+                          )}{" "}
+                          {t("order_items.currency")}
                         </span>
                       )}
                     </div>

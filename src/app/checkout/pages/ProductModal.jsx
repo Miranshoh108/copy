@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function ProductModal({
   isOpen,
@@ -11,6 +12,8 @@ export default function ProductModal({
   getVariantData,
   getProductImages,
 }) {
+  const { t } = useTranslation();
+
   if (!isOpen || !product) return null;
 
   const images = getProductImages(product);
@@ -62,20 +65,26 @@ export default function ProductModal({
                     </span>
                   )}
               </div>
-              <span className="text-gray-600">Miqdor: {product.quantity}</span>
+              <span className="text-gray-600">
+                {t("productModal.quantity")}: {product.quantity}
+              </span>
             </div>
 
             {product.variant && (
               <div className="text-sm text-gray-600 space-y-1">
                 {variantData.color && (
                   <p>
-                    <span className="font-medium">Rang:</span>
+                    <span className="font-medium">
+                      {t("productModal.color")}:
+                    </span>{" "}
                     {variantData.color}
                   </p>
                 )}
                 {variantData.unit && (
                   <p>
-                    <span className="font-medium">O'lchov:</span>
+                    <span className="font-medium">
+                      {t("productModal.unit")}:
+                    </span>{" "}
                     {variantData.unit}
                   </p>
                 )}
@@ -85,6 +94,9 @@ export default function ProductModal({
             {product.description && (
               <div className="mt-3">
                 <p className="text-sm text-gray-700 line-clamp-3">
+                  <span className="font-medium">
+                    {t("productModal.description")}:
+                  </span>{" "}
                   {product.description}
                 </p>
               </div>

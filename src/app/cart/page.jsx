@@ -8,7 +8,11 @@ import CartProduct from "../components/CartProduct";
 import Image from "next/image";
 import Button from "../components/ui/button";
 import { useRouter } from "next/navigation";
+import { useTranslation } from "react-i18next";
+import i18next from "@/i18n/i18n";
+
 export default function Cart() {
+  const { t, i18n } = useTranslation();
   const { cart, onChecked, offChecked, getTotalPrice, getCheckedCount } =
     useCartStore();
   const [promoCode, setPromoCode] = useState("");
@@ -18,13 +22,22 @@ export default function Cart() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState(null);
+  const [isHydrated, setIsHydrated] = useState(false); // Add this state
+
   const isAllChecked = cart.every((item) => item.checked);
   const subtotal = getTotalPrice();
   const checkedCount = getCheckedCount();
   const route = useRouter();
+
+  // Add useEffect to handle hydration
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
+
   useEffect(() => {
     checkAuthStatus();
   }, []);
+
   const checkAuthStatus = () => {
     setAuthLoading(true);
     try {
@@ -47,24 +60,10 @@ export default function Cart() {
       console.error("Auth check error:", error);
       setIsAuthenticated(false);
       setCurrentUser(null);
-      setAuthError("Autentifikatsiya tekshirishda xatolik yuz berdi");
+      setAuthError(t("cart.auth_error"));
     } finally {
       setAuthLoading(false);
     }
-  };
-  const promoCodes = {
-    UZUM10: { discount: 10, type: "percent", description: "10% chegirma" },
-    WELCOME15: { discount: 15, type: "percent", description: "15% chegirma" },
-    SAVE50000: {
-      discount: 50000,
-      type: "fixed",
-      description: "50,000 so'm chegirma",
-    },
-    NEWUSER: {
-      discount: 50,
-      type: "percent",
-      description: "20% chegirma yangi foydalanuvchi uchun",
-    },
   };
 
   const toggleChecked = () => {
@@ -77,7 +76,7 @@ export default function Cart() {
 
   const handleCheckout = async () => {
     if (checkedCount === 0) {
-      console.log("Buyurtma berish uchun kamida bitta mahsulot tanlang");
+      console.log(t("cart.select_product_message"));
       return;
     }
 
@@ -129,7 +128,7 @@ export default function Cart() {
       setAppliedPromo({ code, ...promoCodes[code] });
       setPromoError("");
     } else {
-      setPromoError("Promokod topilmadi yoki yaroqsiz");
+      setPromoError(t("cart.promo_not_found"));
       setAppliedPromo(null);
     }
   };
@@ -157,6 +156,25 @@ export default function Cart() {
     setAuthError("");
     checkAuthStatus();
   };
+
+  // Show loading or placeholder during hydration
+  if (!isHydrated) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Head>
+          <title>Baraka Savdo</title>
+          <meta name="description" content="Online shopping platform" />
+        </Head>
+        <Navbar />
+        <div className="max-w-7xl mx-auto px-4 py-6">
+          <div className="flex items-center justify-center min-h-[500px]">
+            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#249B73]"></div>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -191,14 +209,14 @@ export default function Cart() {
                     onClick={retryAuth}
                     className="text-sm text-yellow-800 underline hover:no-underline"
                   >
-                    Qaytadan urinib ko'ring
+                    {t("cart.retry")}
                   </button>
-                  <span className="mx-2 text-yellow-600">yoki</span>
+                  <span className="mx-2 text-yellow-600">{t("cart.or")}</span>
                   <button
                     onClick={() => route.push("/register")}
                     className="text-sm text-yellow-800 underline hover:no-underline"
                   >
-                    Ro'yxatdan o'ting
+                    {t("cart.register_link")}
                   </button>
                 </div>
               </div>
@@ -220,14 +238,14 @@ export default function Cart() {
               </div>
 
               <h2 className="text-2xl font-semibold text-gray-800 mb-3">
-                Savatingiz bo'sh
+                {t("cart.empty_cart")}
               </h2>
 
               <Button
                 onClick={() => route.push("/")}
                 className="bg-[#249B73] hover:bg-[#249B73] text-white px-8 py-3 rounded-lg font-medium cursor-pointer transition-colors"
               >
-                Xarid qilishni boshlash
+                {t("cart.start_shopping")}
               </Button>
             </div>
           </div>
@@ -236,9 +254,11 @@ export default function Cart() {
             <div className="space-y-4 w-2/3 max-[1130px]:w-[60%] max-[800px]:w-full">
               <div className="flex items-center justify-between mb-6">
                 <h1 className="text-2xl font-semibold text-gray-900">
-                  Savatcha
+                  {t("cart.title")}
                 </h1>
-                <span className="text-gray-500">{cart.length} ta mahsulot</span>
+                <span className="text-gray-500">
+                  {cart.length} {t("cart.products_count")}
+                </span>
               </div>
 
               <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-200">
@@ -268,18 +288,18 @@ export default function Cart() {
                       )}
                     </div>
                     <span className="ml-3 text-gray-800 font-medium group-hover:text-[#249B73] transition-colors duration-200">
-                      Hammasini tanlash
+                      {t("cart.select_all")}
                     </span>
                   </label>
 
                   <div className="flex items-center space-x-4 text-sm text-gray-500 max-[400px]:hidden">
                     {checkedCount > 0 && (
                       <span className="bg-green-100 text-[#249B73] px-3 py-1 rounded-full font-medium">
-                        {checkedCount} ta tanlandi
+                        {checkedCount} {t("cart.selected")}
                       </span>
                     )}
                     <span className="text-gray-400 max-[500px]:hidden">
-                      {cart.length} ta mahsulot
+                      {cart.length} {t("cart.products_count")}
                     </span>
                   </div>
                 </div>
@@ -312,14 +332,16 @@ export default function Cart() {
 
             <div className="space-y-4 w-1/3 max-[1130px]:w-[40%] max-[800px]:w-full">
               <div className="bg-white rounded-lg p-6 shadow-sm border">
-                <h3 className="font-semibold text-gray-900 mb-4">Promokod</h3>
+                <h3 className="font-semibold text-gray-900 mb-4">
+                  {t("cart.promo_code")}
+                </h3>
 
                 {!appliedPromo ? (
                   <div className="space-y-3">
                     <div className="flex gap-2">
                       <input
                         type="text"
-                        placeholder="Promokodni kiriting"
+                        placeholder={t("cart.enter_promo")}
                         value={promoCode}
                         onChange={(e) => setPromoCode(e.target.value)}
                         className="flex-1 px-3 py-2 max-[400px]:px-2 max-[400px]:w-[90%] max-[400px]:py-2 border outline-none border-gray-300 rounded-lg focus:ring-2 focus:ring-[#249B73] focus:border-[#249B73]"
@@ -331,7 +353,7 @@ export default function Cart() {
                         onClick={applyPromoCode}
                         className="px-4 py-2 max-[400px]:py-2 max-[400px]:px-2  bg-[#249B73] cursor-pointer text-white rounded-lg hover:bg-[#249B73] transition-colors font-medium"
                       >
-                        Qo'llash
+                        {t("cart.apply")}
                       </button>
                     </div>
                     {promoError && (
@@ -371,27 +393,35 @@ export default function Cart() {
 
               <div className="bg-white rounded-lg p-6 shadow-sm border">
                 <h3 className="font-semibold text-gray-900 mb-4">
-                  Buyurtmangiz
+                  {t("cart.your_order")}
                 </h3>
 
                 <div className="space-y-3">
                   <div className="flex justify-between text-gray-600">
-                    <span>Mahsulotlar ({checkedCount} ta):</span>
-                    <span>{subtotal.toLocaleString()} so'm</span>
+                    <span>
+                      {t("cart.products")} ({checkedCount}):
+                    </span>
+                    <span>
+                      {subtotal.toLocaleString()} {t("cart.sum")}
+                    </span>
                   </div>
 
                   {discount > 0 && (
-                    <div className="flex justify-between text-[#249B73] ">
-                      <span>Chegirma:</span>
-                      <span>-{discount.toLocaleString()} so'm</span>
+                    <div className="flex justify-between text-[#249B73]">
+                      <span>{t("cart.discount")}:</span>
+                      <span>
+                        -{discount.toLocaleString()} {t("cart.sum")}
+                      </span>
                     </div>
                   )}
 
                   <hr className="my-4" />
 
                   <div className="flex justify-between text-lg font-semibold text-gray-900">
-                    <span>Jami:</span>
-                    <span>{finalTotal.toLocaleString()} so'm</span>
+                    <span>{t("cart.total")}:</span>
+                    <span>
+                      {finalTotal.toLocaleString()} {t("cart.sum")}
+                    </span>
                   </div>
                 </div>
 
@@ -401,15 +431,15 @@ export default function Cart() {
                   disabled={checkedCount === 0 || authLoading}
                 >
                   {authLoading
-                    ? "Tekshirilmoqda..."
+                    ? t("cart.checking")
                     : !isAuthenticated
-                    ? "Ro'yxatdan o'tish"
-                    : "Buyurtma berish"}
+                    ? t("cart.register")
+                    : t("cart.place_order")}
                 </Button>
 
                 {checkedCount === 0 && (
                   <p className="text-sm text-gray-500 text-center mt-2">
-                    Buyurtma berish uchun kamida bitta mahsulot tanlang
+                    {t("cart.select_product_message")}
                   </p>
                 )}
               </div>
@@ -418,11 +448,11 @@ export default function Cart() {
                 <div className="space-y-2">
                   <div className="flex items-center text-sm text-gray-700">
                     <span className="text-green-500 mr-2">✓</span>
-                    Xavfsiz to'lov
+                    {t("cart.secure_payment")}
                   </div>
                   <div className="flex items-center text-sm text-gray-700">
                     <span className="text-green-500 mr-2">✓</span>
-                    Tez yetkazib berish
+                    {t("cart.fast_delivery")}
                   </div>
                 </div>
               </div>

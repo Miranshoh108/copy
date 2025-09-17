@@ -2,8 +2,11 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import { useCartStore } from "./hooks/cart";
+import { useTranslation } from "react-i18next";
+import i18next from "@/i18n/i18n";
 
 export default function CartProduct({ product }) {
+  const { t } = useTranslation();
   const { toggleChecked, updateQuantity, removeCart } = useCartStore();
   const [isRemoving, setIsRemoving] = useState(false);
 
@@ -48,6 +51,18 @@ export default function CartProduct({ product }) {
     toggleChecked(productId, variantId);
   };
 
+  // Get localized name based on current language
+  const getLocalizedName = () => {
+    switch (i18next.language) {
+      case "ru":
+        return product.name_ru || product.name;
+      case "en":
+        return product.name_en || product.name;
+      default:
+        return product.name;
+    }
+  };
+
   const getVariantData = () => {
     if (product.variant) {
       return {
@@ -89,7 +104,7 @@ export default function CartProduct({ product }) {
           <div className="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden">
             <Image
               src={variantData.image || "/images/placeholder.jpg"}
-              alt={product.name}
+              alt={getLocalizedName()}
               width={80}
               height={80}
               className="w-full h-full object-cover"
@@ -99,16 +114,27 @@ export default function CartProduct({ product }) {
 
         <div className="flex-1 min-w-0">
           <h3 className="text-sm font-medium text-gray-900 line-clamp-2 mb-1">
-            {product.name}
+            {getLocalizedName()}
           </h3>
 
           {product.variant && (
             <div className="text-xs text-gray-500 mb-2 max-[500px]:hidden">
-              {variantData.color && <span>Rang: {variantData.color}</span>}
+              {variantData.color && (
+                <span>
+                  {t("cart_product.color")}: {variantData.color}
+                </span>
+              )}
               {variantData.color && variantData.unit && <span> • </span>}
-              {variantData.unit && <span>Birlik: {variantData.unit}</span>}
+              {variantData.unit && (
+                <span>
+                  {t("cart_product.unit")}: {variantData.unit}
+                </span>
+              )}
               {variantData.stockQuantity && (
-                <span> • Omborda: {variantData.stockQuantity}</span>
+                <span>
+                  {" "}
+                  • {t("cart_product.in_stock")}: {variantData.stockQuantity}
+                </span>
               )}
             </div>
           )}
@@ -120,12 +146,12 @@ export default function CartProduct({ product }) {
           <div className="flex items-center justify-between max-[480px]:flex-col max-[480px]:items-start max-[480px]:gap-2">
             <div className="flex flex-col">
               <span className="text-lg font-semibold text-gray-900">
-                {formatPrice(variantData.price)} so&apos;m
+                {formatPrice(variantData.price)} {t("cart.sum")}
               </span>
               {variantData.originalPrice &&
                 variantData.originalPrice !== variantData.price && (
                   <span className="text-sm text-gray-500 line-through">
-                    {formatPrice(variantData.originalPrice)} so&apos;m
+                    {formatPrice(variantData.originalPrice)} {t("cart.sum")}
                   </span>
                 )}
             </div>
@@ -137,8 +163,8 @@ export default function CartProduct({ product }) {
                   className="w-8 h-8 flex items-center cursor-pointer justify-center text-gray-600 hover:bg-gray-100 transition-colors"
                   title={
                     product.quantity === 1
-                      ? "Mahsulotni o'chirish"
-                      : "Kamaytirish"
+                      ? t("cart_product.remove_product")
+                      : t("cart_product.decrease")
                   }
                 >
                   {product.quantity === 1 ? (
@@ -175,7 +201,7 @@ export default function CartProduct({ product }) {
                 <button
                   onClick={incrementQuantity}
                   className="w-8 h-8 flex cursor-pointer  items-center justify-center text-gray-600 hover:bg-gray-100 transition-colors"
-                  title="Ko'paytirish"
+                  title={t("cart_product.increase")}
                 >
                   <svg
                     className="w-4 h-4"
@@ -194,7 +220,7 @@ export default function CartProduct({ product }) {
               <button
                 onClick={handleRemove}
                 className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg cursor-pointer  transition-colors max-[500px]:hidden"
-                title="Mahsulotni o'chirish"
+                title={t("cart_product.remove_product")}
               >
                 <svg
                   className="w-5 h-5"
@@ -214,13 +240,15 @@ export default function CartProduct({ product }) {
           {product.quantity > 1 && (
             <div className="mt-2 text-right">
               <span className="text-sm text-gray-600">
-                Jami:
-                {formatPrice(
-                  parseFloat(
-                    variantData.price?.toString().replace(/[^\d.-]/g, "") || 0
-                  ) * product.quantity
-                )}
-                so&apos;m
+                <div className=" flex gap-1 justify-end">
+                  <p className="font-bold">{t("cart_product.total_price")}:</p>
+                  {formatPrice(
+                    parseFloat(
+                      variantData.price?.toString().replace(/[^\d.-]/g, "") || 0
+                    ) * product.quantity
+                  )}
+                  {t("cart.sum")}
+                </div>
               </span>
             </div>
           )}

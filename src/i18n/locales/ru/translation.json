@@ -165,5 +165,224 @@
     "tip_3": "Используйте более общие термины",
     "previous": "Предыдущая",
     "next": "Следующая"
+  },
+  "cart": {
+    "title": "Корзина",
+    "empty_cart": "Ваша корзина пуста",
+    "start_shopping": "Начать покупки",
+    "products_count": "товаров",
+    "select_all": "Выбрать все",
+    "selected": "выбрано",
+    "promo_code": "Промокод",
+    "enter_promo": "Введите промокод",
+    "apply": "Применить",
+    "promo_not_found": "Промокод не найден или недействителен",
+    "your_order": "Ваш заказ",
+    "products": "Товары",
+    "discount": "Скидка",
+    "total": "Итого",
+    "place_order": "Оформить заказ",
+    "register": "Зарегистрироваться",
+    "checking": "Проверяется...",
+    "select_product_message": "Выберите хотя бы один товар для оформления заказа",
+    "secure_payment": "Безопасная оплата",
+    "fast_delivery": "Быстрая доставка",
+    "auth_error": "Ошибка при проверке аутентификации",
+    "retry": "Попробуйте снова",
+    "or": "или",
+    "register_link": "Зарегистрируйтесь",
+    "sum": "сум"
+  },
+  "cart_product": {
+    "color": "Цвет",
+    "unit": "Единица",
+    "in_stock": "В наличии",
+    "remove_product": "Удалить товар",
+    "decrease": "Уменьшить",
+    "increase": "Увеличить",
+    "total_price": "Итого"
+  },
+  "wishes": {
+    "add_favorites": "Добавьте понравившиеся товары",
+    "no_likes": "К сожалению, у вас пока нет избранных товаров",
+    "back_home": "Вернуться на главную",
+    "favorites": "Избранные товары"
+  },
+  "variant": {
+    "select": "Выберите вариант",
+    "saved_account": "Будет сохранено в вашем аккаунте",
+    "single": "Один вариант",
+    "multiple": "Несколько вариантов",
+    "multiple_hint": "Чтобы выбрать несколько вариантов, нажмите на них",
+    "available": "Доступные варианты",
+    "selected": "выбрано",
+    "color": "Цвет",
+    "size": "Размер",
+    "quantity": "Количество",
+    "total": "Итого",
+    "add_single": "Добавить в корзину",
+    "add_multiple": "Добавить {{count}} вариантов в корзину",
+    "login_hint": "Сохраняйте товары, зарегистрировавшись"
+  },
+  "order_items": {
+    "title": "Товары заказа ({{count}} шт.)",
+    "color": "Цвет",
+    "unit": "Единица",
+    "stock": "На складе",
+    "total": "Итого",
+    "currency": "сум"
+  },
+  "orderSummary": {
+    "title": "Итог заказа",
+    "items": "Товары",
+    "delivery": "Доставка",
+    "calculating": "Рассчитывается...",
+    "discounts": "Скидки",
+    "total": "Итого",
+    "currency": "сум",
+    "submit": "Оформить заказ",
+    "submitting": "Заказ оформляется...",
+    "selectRegion": "Выберите регион",
+    "selectPickupPoint": "Выберите пункт выдачи",
+    "and": "и"
+  },
+  "payment": {
+    "title": "Способ оплаты",
+    "clickTitle": "Оплата через Click",
+    "clickDesc": "Оплатите безопасно через систему Click",
+    "paymeTitle": "Оплата через Payme",
+    "paymeDesc": "Скоро... (в процессе интеграции)",
+    "clickButton": "Оплатить через Click",
+    "paymeButton": "Оплатить через Payme"
+  },
+  "pickupPoints": {
+    "title": "Пункт выдачи BS Market",
+    "selectRegion": "Выберите область",
+    "region": "Область",
+    "loadingRegions": "Загрузка...",
+    "chooseRegion": "Выберите область",
+    "choosePickup": "Выберите пункт выдачи",
+    "loadingPickup": "Загрузка пунктов...",
+    "noPickup": "В этой области нет пунктов выдачи",
+    "showMore": "Показать больше (осталось {{count}})",
+    "showLess": "Показать меньше",
+    "deliveryInfo": "Информация о доставке",
+    "calculating": "Рассчитывается...",
+    "deliveryPrice": "Стоимость доставки:",
+    "totalWeight": "Общий вес:",
+    "recipient": "Получатель",
+    "unknown": "Неизвестно",
+    "noPhone": "Номер телефона отсутствует"
+  },
+  "productModal": {
+    "quantity": "Количество",
+    "color": "Цвет",
+    "unit": "Единица",
+    "description": "Описание"
+  },
+  "checkout": {
+    "title": "Заказ",
+    "loading": "Загрузка...",
+    "order": "Оформить заказ",
+    "deliveryError": "Ошибка при расчете доставки",
+    "selectRegion": "Пожалуйста, выберите регион!",
+    "selectPickup": "Пожалуйста, выберите пункт выдачи!"
+  },
+  "profile": {
+    "loading": "Загрузка данных профиля...",
+    "error": "Ошибка при загрузке профиля",
+    "retry": "Повторить",
+    "notFound": "Данные пользователя не найдены",
+    "hide": "Скрыть",
+    "personal": "Личные данные",
+    "orders": "Мои заказы",
+    "favorites": "Избранное",
+    "notifications": "Уведомления",
+    "logout": "Выйти",
+    "online": "В сети",
+    "role": "Тип пользователя",
+    "admin": "Админ",
+    "worker": "Сотрудник",
+    "client": "Клиент",
+    "interests": "Интересы",
+    "personal_info": "Личная информация",
+    "labels": {
+      "role": "Тип пользователя",
+      "member_since": "Дата регистрации",
+      "interests_count": "Количество интересов"
+    },
+    "fields": {
+      "firstName": "Имя",
+      "lastName": "Фамилия",
+      "phone": "Номер телефона",
+      "email": "Электронная почта",
+      "gender": "Пол"
+    },
+    "placeholders": {
+      "firstName": "Введите имя",
+      "lastName": "Введите фамилию"
+    },
+    "gender": {
+      "male": "Мужской",
+      "female": "Женский",
+      "other": "Другой",
+      "unknown": "Не указан"
+    },
+    "roles": {
+      "admin": "Администратор",
+      "worker": "Сотрудник",
+      "customer": "Клиент"
+    },
+    "actions": {
+      "edit": "Редактировать",
+      "cancel": "Отмена",
+      "save": "Сохранить",
+      "saving": "Сохранение..."
+    },
+    "validation": {
+      "required_fields": "Имя, фамилия и телефон обязательны",
+      "invalid_email": "Неверный формат email",
+      "invalid_phone": "Телефон должен быть в формате +998XXXXXXXXX"
+    },
+    "errors": {
+      "update_failed": "Ошибка при обновлении профиля"
+    }
+  },
+  "toliq tugamay qoldi": {},
+  "orders": {
+    "myOrders": "Мои заказы",
+    "loading": "Загрузка заказов...",
+    "noOrders": "Заказы отсутствуют.",
+    "firstOrder": "Сделайте свой первый заказ!",
+    "errorTitle": "Произошла ошибка",
+    "retry": "Повторить",
+    "refresh": "Обновить",
+    "view": "Просмотр",
+    "back": "← Назад",
+    "order": "Заказ",
+    "status": {
+      "delivered": "Доставлен",
+      "shipping": "В пути",
+      "processing": "В обработке",
+      "cancelled": "Отменен"
+    },
+    "paid": "Оплачен",
+    "unpaid": "Не оплачен",
+    "paymentMethod": "Способ оплаты",
+    "online": "Онлайн",
+    "cash": "Наличные",
+    "leaveReview": "Оставить отзыв",
+    "yourReview": "Ваш отзыв",
+    "rating": "Оценка",
+    "comment": "Комментарий",
+    "sendReview": "Отправить отзыв",
+    "deleteReview": "Удалить отзыв",
+    "products": "Товары",
+    "total": "Итого",
+    "date": "Дата",
+    "delivery": "Доставка",
+    "close": "Закрыть",
+    "print": "Печать",
+    "qrTitle": "QR код заказа"
   }
 }

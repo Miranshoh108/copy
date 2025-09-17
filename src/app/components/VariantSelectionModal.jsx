@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { X, ShoppingCart, Plus, Minus } from "lucide-react";
 import { createPortal } from "react-dom";
+import { useTranslation } from "react-i18next";
 
 const VariantSelectionModal = ({
   isOpen,
@@ -10,6 +11,7 @@ const VariantSelectionModal = ({
   currencyText = "so'm",
   isAuthenticated = false,
 }) => {
+  const { t } = useTranslation();
   const [selectedVariants, setSelectedVariants] = useState(new Set());
   const [quantities, setQuantities] = useState({});
   const [isLoading, setIsLoading] = useState(false);
@@ -41,33 +43,6 @@ const VariantSelectionModal = ({
 
   if (!mounted || !isOpen || !product) return null;
 
-  const checkAuthentication = () => {
-    try {
-      const token =
-        localStorage.getItem("accessToken") || localStorage.getItem("token");
-      const isAuth = !!token && token !== "undefined" && token.length > 0;
-      console.log(
-        "Modal authentication check:",
-        isAuth,
-        "Token:",
-        token ? "exists" : "missing"
-      );
-      return isAuth;
-    } catch (error) {
-      console.error("Error checking authentication in modal:", error);
-      return false;
-    }
-  };
-
-  const showNotification = (message, type = "success") => {
-    console.log(`${type}: ${message}`);
-    if (type === "success") {
-      console.log("✅", message);
-    } else {
-      console.error("❌", message);
-    }
-  };
-
   const handleVariantSelect = (variant) => {
     if (addMode === "single") {
       setSelectedVariants(new Set([variant._id]));
@@ -86,7 +61,6 @@ const VariantSelectionModal = ({
     if (selectedVariants.size === 0) return;
 
     setIsLoading(true);
-    const authStatus = checkAuthentication();
 
     try {
       const selectedVariantIds = Array.from(selectedVariants);
@@ -101,71 +75,23 @@ const VariantSelectionModal = ({
           quantity: quantities[variant._id] || 1,
           price: variant.discountedPrice || variant.price,
         };
-
-        console.log("Single variant cart data:", cartData);
-
-        if (authStatus) {
-          console.log("Adding single variant via API");
-          await onAddToCart(cartData);
-        } else {
-          console.log("Adding single variant to local storage");
-          await onAddToCart(cartData);
-        }
-
-        showNotification(
-          "Variant muvaffaqiyatli savatga qo'shildi!",
-          "success"
-        );
+        await onAddToCart(cartData);
       } else {
-        const cartRequests = selectedVariantIds.map((variantId) => {
+        for (const variantId of selectedVariantIds) {
           const variant = product.variants.find((v) => v._id === variantId);
-          return {
+          const cartData = {
             productId: product.id,
             variantId: variant._id,
             quantity: quantities[variant._id] || 1,
             price: variant.discountedPrice || variant.price,
           };
-        });
-
-        console.log("Multiple variants cart data:", cartRequests);
-
-        if (authStatus) {
-          console.log("Adding multiple variants via API");
-          for (const cartData of cartRequests) {
-            await onAddToCart(cartData);
-            await new Promise((resolve) => setTimeout(resolve, 100));
-          }
-        } else {
-          console.log("Adding multiple variants to local storage");
-          for (const cartData of cartRequests) {
-            await onAddToCart(cartData);
-          }
+          await onAddToCart(cartData);
         }
-
-        showNotification(
-          `${selectedVariantIds.length} ta variant savatga qo'shildi!`,
-          "success"
-        );
       }
 
       onClose();
     } catch (error) {
       console.error("Error adding to cart:", error);
-
-      if (error.response) {
-        console.error("Response data:", error.response.data);
-        console.error("Response status:", error.response.status);
-      }
-
-      let errorMessage = "Xatolik yuz berdi";
-
-      if (authStatus) {
-        errorMessage = `API xatoligi: ${
-          error.response?.data?.message || error.message
-        }`;
-      }
-
-      showNotification(errorMessage, "error");
     } finally {
       setIsLoading(false);
     }
@@ -206,6 +132,7 @@ const VariantSelectionModal = ({
 
   const modalContent = (
     <>
+      {/* Background */}
       <div
         className={`fixed inset-0 bg-black z-[9998] transition-opacity duration-300 flex flex-col items-center justify-center ${
           isOpen ? "opacity-30" : "opacity-0"
@@ -213,15 +140,17 @@ const VariantSelectionModal = ({
         onClick={handleBackdropClick}
       />
 
+      {/* Modal */}
       <div
         className={`fixed inset-x-0 bottom-20 z-[9999] max-[700px]:px-4 overflow-y-auto flex justify-center items-center transition-transform duration-300 ease-out ${
           isOpen ? "translate-y-0" : "translate-y-full"
         }`}
       >
         <div className="bg-white rounded-t-2xl w-[600px] mx-auto shadow-2xl h-[80vh] flex flex-col">
+          {/* Header */}
           <div className="flex items-center justify-between p-4 border-b flex-shrink-0">
             <h3 className="text-lg font-semibold text-gray-800">
-              Variantni tanlang
+              {t("variant.select")}
             </h3>
             <button
               onClick={onClose}
@@ -231,6 +160,7 @@ const VariantSelectionModal = ({
             </button>
           </div>
 
+          {/* Product Info */}
           <div className="p-4 border-b flex-shrink-0">
             <div className="flex items-start gap-3 mb-3">
               <img
@@ -247,7 +177,7 @@ const VariantSelectionModal = ({
             </div>
 
             <div className="mb-3 text-xs text-gray-500">
-              {isAuthenticated ? " Hisobingizga saqlanadi" : ""}
+              {isAuthenticated ? t("variant.saved_account") : ""}
             </div>
 
             <div className="flex gap-2 mb-2">
@@ -265,7 +195,7 @@ const VariantSelectionModal = ({
                     : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                 }`}
               >
-                Bitta variant
+                {t("variant.single")}
               </button>
               <button
                 onClick={() => setAddMode("multiple")}
@@ -275,20 +205,22 @@ const VariantSelectionModal = ({
                     : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                 }`}
               >
-                Bir nechta variant
+                {t("variant.multiple")}
               </button>
             </div>
 
             {addMode === "multiple" && (
               <p className="text-xs text-gray-600">
-                Bir nechta variant tanlash uchun variantlarni bosing
+                {t("variant.multiple_hint")}
               </p>
             )}
           </div>
 
+          {/* Variants */}
           <div className="p-4 flex-1 overflow-y-auto">
             <p className="text-sm font-medium text-gray-700 mb-3">
-              Mavjud variantlar ({selectedVariants.size} tanlangan):
+              {t("variant.available")} ({selectedVariants.size}{" "}
+              {t("variant.selected")}):
             </p>
             <div className="space-y-2">
               {product.variants?.map((variant) => {
@@ -344,12 +276,12 @@ const VariantSelectionModal = ({
                           </p>
                           {variant.color && (
                             <p className="text-sm text-gray-600">
-                              Rang: {variant.color}
+                              {t("variant.color")}: {variant.color}
                             </p>
                           )}
                           {variant.size && (
                             <p className="text-sm text-gray-600">
-                              O'lcham: {variant.size}
+                              {t("variant.size")}: {variant.size}
                             </p>
                           )}
                         </div>
@@ -386,7 +318,7 @@ const VariantSelectionModal = ({
                       <div className="mt-3 pt-3 border-t border-gray-100">
                         <div className="flex items-center justify-center gap-4">
                           <span className="text-sm font-medium text-gray-700">
-                            Miqdor:
+                            {t("variant.quantity")}:
                           </span>
                           <div className="flex items-center gap-3">
                             <button
@@ -421,13 +353,14 @@ const VariantSelectionModal = ({
             </div>
           </div>
 
+          {/* Footer */}
           <div className="p-4 border-t bg-gray-50 rounded-b-2xl flex-shrink-0">
-            {/* Jami narx ko'rsatish */}
             {selectedVariants.size > 0 && (
               <div className="mb-3 p-2 bg-white rounded-lg border">
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-medium text-gray-700">
-                    Jami ({selectedVariants.size} ta variant):
+                    {t("variant.total")} ({selectedVariants.size}{" "}
+                    {t("variant.selected")}):
                   </span>
                   <span className="text-lg font-bold text-[#249B73]">
                     {new Intl.NumberFormat("ru-RU").format(totalPrice)}
@@ -453,9 +386,10 @@ const VariantSelectionModal = ({
                   <ShoppingCart size={18} />
                   <span>
                     {selectedVariants.size > 1
-                      ? `${selectedVariants.size} ta variantni savatga qo'shish`
-                      : "Savatga qo'shish"}
-                    {!isAuthenticated && ""}
+                      ? t("variant.add_multiple", {
+                          count: selectedVariants.size,
+                        })
+                      : t("variant.add_single")}
                   </span>
                 </>
               )}
@@ -463,7 +397,7 @@ const VariantSelectionModal = ({
 
             {!isAuthenticated && (
               <p className="text-xs text-gray-500 text-center mt-2">
-                Ro'yxatdan o'tish orqali mahsulotlaringizni saqlang
+                {t("variant.login_hint")}
               </p>
             )}
           </div>

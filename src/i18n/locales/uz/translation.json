@@ -21,7 +21,7 @@
     "no_subcategories": "Bu kategoriyada hozircha mahsulotlar yo'q",
     "select_category": "Kategoriya tanlang",
     "home": "Bosh sahifa",
-    "katalog":"Katalog"
+    "katalog": "Katalog"
   },
   "home": {
     "title": "BS Market - O'zbekistondagi Eng Yaxshi Onlayn Do'kon",
@@ -166,5 +166,224 @@
     "tip_3": "Umumiy so'zlardan foydalaning",
     "previous": "Oldingi",
     "next": "Keyingi"
+  },
+  "cart": {
+    "title": "Savatcha",
+    "empty_cart": "Savatingiz bo'sh",
+    "start_shopping": "Xarid qilishni boshlash",
+    "products_count": "ta mahsulot",
+    "select_all": "Hammasini tanlash",
+    "selected": "ta tanlandi",
+    "promo_code": "Promokod",
+    "enter_promo": "Promokodni kiriting",
+    "apply": "Qo'llash",
+    "promo_not_found": "Promokod topilmadi yoki yaroqsiz",
+    "your_order": "Buyurtmangiz",
+    "products": "Mahsulotlar",
+    "discount": "Chegirma",
+    "total": "Jami",
+    "place_order": "Buyurtma berish",
+    "register": "Ro'yxatdan o'tish",
+    "checking": "Tekshirilmoqda...",
+    "select_product_message": "Buyurtma berish uchun kamida bitta mahsulot tanlang",
+    "secure_payment": "Xavfsiz to'lov",
+    "fast_delivery": "Tez yetkazib berish",
+    "auth_error": "Autentifikatsiya tekshirishda xatolik yuz berdi",
+    "retry": "Qaytadan urinib ko'ring",
+    "or": "yoki",
+    "register_link": "Ro'yxatdan o'ting",
+    "sum": "so'm"
+  },
+  "cart_product": {
+    "color": "Rang",
+    "unit": "Birlik",
+    "in_stock": "Omborda",
+    "remove_product": "Mahsulotni o'chirish",
+    "decrease": "Kamaytirish",
+    "increase": "Ko'paytirish",
+    "total_price": "Jami"
+  },
+  "wishes": {
+    "add_favorites": "Sizga yoqqanini qoʻshing",
+    "no_likes": "Afsuski hozirda siz yoqtirgan mahsulotlar yo'q",
+    "back_home": "Bosh sahifaga qaytish",
+    "favorites": "Sevimli mahsulotlar"
+  },
+  "variant": {
+    "select": "Variantni tanlang",
+    "saved_account": "Hisobingizga saqlanadi",
+    "single": "Bitta variant",
+    "multiple": "Bir nechta variant",
+    "multiple_hint": "Bir nechta variant tanlash uchun variantlarni bosing",
+    "available": "Mavjud variantlar",
+    "selected": "tanlangan",
+    "color": "Rang",
+    "size": "O'lcham",
+    "quantity": "Miqdor",
+    "total": "Jami",
+    "add_single": "Savatga qo'shish",
+    "add_multiple": "{{count}} ta variantni savatga qo'shish",
+    "login_hint": "Ro'yxatdan o'tish orqali mahsulotlaringizni saqlang"
+  },
+  "order_items": {
+    "title": "Buyurtma mahsulotlari ({{count}} ta)",
+    "color": "Rang",
+    "unit": "O'lchov",
+    "stock": "Omborda",
+    "total": "Jami",
+    "currency": "so'm"
+  },
+  "orderSummary": {
+    "title": "Buyurtma xulosasi",
+    "items": "Tovarlar",
+    "delivery": "Yetkazib berish",
+    "calculating": "Hisoblanmoqda...",
+    "discounts": "Chegirmalar",
+    "total": "Jami",
+    "currency": "so'm",
+    "submit": "Buyurtmani rasmiylashtirish",
+    "submitting": "Buyurtma berilmoqda...",
+    "selectRegion": "Viloyatni tanlang",
+    "selectPickupPoint": "Topshirish punktini tanlang",
+    "and": "va"
+  },
+  "payment": {
+    "title": "To'lov turi",
+    "clickTitle": "Click orqali to'lash",
+    "clickDesc": "Click tizimi orqali xavfsiz to'lov amalga oshiring",
+    "paymeTitle": "Payme orqali to'lash",
+    "paymeDesc": "Tez orada... (integratsiya jarayonida)",
+    "clickButton": "Click orqali to'lash",
+    "paymeButton": "Payme orqali to'lash"
+  },
+  "pickupPoints": {
+    "title": "BS Market topshirish punkti",
+    "selectRegion": "Viloyatni tanlang",
+    "region": "Viloyat",
+    "loadingRegions": "Yuklanmoqda...",
+    "chooseRegion": "Viloyatni tanlang",
+    "choosePickup": "Topshirish punktini tanlang",
+    "loadingPickup": "PVZ larni yuklanmoqda...",
+    "noPickup": "Bu viloyatda topshirish punktlari topilmadi",
+    "showMore": "Ko'proq ko'rish ({{count}} ta qolgan)",
+    "showLess": "Kamroq ko'rish",
+    "deliveryInfo": "Yetkazib berish ma'lumotlari",
+    "calculating": "Hisoblanmoqda...",
+    "deliveryPrice": "Yetkazib berish narxi:",
+    "totalWeight": "Umumiy og'irligi:",
+    "recipient": "Oluvchi",
+    "unknown": "Noma'lum",
+    "noPhone": "Telefon raqami yo'q"
+  },
+  "productModal": {
+    "quantity": "Miqdor",
+    "color": "Rang",
+    "unit": "O'lchov",
+    "description": "Tavsif"
+  },
+  "checkout": {
+    "title": "Buyurtma",
+    "loading": "Yuklanmoqda...",
+    "order": "Buyurtma berish",
+    "deliveryError": "Yetkazib berishda xatolik yuz berdi",
+    "selectRegion": "Iltimos, viloyatni tanlang!",
+    "selectPickup": "Iltimos, topshirish punktini tanlang!"
+  },
+  "profile": {
+    "loading": "Profil ma'lumotlari yuklanmoqda...",
+    "error": "Profil yuklashda xatolik yuz berdi",
+    "retry": "Qayta urinish",
+    "notFound": "Foydalanuvchi ma'lumotlari topilmadi",
+    "hide": "Yashirish",
+    "personal": "Shaxsiy ma'lumotlar",
+    "orders": "Buyurtmalarim",
+    "favorites": "Sevimlilar",
+    "notifications": "Bildirishnomalar",
+    "logout": "Chiqish",
+    "online": "Online",
+    "role": "Foydalanuvchi turi",
+    "admin": "Admin",
+    "worker": "Xodim",
+    "client": "Mijoz",
+    "interests": "Qiziqishlar",
+    "personal_info": "Shaxsiy ma'lumotlar",
+    "labels": {
+      "role": "Foydalanuvchi turi",
+      "member_since": "A'zo bo'lgan sana",
+      "interests_count": "Qiziqishlar soni"
+    },
+    "fields": {
+      "firstName": "Ism",
+      "lastName": "Familiya",
+      "phone": "Telefon raqami",
+      "email": "Email manzili",
+      "gender": "Jins"
+    },
+    "placeholders": {
+      "firstName": "Ismingizni kiriting",
+      "lastName": "Familiyangizni kiriting"
+    },
+    "gender": {
+      "male": "Erkak",
+      "female": "Ayol",
+      "other": "Boshqa",
+      "unknown": "Belgilanmagan"
+    },
+    "roles": {
+      "admin": "Administrator",
+      "worker": "Xodim",
+      "customer": "Mijoz"
+    },
+    "actions": {
+      "edit": "Tahrirlash",
+      "cancel": "Bekor qilish",
+      "save": "Saqlash",
+      "saving": "Saqlanmoqda..."
+    },
+    "validation": {
+      "required_fields": "Ism, familiya va telefon raqami to'ldirilishi shart",
+      "invalid_email": "Email manzili noto'g'ri formatda",
+      "invalid_phone": "Telefon raqami +998XXXXXXXXX formatida bo'lishi kerak"
+    },
+    "errors": {
+      "update_failed": "Profile yangilashda xatolik yuz berdi"
+    }
+  },
+  "toliq tugamay qoldi":{},
+  "orders": {
+    "myOrders": "Mening buyurtmalarim",
+    "loading": "Buyurtmalar yuklanmoqda...",
+    "noOrders": "Buyurtmalar mavjud emas.",
+    "firstOrder": "Birinchi buyurtmangizni bering!",
+    "errorTitle": "Xatolik yuz berdi",
+    "retry": "Qayta urinish",
+    "refresh": "Yangilash",
+    "view": "Ko'rish",
+    "back": "← Orqaga",
+    "order": "Buyurtma",
+    "status": {
+      "delivered": "Yetkazildi",
+      "shipping": "Yo'lda",
+      "processing": "Tayyorlanmoqda",
+      "cancelled": "Bekor qilingan"
+    },
+    "paid": "To'langan",
+    "unpaid": "To'lanmagan",
+    "paymentMethod": "To'lov usuli",
+    "online": "Online",
+    "cash": "Naqd",
+    "leaveReview": "Sharh qoldiring",
+    "yourReview": "Sizning sharhingiz",
+    "rating": "Baho",
+    "comment": "Izoh",
+    "sendReview": "Sharh yuborish",
+    "deleteReview": "Sharhni o'chirish",
+    "products": "Mahsulotlar",
+    "total": "Jami",
+    "date": "Sana",
+    "delivery": "Yetkazish",
+    "close": "Yopish",
+    "print": "Chop etish",
+    "qrTitle": "Buyurtma QR Kodi"
   }
 }

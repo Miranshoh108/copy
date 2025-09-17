@@ -5,8 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "react-i18next";
 
 const ProfileTab = ({ user, isEditing, setIsEditing, updateUserProfile }) => {
+  const { t } = useTranslation();
+
   const [formData, setFormData] = useState({
     firstName: user.firstName || "",
     lastName: user.lastName || "",
@@ -24,30 +27,28 @@ const ProfileTab = ({ user, isEditing, setIsEditing, updateUserProfile }) => {
 
   const handleSave = async () => {
     if (!formData.firstName || !formData.lastName || !formData.phone) {
-      setError("Ism, familiya va telefon raqami to'ldirilishi shart");
+      setError(t("profile.validation.required_fields"));
       return;
     }
 
     if (formData.email && !/\S+@\S+\.\S+/.test(formData.email)) {
-      setError("Email manzili noto'g'ri formatda");
+      setError(t("profile.validation.invalid_email"));
       return;
     }
 
     if (!/^\+998\d{9}$/.test(formData.phone)) {
-      setError("Telefon raqami +998XXXXXXXXX formatida bo'lishi kerak");
+      setError(t("profile.validation.invalid_phone"));
       return;
     }
 
     try {
       setLoading(true);
       setError(null);
-
       await updateUserProfile(formData);
-
       setIsEditing(false);
     } catch (error) {
       console.error("Profile yangilashda xatolik:", error);
-      setError(error.message || "Profile yangilashda xatolik yuz berdi");
+      setError(error.message || t("profile.errors.update_failed"));
     } finally {
       setLoading(false);
     }
@@ -66,13 +67,6 @@ const ProfileTab = ({ user, isEditing, setIsEditing, updateUserProfile }) => {
   };
 
   const handleEdit = () => {
-    setFormData({
-      firstName: user.firstName || "",
-      lastName: user.lastName || "",
-      email: user.email || "",
-      phone: user.phone || "",
-      gender: user.gender || "",
-    });
     setIsEditing(true);
     setError(null);
   };
@@ -80,36 +74,39 @@ const ProfileTab = ({ user, isEditing, setIsEditing, updateUserProfile }) => {
   const getGenderDisplay = (gender) => {
     switch (gender) {
       case "male":
-        return "Erkak";
+        return t("profile.gender.male");
       case "female":
-        return "Ayol";
+        return t("profile.gender.female");
       case "other":
-        return "Boshqa";
+        return t("profile.gender.other");
       default:
-        return "Belgilanmagan";
+        return t("profile.gender.unknown");
     }
   };
 
   const getRoleDisplay = (role, isWorker) => {
-    if (role === "admin") return "Administrator";
-    if (isWorker) return "Xodim";
-    return "Mijoz";
+    if (role === "admin") return t("profile.roles.admin");
+    if (isWorker) return t("profile.roles.worker");
+    return t("profile.roles.customer");
   };
 
   return (
     <div className="space-y-6">
+      {/* Info Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-green-100 text-[#249B73]  rounded-lg flex items-center justify-center">
+              <div className="w-12 h-12 bg-green-100 text-[#249B73] rounded-lg flex items-center justify-center">
                 <User size={24} />
               </div>
               <div>
                 <p className="text-2xl font-bold text-gray-900">
                   {getRoleDisplay(user.role, user.isWorker)}
                 </p>
-                <p className="text-gray-500 text-sm">Foydalanuvchi turi</p>
+                <p className="text-gray-500 text-sm">
+                  {t("profile.labels.role")}
+                </p>
               </div>
             </div>
           </CardContent>
@@ -125,7 +122,9 @@ const ProfileTab = ({ user, isEditing, setIsEditing, updateUserProfile }) => {
                 <p className="text-2xl font-bold text-gray-900">
                   {user.memberSince}
                 </p>
-                <p className="text-gray-500 text-sm">A'zo bo'lgan sana</p>
+                <p className="text-gray-500 text-sm">
+                  {t("profile.labels.member_since")}
+                </p>
               </div>
             </div>
           </CardContent>
@@ -141,17 +140,20 @@ const ProfileTab = ({ user, isEditing, setIsEditing, updateUserProfile }) => {
                 <p className="text-2xl font-bold text-gray-900">
                   {user.interests?.length || 0}
                 </p>
-                <p className="text-gray-500 text-sm">Qiziqishlar soni</p>
+                <p className="text-gray-500 text-sm">
+                  {t("profile.labels.interests_count")}
+                </p>
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
 
+      {/* Personal Info */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>Shaxsiy ma'lumotlar</CardTitle>
+            <CardTitle>{t("profile.personal_info")}</CardTitle>
             <Button
               variant="default"
               onClick={isEditing ? handleCancel : handleEdit}
@@ -159,7 +161,9 @@ const ProfileTab = ({ user, isEditing, setIsEditing, updateUserProfile }) => {
               disabled={loading}
             >
               {!isEditing && <Edit size={16} />}
-              {isEditing ? "Bekor qilish" : "Tahrirlash"}
+              {isEditing
+                ? t("profile.actions.cancel")
+                : t("profile.actions.edit")}
             </Button>
           </div>
         </CardHeader>
@@ -171,13 +175,9 @@ const ProfileTab = ({ user, isEditing, setIsEditing, updateUserProfile }) => {
           )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* First Name */}
             <div>
-              <Label
-                htmlFor="firstName"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
-                Ism
-              </Label>
+              <Label htmlFor="firstName">{t("profile.fields.firstName")}</Label>
               <Input
                 id="firstName"
                 name="firstName"
@@ -185,18 +185,13 @@ const ProfileTab = ({ user, isEditing, setIsEditing, updateUserProfile }) => {
                 value={formData.firstName}
                 onChange={handleInputChange}
                 disabled={!isEditing}
-                className="w-full"
-                placeholder="Ismingizni kiriting"
+                placeholder={t("profile.placeholders.firstName")}
               />
             </div>
 
+            {/* Last Name */}
             <div>
-              <Label
-                htmlFor="lastName"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
-                Familiya
-              </Label>
+              <Label htmlFor="lastName">{t("profile.fields.lastName")}</Label>
               <Input
                 id="lastName"
                 name="lastName"
@@ -204,18 +199,13 @@ const ProfileTab = ({ user, isEditing, setIsEditing, updateUserProfile }) => {
                 value={formData.lastName}
                 onChange={handleInputChange}
                 disabled={!isEditing}
-                className="w-full"
-                placeholder="Familiyangizni kiriting"
+                placeholder={t("profile.placeholders.lastName")}
               />
             </div>
 
+            {/* Phone */}
             <div>
-              <Label
-                htmlFor="phone"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
-                Telefon raqami
-              </Label>
+              <Label htmlFor="phone">{t("profile.fields.phone")}</Label>
               <Input
                 id="phone"
                 name="phone"
@@ -223,18 +213,13 @@ const ProfileTab = ({ user, isEditing, setIsEditing, updateUserProfile }) => {
                 value={formData.phone}
                 onChange={handleInputChange}
                 disabled={!isEditing}
-                className="w-full"
                 placeholder="+998901234567"
               />
             </div>
 
+            {/* Email */}
             <div>
-              <Label
-                htmlFor="email"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
-                Email manzili
-              </Label>
+              <Label htmlFor="email">{t("profile.fields.email")}</Label>
               <Input
                 id="email"
                 name="email"
@@ -242,18 +227,13 @@ const ProfileTab = ({ user, isEditing, setIsEditing, updateUserProfile }) => {
                 value={formData.email}
                 onChange={handleInputChange}
                 disabled={!isEditing}
-                className="w-full"
                 placeholder="email@example.com"
               />
             </div>
 
+            {/* Gender */}
             <div>
-              <Label
-                htmlFor="gender"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
-                Jins
-              </Label>
+              <Label htmlFor="gender">{t("profile.fields.gender")}</Label>
               {isEditing ? (
                 <select
                   id="gender"
@@ -262,48 +242,36 @@ const ProfileTab = ({ user, isEditing, setIsEditing, updateUserProfile }) => {
                   onChange={handleInputChange}
                   className="w-full border rounded-md p-2"
                 >
-                  <option value="other">Boshqa</option>
-                  <option value="male">Erkak</option>
-                  <option value="female">Ayol</option>
+                  <option value="other">{t("profile.gender.other")}</option>
+                  <option value="male">{t("profile.gender.male")}</option>
+                  <option value="female">{t("profile.gender.female")}</option>
                 </select>
               ) : (
-                <Input
-                  value={getGenderDisplay(user.gender)}
-                  disabled
-                  className="w-full bg-gray-50"
-                />
+                <Input value={getGenderDisplay(user.gender)} disabled />
               )}
             </div>
 
+            {/* Member Since */}
             <div>
-              <Label
-                htmlFor="memberSince"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
-                A'zo bo'lgan sana
+              <Label htmlFor="memberSince">
+                {t("profile.labels.member_since")}
               </Label>
               <Input
                 id="memberSince"
                 type="text"
                 value={user.memberSince}
                 disabled
-                className="w-full bg-gray-50"
               />
             </div>
 
+            {/* Role */}
             <div>
-              <Label
-                htmlFor="role"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
-                Foydalanuvchi turi
-              </Label>
+              <Label htmlFor="role">{t("profile.labels.role")}</Label>
               <Input
                 id="role"
                 type="text"
                 value={getRoleDisplay(user.role, user.isWorker)}
                 disabled
-                className="w-full bg-gray-50"
               />
             </div>
           </div>
@@ -313,17 +281,18 @@ const ProfileTab = ({ user, isEditing, setIsEditing, updateUserProfile }) => {
               <Button
                 onClick={handleSave}
                 disabled={loading}
-                className="cursor-pointer font-medium bg-[#249B73] hover:bg-[#1e8a66] disabled:opacity-50"
+                className="bg-[#249B73] hover:bg-[#1e8a66]"
               >
-                {loading ? "Saqlanmoqda..." : "Saqlash"}
+                {loading
+                  ? t("profile.actions.saving")
+                  : t("profile.actions.save")}
               </Button>
               <Button
                 variant="outline"
                 onClick={handleCancel}
                 disabled={loading}
-                className="cursor-pointer font-medium"
               >
-                Bekor qilish
+                {t("profile.actions.cancel")}
               </Button>
             </div>
           )}

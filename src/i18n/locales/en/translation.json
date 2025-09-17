@@ -165,5 +165,224 @@
     "tip_3": "Use more general terms",
     "previous": "Previous",
     "next": "Next"
+  },
+  "cart": {
+    "title": "Cart",
+    "empty_cart": "Your cart is empty",
+    "start_shopping": "Start shopping",
+    "products_count": "products",
+    "select_all": "Select all",
+    "selected": "selected",
+    "promo_code": "Promo Code",
+    "enter_promo": "Enter promo code",
+    "apply": "Apply",
+    "promo_not_found": "Promo code not found or invalid",
+    "your_order": "Your Order",
+    "products": "Products",
+    "discount": "Discount",
+    "total": "Total",
+    "place_order": "Place Order",
+    "register": "Register",
+    "checking": "Checking...",
+    "select_product_message": "Select at least one product to place an order",
+    "secure_payment": "Secure Payment",
+    "fast_delivery": "Fast Delivery",
+    "auth_error": "Error occurred during authentication check",
+    "retry": "Try again",
+    "or": "or",
+    "register_link": "Register",
+    "sum": "sum"
+  },
+  "cart_product": {
+    "color": "Color",
+    "unit": "Unit",
+    "in_stock": "In Stock",
+    "remove_product": "Remove product",
+    "decrease": "Decrease",
+    "increase": "Increase",
+    "total_price": "Total"
+  },
+  "wishes": {
+    "add_favorites": "Add your favorites",
+    "no_likes": "Unfortunately, you don’t have any favorite products yet",
+    "back_home": "Back to Home",
+    "favorites": "Favorite Products"
+  },
+  "variant": {
+    "select": "Select a variant",
+    "saved_account": "Will be saved to your account",
+    "single": "Single variant",
+    "multiple": "Multiple variants",
+    "multiple_hint": "Click on variants to select multiple",
+    "available": "Available variants",
+    "selected": "selected",
+    "color": "Color",
+    "size": "Size",
+    "quantity": "Quantity",
+    "total": "Total",
+    "add_single": "Add to cart",
+    "add_multiple": "Add {{count}} variants to cart",
+    "login_hint": "Sign up to save your products"
+  },
+  "order_items": {
+    "title": "Order Items ({{count}} pcs)",
+    "color": "Color",
+    "unit": "Unit",
+    "stock": "In stock",
+    "total": "Total",
+    "currency": "UZS"
+  },
+  "orderSummary": {
+    "title": "Order Summary",
+    "items": "Items",
+    "delivery": "Delivery",
+    "calculating": "Calculating...",
+    "discounts": "Discounts",
+    "total": "Total",
+    "currency": "UZS",
+    "submit": "Place Order",
+    "submitting": "Placing order...",
+    "selectRegion": "Select region",
+    "selectPickupPoint": "Select pickup point",
+    "and": "and"
+  },
+  "payment": {
+    "title": "Payment Method",
+    "clickTitle": "Pay with Click",
+    "clickDesc": "Make a secure payment through Click system",
+    "paymeTitle": "Pay with Payme",
+    "paymeDesc": "Coming soon... (integration in progress)",
+    "clickButton": "Pay with Click",
+    "paymeButton": "Pay with Payme"
+  },
+  "pickupPoints": {
+    "title": "BS Market Pickup Point",
+    "selectRegion": "Select a region",
+    "region": "Region",
+    "loadingRegions": "Loading...",
+    "chooseRegion": "Select a region",
+    "choosePickup": "Select a pickup point",
+    "loadingPickup": "Loading pickup points...",
+    "noPickup": "No pickup points found in this region",
+    "showMore": "Show more ({{count}} left)",
+    "showLess": "Show less",
+    "deliveryInfo": "Delivery Information",
+    "calculating": "Calculating...",
+    "deliveryPrice": "Delivery Price:",
+    "totalWeight": "Total Weight:",
+    "recipient": "Recipient",
+    "unknown": "Unknown",
+    "noPhone": "No phone number"
+  },
+  "productModal": {
+    "quantity": "Quantity",
+    "color": "Color",
+    "unit": "Unit",
+    "description": "Description"
+  },
+  "checkout": {
+    "title": "Checkout",
+    "loading": "Loading...",
+    "order": "Place Order",
+    "deliveryError": "Error calculating delivery cost",
+    "selectRegion": "Please select a region!",
+    "selectPickup": "Please select a pickup point!"
+  },
+  "profile": {
+    "loading": "Loading profile data...",
+    "error": "Error loading profile",
+    "retry": "Retry",
+    "notFound": "User data not found",
+    "hide": "Hide",
+    "personal": "Personal Information",
+    "orders": "My Orders",
+    "favorites": "Favorites",
+    "notifications": "Notifications",
+    "logout": "Logout",
+    "online": "Online",
+    "role": "User Type",
+    "admin": "Admin",
+    "worker": "Worker",
+    "client": "Customer",
+    "interests": "Interests",
+    "personal_info": "Personal Information",
+    "labels": {
+      "role": "User Type",
+      "member_since": "Member Since",
+      "interests_count": "Number of Interests"
+    },
+    "fields": {
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "phone": "Phone Number",
+      "email": "Email Address",
+      "gender": "Gender"
+    },
+    "placeholders": {
+      "firstName": "Enter your first name",
+      "lastName": "Enter your last name"
+    },
+    "gender": {
+      "male": "Male",
+      "female": "Female",
+      "other": "Other",
+      "unknown": "Not specified"
+    },
+    "roles": {
+      "admin": "Administrator",
+      "worker": "Employee",
+      "customer": "Customer"
+    },
+    "actions": {
+      "edit": "Edit",
+      "cancel": "Cancel",
+      "save": "Save",
+      "saving": "Saving..."
+    },
+    "validation": {
+      "required_fields": "First name, last name and phone number are required",
+      "invalid_email": "Invalid email format",
+      "invalid_phone": "Phone must be in format +998XXXXXXXXX"
+    },
+    "errors": {
+      "update_failed": "Failed to update profile"
+    }
+  },
+  "toliq tugamay qoldi":{},
+  "orders": {
+    "myOrders": "My Orders",
+    "loading": "Loading orders...",
+    "noOrders": "No orders available.",
+    "firstOrder": "Place your first order!",
+    "errorTitle": "An error occurred",
+    "retry": "Retry",
+    "refresh": "Refresh",
+    "view": "View",
+    "back": "← Back",
+    "order": "Order",
+    "status": {
+      "delivered": "Delivered",
+      "shipping": "Shipping",
+      "processing": "Processing",
+      "cancelled": "Cancelled"
+    },
+    "paid": "Paid",
+    "unpaid": "Unpaid",
+    "paymentMethod": "Payment Method",
+    "online": "Online",
+    "cash": "Cash",
+    "leaveReview": "Leave a Review",
+    "yourReview": "Your Review",
+    "rating": "Rating",
+    "comment": "Comment",
+    "sendReview": "Send Review",
+    "deleteReview": "Delete Review",
+    "products": "Products",
+    "total": "Total",
+    "date": "Date",
+    "delivery": "Delivery",
+    "close": "Close",
+    "print": "Print",
+    "qrTitle": "Order QR Code"
   }
 }

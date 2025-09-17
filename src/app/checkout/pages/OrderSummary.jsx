@@ -1,4 +1,6 @@
+"use client";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 export default function OrderSummary({
   total,
@@ -12,12 +14,11 @@ export default function OrderSummary({
   getVariantData,
   onSubmit,
 }) {
+  const { t } = useTranslation();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmitClick = async () => {
-    if (!selectedRegion || !selectedPickupPoint || isSubmitting) {
-      return;
-    }
+    if (!selectedRegion || !selectedPickupPoint || isSubmitting) return;
 
     setIsSubmitting(true);
     try {
@@ -48,43 +49,53 @@ export default function OrderSummary({
   return (
     <div className="lg:col-span-1">
       <div className="bg-white rounded-lg shadow-lg p-6 sticky top-45">
-        <h3 className="text-lg font-semibold mb-4">Buyurtma xulosasi</h3>
+        <h3 className="text-lg font-semibold mb-4">
+          {t("orderSummary.title")}
+        </h3>
 
         <div className="space-y-3 mb-6">
           <div className="flex justify-between text-gray-600">
-            <span>Tovarlar ({checkedItems.length} dona)</span>
-            <span>{formatPrice(total)} so'm</span>
+            <span>
+              {t("orderSummary.items")} ({checkedItems.length})
+            </span>
+            <span>
+              {formatPrice(total)} {t("orderSummary.currency")}
+            </span>
           </div>
 
           <div className="flex justify-between text-gray-600">
-            <span>Yetkazib berish</span>
+            <span>{t("orderSummary.delivery")}</span>
             <span>
               {loadingDelivery ? (
                 <div className="flex items-center">
                   <div className="animate-spin h-4 w-4 border-2 border-[#249B73] border-t-transparent rounded-full mr-2"></div>
-                  Hisoblanmoqda...
+                  {t("orderSummary.calculating")}
                 </div>
               ) : deliveryInfo ? (
-                `${formatPrice(deliveryInfo.price)} so'm`
+                `${formatPrice(deliveryInfo.price)} ${t(
+                  "orderSummary.currency"
+                )}`
               ) : (
-                "0 so'm"
+                `0 ${t("orderSummary.currency")}`
               )}
             </span>
           </div>
 
           {discount > 0 && (
             <div className="flex justify-between text-green-600">
-              <span>Chegirmalar</span>
-              <span>-{formatPrice(discount)} so'm</span>
+              <span>{t("orderSummary.discounts")}</span>
+              <span>
+                -{formatPrice(discount)} {t("orderSummary.currency")}
+              </span>
             </div>
           )}
 
           <hr className="border-gray-200" />
 
           <div className="flex justify-between text-xl font-bold text-gray-800">
-            <span>Jami</span>
+            <span>{t("orderSummary.total")}</span>
             <span className="text-[#249B73]">
-              {formatPrice(totalWithDelivery)} so'm
+              {formatPrice(totalWithDelivery)} {t("orderSummary.currency")}
             </span>
           </div>
         </div>
@@ -109,18 +120,20 @@ export default function OrderSummary({
           {isSubmitting ? (
             <div className="flex items-center justify-center">
               <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full mr-2"></div>
-              Buyurtma berilmoqda...
+              {t("orderSummary.submitting")}
             </div>
           ) : (
-            "Buyurtmani rasmiylashtirish"
+            t("orderSummary.submit")
           )}
         </button>
 
         {(!selectedRegion || !selectedPickupPoint) && (
           <div className="text-sm text-red-500 mt-2 text-center">
-            {!selectedRegion && "Viloyatni tanlang"}
-            {!selectedRegion && !selectedPickupPoint && " va "}
-            {!selectedPickupPoint && "Topshirish punktini tanlang"}
+            {!selectedRegion && t("orderSummary.selectRegion")}
+            {!selectedRegion &&
+              !selectedPickupPoint &&
+              " " + t("orderSummary.and") + " "}
+            {!selectedPickupPoint && t("orderSummary.selectPickupPoint")}
           </div>
         )}
       </div>

@@ -1,14 +1,5 @@
 "use client";
-import {
-  User,
-  ShoppingBag,
-  Heart,
-  CreditCard,
-  MapPin,
-  Bell,
-  LogOut,
-  Camera,
-} from "lucide-react";
+import { User, ShoppingBag, Heart, Bell, LogOut, Camera } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
 import ProfileTab from "./info/ProfileTab";
 import Orders from "./info/Orders";
@@ -18,15 +9,23 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import { useHomeLikes } from "../components/hooks/likes";
 import $api from "../http/api";
+import { useTranslation } from "react-i18next";
 
-const Profile = () => {
+const ProfileClient = () => {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState("profile");
   const [isEditing, setIsEditing] = useState(false);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [mounted, setMounted] = useState(false);
   const fileInputRef = useRef(null);
   const { likes } = useHomeLikes();
+
+  // Ensure component is mounted on client
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const fetchUserProfile = async () => {
     try {
@@ -142,8 +141,10 @@ const Profile = () => {
   };
 
   useEffect(() => {
-    fetchUserProfile();
-  }, []);
+    if (mounted) {
+      fetchUserProfile();
+    }
+  }, [mounted]);
 
   const handleAvatarChange = async (e) => {
     const file = e.target.files[0];
@@ -185,18 +186,6 @@ const Profile = () => {
     }
   };
 
-  const menuItems = [
-    { id: "profile", icon: User, label: "Shaxsiy ma'lumotlar", count: null },
-    {
-      id: "orders",
-      icon: ShoppingBag,
-      label: "Buyurtmalarim",
-      count: null,
-    },
-    { id: "favorites", icon: Heart, label: "Sevimlilar", count: likes.length },
-    { id: "notifications", icon: Bell, label: "Bildirishnomalar", count: null },
-  ];
-
   const handleLogout = async () => {
     try {
       const token = localStorage.getItem("accessToken");
@@ -215,12 +204,45 @@ const Profile = () => {
     }
   };
 
+  // Don't render anything until mounted on client
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#249B73] mx-auto mb-4"></div>
+        </div>
+      </div>
+    );
+  }
+
+  const menuItems = [
+    { id: "profile", icon: User, label: t("profile.personal"), count: null },
+    {
+      id: "orders",
+      icon: ShoppingBag,
+      label: t("profile.orders"),
+      count: null,
+    },
+    {
+      id: "favorites",
+      icon: Heart,
+      label: t("profile.favorites"),
+      count: likes.length,
+    },
+    {
+      id: "notifications",
+      icon: Bell,
+      label: t("profile.notifications"),
+      count: null,
+    },
+  ];
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#249B73]  mx-auto mb-4"></div>
-          <p className="text-gray-600">Profile ma'lumotlari yuklanmoqda...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#249B73] mx-auto mb-4"></div>
+          <p className="text-gray-600">{t("profile.loading")}</p>
         </div>
       </div>
     );
@@ -230,25 +252,12 @@ const Profile = () => {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="text-red-500 mb-4">
-            <svg
-              className="w-16 h-16 mx-auto"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path
-                fillRule="evenodd"
-                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
-                clipRule="evenodd"
-              />
-            </svg>
-          </div>
-          <p className="text-gray-600 mb-4">{error}</p>
+          <p className="text-gray-600 mb-4">{t("profile.error")}</p>
           <button
             onClick={fetchUserProfile}
-            className="px-4 py-2 bg-[#249B73]  text-white rounded-lg hover:bg-[#249B73]  transition-colors"
+            className="px-4 cursor-pointer py-2 bg-[#249B73] text-white rounded-lg hover:bg-[#1e7f5f]"
           >
-            Qayta urinish
+            {t("profile.retry")}
           </button>
         </div>
       </div>
@@ -258,9 +267,7 @@ const Profile = () => {
   if (!user) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-gray-600">Foydalanuvchi ma'lumotlari topilmadi</p>
-        </div>
+        <p className="text-gray-600">{t("profile.notFound")}</p>
       </div>
     );
   }
@@ -269,55 +276,20 @@ const Profile = () => {
     <div className="min-h-screen bg-gray-50">
       <Navbar />
 
-      {error && user && (
-        <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mx-4 mt-4">
-          <div className="flex">
-            <div className="flex-shrink-0">
-              <svg
-                className="h-5 w-5 text-yellow-400"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </div>
-            <div className="ml-3">
-              <p className="text-sm text-yellow-700">
-                {error}
-                <button
-                  onClick={() => setError(null)}
-                  className="ml-2 underline hover:no-underline"
-                >
-                  Yashirish
-                </button>
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
       <div className="max-w-7xl mx-auto px-4 py-6">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           <div className="lg:col-span-1">
             <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-              <div className="p-6 bg-gradient-to-r from-[#249B73]  to-[#249B73]  text-white">
+              <div className="p-6 bg-gradient-to-r from-[#249B73] to-[#249B73] text-white">
                 <div className="flex items-center gap-4">
                   <div className="relative">
                     <img
                       src={user.avatar}
                       alt={user.name}
                       className="w-20 h-20 rounded-full border-3 border-white object-cover"
-                      onError={(e) => {
-                        e.target.src =
-                          "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face";
-                      }}
                     />
                     <button
-                      className="absolute cursor-pointer -bottom-1 -right-1 w-6 h-6 bg-white text-[#249B73]  rounded-full flex items-center justify-center hover:scale-110 transition-transform"
+                      className="absolute -bottom-1 cursor-pointer -right-1 w-6 h-6 bg-white text-[#249B73] rounded-full flex items-center justify-center"
                       onClick={() => fileInputRef.current.click()}
                     >
                       <Camera size={12} />
@@ -336,7 +308,9 @@ const Profile = () => {
                     {user.isOnline && (
                       <div className="flex items-center gap-1 mt-1">
                         <div className="w-2 h-2 bg-green-300 rounded-full"></div>
-                        <span className="text-green-200 text-xs">Online</span>
+                        <span className="text-green-200 text-xs">
+                          {t("profile.online")}
+                        </span>
                       </div>
                     )}
                   </div>
@@ -346,20 +320,22 @@ const Profile = () => {
                   <div>
                     <div className="text-xl font-bold">
                       {user.role === "admin"
-                        ? "Admin"
+                        ? t("profile.admin")
                         : user.isWorker
-                        ? "Xodim"
-                        : "Mijoz"}
+                        ? t("profile.worker")
+                        : t("profile.client")}
                     </div>
                     <div className="text-green-200 text-xs">
-                      Foydalanuvchi turi
+                      {t("profile.role")}
                     </div>
                   </div>
                   <div>
                     <div className="text-xl font-bold">
                       {user.interests?.length || 0}
                     </div>
-                    <div className="text-green-200 text-xs">Qiziqishlar</div>
+                    <div className="text-green-200 text-xs">
+                      {t("profile.interests")}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -369,10 +345,10 @@ const Profile = () => {
                   <button
                     key={item.id}
                     onClick={() => setActiveTab(item.id)}
-                    className={`w-full cursor-pointer flex items-center justify-between p-3 rounded-lg text-left hover:bg-gray-50 transition-colors ${
+                    className={`w-full cursor-pointer flex items-center justify-between p-3 rounded-lg ${
                       activeTab === item.id
-                        ? "bg-green-50 text-[#249B73]  border-r-2 border-[#249B73] "
-                        : "text-gray-700"
+                        ? "bg-green-50 text-[#249B73] border-r-2 border-[#249B73]"
+                        : "text-gray-700 hover:bg-gray-50"
                     }`}
                   >
                     <div className="flex items-center gap-3">
@@ -380,7 +356,7 @@ const Profile = () => {
                       <span className="text-sm font-medium">{item.label}</span>
                     </div>
                     {item.count > 0 && (
-                      <span className="bg-green-100 text-[#249B73]  text-xs px-2 py-1 rounded-full">
+                      <span className="bg-green-100 text-[#249B73] text-xs px-2 py-1 rounded-full">
                         {item.count}
                       </span>
                     )}
@@ -389,10 +365,12 @@ const Profile = () => {
 
                 <button
                   onClick={handleLogout}
-                  className="w-full cursor-pointer flex items-center gap-3 p-3 text-red-600 hover:bg-red-50 rounded-lg transition-colors mt-2"
+                  className="w-full flex cursor-pointer items-center gap-3 p-3 text-red-600 hover:bg-red-50 rounded-lg mt-2"
                 >
                   <LogOut size={18} />
-                  <span className="text-sm font-medium">Chiqish</span>
+                  <span className="text-sm font-medium">
+                    {t("profile.logout")}
+                  </span>
                 </button>
               </div>
             </div>
@@ -421,4 +399,4 @@ const Profile = () => {
   );
 };
 
-export default Profile;
+export default ProfileClient;

@@ -863,23 +863,23 @@ export default function ProductDetail() {
                 </h3>
                 <div className="space-y-2 text-sm text-gray-600">
                   {color && (
-                    <p>
+                    <p className="flex gap-2">
                       <span className="font-medium">{t("product.color")}:</span>
                       {color}
                     </p>
                   )}
                   {unit && (
-                    <p>
+                    <p className="flex gap-2">
                       <span className="font-medium">{t("product.unit")}:</span>
                       {unit}
                     </p>
                   )}
-                  <p>
+                  <p className="flex gap-2">
                     <span className="font-medium">{t("product.stock")}:</span>
                     {stockQuantity} {unit || t("product.piece")}
                   </p>
                   {discount > 0 && (
-                    <p>
+                    <p className="flex gap-2">
                       <span className="font-medium">
                         {t("product.discount")}:
                       </span>

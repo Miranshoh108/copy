@@ -1,16 +1,20 @@
+"use client";
+import { useTranslation } from "react-i18next";
+
 export default function PaymentMethod({ formData, onFormChange }) {
+  const { t } = useTranslation();
+
   const handleClickPayment = () => {
     // Click to'lov parametrlari
     const clickParams = {
-      service_id: "YOUR_SERVICE_ID", // Bu yerda haqiqiy service_id ni kiriting
-      merchant_id: "YOUR_MERCHANT_ID", // Bu yerda haqiqiy merchant_id ni kiriting
-      amount: formData.totalAmount || 100000, // To'lov miqdori (tiyin hisobida)
-      transaction_param: `order_${Date.now()}`, // Unique transaction ID
-      return_url: window.location.origin + "/payment/success", // Qaytish URL'i
+      service_id: "YOUR_SERVICE_ID", // bu yerda haqiqiy service_id ni kiriting
+      merchant_id: "YOUR_MERCHANT_ID", // bu yerda haqiqiy merchant_id ni kiriting
+      amount: formData.totalAmount || 100000, // to'lov miqdori
+      transaction_param: `order_${Date.now()}`, // unique transaction ID
+      return_url: window.location.origin + "/payment/success",
       card_type: "uzcard", // yoki "humo"
     };
 
-    // Click URL ni yaratish
     const clickUrl = `https://my.click.uz/services/pay?service_id=${
       clickParams.service_id
     }&merchant_id=${clickParams.merchant_id}&amount=${
@@ -26,8 +30,11 @@ export default function PaymentMethod({ formData, onFormChange }) {
 
   return (
     <div className="bg-white rounded-lg shadow p-6 mb-8">
-      <h2 className="text-lg font-semibold text-gray-700 mb-4">To'lov turi</h2>
+      <h2 className="text-lg font-semibold text-gray-700 mb-4">
+        {t("payment.title")}
+      </h2>
 
+      {/* CLICK */}
       <div className="border rounded-lg p-4 mb-4">
         <label className="flex items-center gap-3 cursor-pointer">
           <input
@@ -43,15 +50,16 @@ export default function PaymentMethod({ formData, onFormChange }) {
               <span className="text-white text-xs font-bold">C</span>
             </div>
             <div>
-              <div className="font-medium">Click orqali to'lash</div>
+              <div className="font-medium">{t("payment.clickTitle")}</div>
               <div className="text-sm text-gray-600 max-[500px]:hidden">
-                Click tizimi orqali xavfsiz to'lov amalga oshiring
+                {t("payment.clickDesc")}
               </div>
             </div>
           </div>
         </label>
       </div>
 
+      {/* PAYME */}
       <div className="border rounded-lg p-4 mb-4 opacity-50">
         <label className="flex items-center gap-3 cursor-not-allowed">
           <input
@@ -67,10 +75,10 @@ export default function PaymentMethod({ formData, onFormChange }) {
             </div>
             <div>
               <div className="font-medium text-gray-500">
-                Payme orqali to'lash
+                {t("payment.paymeTitle")}
               </div>
               <div className="text-sm text-gray-400 max-[500px]:hidden">
-                Tez orada... (integratsiya jarayonida)
+                {t("payment.paymeDesc")}
               </div>
             </div>
           </div>
@@ -83,7 +91,7 @@ export default function PaymentMethod({ formData, onFormChange }) {
             onClick={handleClickPayment}
             className="w-full bg-[#249B73] text-white py-3 px-4 rounded-lg font-medium hover:bg-[#249B73] transition-colors"
           >
-            Click orqali to'lash
+            {t("payment.clickButton")}
           </button>
         </div>
       )}
@@ -91,7 +99,7 @@ export default function PaymentMethod({ formData, onFormChange }) {
       {formData.payment === "payme" && (
         <div className="mt-4">
           <button className="w-full bg-[#249B73] text-white py-3 px-4 rounded-lg font-medium hover:bg-[#1e7a5a] transition-colors">
-             Payme orqali to'lash
+            {t("payment.paymeButton")}
           </button>
         </div>
       )}

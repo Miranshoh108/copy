@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { MapPin } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import MapComponent from "../../components/MapComponent";
 
 export default function PickupPoints({
@@ -18,6 +19,7 @@ export default function PickupPoints({
   formatPrice,
   userProfile,
 }) {
+  const { t } = useTranslation();
   const [showAll, setShowAll] = useState(false);
   const POINTS_PER_PAGE = 5;
 
@@ -48,16 +50,18 @@ export default function PickupPoints({
   return (
     <div className="bg-gray-50 rounded-lg p-6 mb-8 max-[720px]:p-2">
       <h2 className="text-xl font-semibold text-gray-700 mb-4">
-        BS Market topshirish punkti
+        {t("pickupPoints.title")}
       </h2>
 
       <div className="bg-white rounded-lg p-4 mb-6">
-        <h3 className="font-semibold text-gray-800 mb-4">Viloyatni tanlang</h3>
+        <h3 className="font-semibold text-gray-800 mb-4">
+          {t("pickupPoints.selectRegion")}
+        </h3>
 
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-2">
             <MapPin className="inline w-4 h-4 mr-1" />
-            Viloyat
+            {t("pickupPoints.region")}
           </label>
           <select
             value={selectedRegion}
@@ -66,7 +70,9 @@ export default function PickupPoints({
             disabled={regionsLoading}
           >
             <option value="" disabled>
-              {regionsLoading ? "Yuklanmoqda..." : "Viloyatni tanlang"}
+              {regionsLoading
+                ? t("pickupPoints.loadingRegions")
+                : t("pickupPoints.chooseRegion")}
             </option>
             {regions.map((region) => (
               <option key={region.code[0]} value={region.code[0]}>
@@ -79,12 +85,14 @@ export default function PickupPoints({
         {selectedRegion && (
           <div className="mb-6">
             <h4 className="font-semibold text-gray-800 mb-3">
-              Topshirish punktini tanlang
+              {t("pickupPoints.choosePickup")}
             </h4>
 
             {loadingPickupPoints ? (
               <div className="text-center py-4">
-                <span className="text-gray-600">PVZ larni yuklanmoqda...</span>
+                <span className="text-gray-600">
+                  {t("pickupPoints.loadingPickup")}
+                </span>
               </div>
             ) : allPickupPoints.length > 0 ? (
               <>
@@ -137,17 +145,17 @@ export default function PickupPoints({
                       className="bg-[#249B73] text-white px-6 py-2 rounded-lg hover:bg-[#249B73] transition-colors"
                     >
                       {showAll
-                        ? "Kamroq ko'rish"
-                        : `Ko'proq ko'rish (${
-                            allPickupPoints.length - POINTS_PER_PAGE
-                          } ta qolgan)`}
+                        ? t("pickupPoints.showLess")
+                        : t("pickupPoints.showMore", {
+                            count: allPickupPoints.length - POINTS_PER_PAGE,
+                          })}
                     </button>
                   </div>
                 )}
               </>
             ) : (
               <div className="text-center py-4 text-gray-600">
-                Bu viloyatda topshirish punktlari topilmadi
+                {t("pickupPoints.noPickup")}
               </div>
             )}
           </div>
@@ -156,24 +164,30 @@ export default function PickupPoints({
         {selectedPickupPoint && (
           <div className="bg-blue-50 rounded-lg p-4 mb-4">
             <h4 className="font-semibold text-gray-800 mb-2">
-              Yetkazib berish ma'lumotlari
+              {t("pickupPoints.deliveryInfo")}
             </h4>
             {loadingDelivery ? (
               <div className="text-center py-2">
-                <span className="text-gray-600">Hisoblanmoqda...</span>
+                <span className="text-gray-600">
+                  {t("pickupPoints.calculating")}
+                </span>
               </div>
             ) : deliveryError ? (
               <div className="text-red-600 text-sm">{deliveryError}</div>
             ) : deliveryInfo ? (
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Yetkazib berish narxi:</span>
+                  <span className="text-gray-600">
+                    {t("pickupPoints.deliveryPrice")}
+                  </span>
                   <span className="font-semibold text-[#249B73]">
                     {formatPrice(deliveryInfo.price)} so'm
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Umumiy og'irligi:</span>
+                  <span className="text-gray-600">
+                    {t("pickupPoints.totalWeight")}
+                  </span>
                   <span>{deliveryInfo.weight} kg</span>
                 </div>
               </div>
@@ -196,14 +210,18 @@ export default function PickupPoints({
             <span className="text-gray-600">👤</span>
           </div>
           <div className="flex-1">
-            <div className="font-medium text-gray-800">Oluvchi</div>
+            <div className="font-medium text-gray-800">
+              {t("pickupPoints.recipient")}
+            </div>
             <div className="text-gray-600">
               {userProfile
                 ? `${userProfile.firstName} ${userProfile.lastName}`
-                : "Noma'lum"}
+                : t("pickupPoints.unknown")}
             </div>
             <div className="text-gray-600">
-              {userProfile ? userProfile.phoneNumber : "Telefon raqami yo'q"}
+              {userProfile
+                ? userProfile.phoneNumber
+                : t("pickupPoints.noPhone")}
             </div>
           </div>
           <button className="text-[#249B73] cursor-pointer hover:text-[#249B73]">

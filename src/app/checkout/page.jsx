@@ -11,14 +11,15 @@ import PickupPoints from "./pages/PickupPoints";
 import PaymentMethod from "./pages/PaymentMethod";
 import OrderSummary from "./pages/OrderSummary";
 import ProductModal from "./pages/ProductModal";
+import { useTranslation } from "react-i18next";
 
 export default function Checkout() {
+  const { t, ready } = useTranslation(); // Add 'ready' to check if translations are loaded
   const { getCheckedItems, getTotalPrice, clearCart } = useCartStore();
   const router = useRouter();
   const checkedItems = getCheckedItems();
   const total = getTotalPrice();
 
-  // Delivery calculation qilish uchun ref
   const deliveryCalculationRef = useRef(null);
   const isCalculatingRef = useRef(false);
 
@@ -38,10 +39,18 @@ export default function Checkout() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalImageIndex, setModalImageIndex] = useState(0);
 
+  // Add hydration state to prevent hydration mismatch
+  const [isHydrated, setIsHydrated] = useState(false);
+
   // Yetkazib berish uchun state'lar
   const [deliveryInfo, setDeliveryInfo] = useState(null);
   const [loadingDelivery, setLoadingDelivery] = useState(false);
   const [deliveryError, setDeliveryError] = useState(null);
+
+  // Handle hydration
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
 
   // Foydalanuvchi profilini olish
   useEffect(() => {
@@ -408,17 +417,17 @@ export default function Checkout() {
 
   const handleSubmit = async () => {
     if (!userProfile) {
-      console.error("❌ Foydalanuvchi ma'lumotlari topilmadi");
+      console.error("❌", t("checkout.deliveryError"));
       return;
     }
 
     if (!selectedRegion) {
-      console.log("Iltimos, viloyatni tanlang!");
+      console.log(t("checkout.selectRegion"));
       return;
     }
 
     if (!selectedPickupPoint) {
-      console.log("Iltimos, topshirish punktini tanlang!");
+      console.log(t("checkout.selectPickup"));
       return;
     }
 
@@ -451,12 +460,6 @@ export default function Checkout() {
             }`,
           },
           receiverPvz: selectedPickupPoint?.code?.[0] || "",
-          // Agar delivery ma'lumotlarini jo'natish kerak bo'lsa, alohida field'lar sifatida qo'shamiz
-          // deliveryInfo: deliveryInfo ? {
-          //   price: deliveryInfo.price,
-          //   minDays: deliveryInfo.minDays,
-          //   maxDays: deliveryInfo.maxDays
-          // } : null
         };
       });
 
@@ -492,6 +495,7 @@ export default function Checkout() {
       setLoading(false);
     }
   };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -500,19 +504,15 @@ export default function Checkout() {
   const handleRegionChange = (e) => {
     setSelectedRegion(e.target.value);
     setSelectedPickupPoint(null);
-    // Delivery info ni tozalash
     setDeliveryInfo(null);
     setDeliveryError(null);
-    // Calculation ref ni tozalash
     deliveryCalculationRef.current = null;
   };
 
   const handlePickupPointSelect = (point) => {
     setSelectedPickupPoint(point);
-    // Delivery info ni tozalash - yangi pickup point uchun qayta hisoblash
     setDeliveryInfo(null);
     setDeliveryError(null);
-    // Calculation ref ni tozalash
     deliveryCalculationRef.current = null;
   };
 
@@ -542,17 +542,19 @@ export default function Checkout() {
 
   const totalWithDelivery = total + (deliveryInfo?.price || 0);
 
-  if (loading) {
+  // Show loading screen until hydration is complete and translations are ready
+  if (loading || !isHydrated || !ready) {
     return (
       <div>
         <Head>
-          <title>Buyurtma berish</title>
+          <title>Order</title>{" "}
+          {/* Use static text to avoid hydration mismatch */}
           <meta name="description" content="Checkout - Baraka savdo" />
         </Head>
         <Navbar />
         <div className="max-w-4xl mx-auto px-4 py-8">
           <div className="flex justify-center items-center h-64">
-            <div className="text-lg">Yuklanmoqda...</div>
+            <div className="text-lg">Loading...</div> {/* Static text */}
           </div>
         </div>
         <Footer />
@@ -563,14 +565,16 @@ export default function Checkout() {
   return (
     <div>
       <Head>
-        <title>Buyurtma</title>
+        <title>{t("checkout.title")}</title>
         <meta name="description" content="Checkout - Baraka Savdo" />
       </Head>
 
       <Navbar />
 
       <div className="max-w-6xl mx-auto px-4 py-8 max-[720px]:px-2">
-        <h1 className="text-3xl font-bold mb-8 text-gray-800">Buyurtma</h1>
+        <h1 className="text-3xl font-bold mb-8 text-gray-800">
+          {t("checkout.title")}
+        </h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2">
